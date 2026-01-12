@@ -12,10 +12,10 @@ let synths = []; // Array of FM synths
 let gainNodes = []; // Array of gain nodes
 
 // Import synths and samplers
-import { samplers, fmSynths } from "./instruments.js";
+import { samplers, fmSynths } from './instruments.js';
 
 // HTML template for a sound module
-import { createSoundModuleTemplate } from "./soundModule.js";
+import { createSoundModuleTemplate } from './soundModule.js';
 
 // Menu items for the instruments
 let instrumentsMenuItems = [];
@@ -42,30 +42,30 @@ let timeBetweenNotes = 500;
 // Hold the most recently retrieved data
 var retrievedData;
 
-// Hold the most recently retrieved metadata
-var metadata;
+// Array to hold x-axis data for each plot
+let plotXData = [];
 
 // Function to initialize a sound module
 async function addSoundModule() {
-  console.log("Adding a new sound module...");
+  console.log('Adding a new sound module...');
 
   const moduleId = soundModules.length; // Determine the next module ID
-  const modulesContainer = document.getElementById("modulesContainer");
+  const modulesContainer = document.getElementById('modulesContainer');
 
   // Use the template function to generate the new module's HTML
   const newModuleHTML = createSoundModuleTemplate(moduleId);
 
   // Append the new module to the container
-  modulesContainer.insertAdjacentHTML("beforeend", newModuleHTML);
+  modulesContainer.insertAdjacentHTML('beforeend', newModuleHTML);
 
   // Get the newly created module element
   const newModule = modulesContainer.lastElementChild;
   newModule.id = `module${moduleCounter++}`;
 
   // Populate the sound types dropdown
-  const soundTypesSelect = newModule.querySelector(".soundTypes");
-  soundTypesSelect.innerHTML = instrumentsMenuItems.join("");
-  soundTypesSelect.value = "retro"; // Set default value
+  const soundTypesSelect = newModule.querySelector('.soundTypes');
+  soundTypesSelect.innerHTML = instrumentsMenuItems.join('');
+  soundTypesSelect.value = 'retro'; // Set default value
 
   // Set default sustain notes for the new module
   sustainNotes[moduleId] = true; // Default to true
@@ -73,7 +73,7 @@ async function addSoundModule() {
   // Add the module to the soundModules array
   // Make sure the new module isn't a null object
   if (newModule === null) {
-    console.error("New module is null. Cannot add to soundModules array.");
+    console.error('New module is null. Cannot add to soundModules array.');
     return;
   }
   soundModules.push(newModule);
@@ -93,7 +93,7 @@ async function addSoundModule() {
   }
 }
 
-document.getElementById("addModule").onclick = addSoundModule;
+document.getElementById('addModule').onclick = addSoundModule;
 
 // Event listener for the "Add Module" button
 
@@ -111,35 +111,23 @@ function attachListenersToSoundModule(soundModule) {
 }
 
 function attachSustainNotesListener(soundModule) {
-  const sustainNotesCheckbox = soundModule.querySelector(".sustainNotes");
-  sustainNotesCheckbox.addEventListener("change", () => {
+  const sustainNotesCheckbox = soundModule.querySelector('.sustainNotes');
+  sustainNotesCheckbox.addEventListener('change', () => {
     const moduleId = soundModules.indexOf(soundModule);
     // Print out module ID
-    console.log("Module ID: " + moduleId);
+    console.log('Module ID: ' + moduleId);
     sustainNotes[moduleId] = sustainNotesCheckbox.checked;
   });
 }
 
 function attachRemoveListener(soundModule) {
-  const removeBtn = soundModule.querySelector(".removeModule");
-  removeBtn.addEventListener("click", () => {
+  const removeBtn = soundModule.querySelector('.removeModule');
+  removeBtn.addEventListener('click', () => {
+    // Ask for confirmation before deleting
+    const isConfirmed = confirm('Are you sure you want to remove this sound track?');
+    if (!isConfirmed) return; // Stop if user clicks "Cancel"
+
     const moduleId = parseInt(removeBtn.dataset.moduleId);
-
-    // Ask for confirmation before removing
-    const confirmRemoval = confirm(
-      "Are you sure you want to remove this sound module?"
-    );
-    if (!confirmRemoval) return;
-
-    // Remove the corresponding synth and gain node
-    if (synths[moduleId]) {
-      synths[moduleId].dispose();
-      synths.splice(moduleId, 1);
-    }
-    if (gainNodes[moduleId]) {
-      gainNodes[moduleId].dispose();
-      gainNodes.splice(moduleId, 1);
-    }
 
     // Remove the corresponding midi pitches
     if (midiPitchesArray[moduleId]) {
@@ -159,7 +147,7 @@ function attachRemoveListener(soundModule) {
     // Update the IDs and data-module-id attributes of the remaining modules
     soundModules.forEach((module, index) => {
       module.id = `module${index}`;
-      const removeBtn = module.querySelector(".removeModule");
+      const removeBtn = module.querySelector('.removeModule');
       removeBtn.dataset.moduleId = index;
     });
 
@@ -168,8 +156,8 @@ function attachRemoveListener(soundModule) {
 }
 
 function attachVolumeListener(soundModule) {
-  const volumeSlider = soundModule.querySelector(".volume");
-  volumeSlider.addEventListener("input", (event) => {
+  const volumeSlider = soundModule.querySelector('.volume');
+  volumeSlider.addEventListener('input', event => {
     const volumeValue = parseFloat(event.target.value);
     gainNodes[soundModules.indexOf(soundModule)].volume.value = volumeValue;
     console.log(`Volume for ${soundModule.id} set to ${volumeValue} dB`);
@@ -177,8 +165,8 @@ function attachVolumeListener(soundModule) {
 }
 
 function attachSensorListener(soundModule) {
-  const sensorSelect = soundModule.querySelector(".sensors");
-  sensorSelect.addEventListener("change", (event) => {
+  const sensorSelect = soundModule.querySelector('.sensors');
+  sensorSelect.addEventListener('change', event => {
     const selectedSensor = event.target.value;
     setReadings(soundModules.indexOf(soundModule));
     console.log(`Sensor for ${soundModule.id} set to ${selectedSensor}`);
@@ -186,8 +174,8 @@ function attachSensorListener(soundModule) {
 }
 
 function attachReadingListener(soundModule) {
-  const readingSelect = soundModule.querySelector(".readings");
-  readingSelect.addEventListener("change", (event) => {
+  const readingSelect = soundModule.querySelector('.readings');
+  readingSelect.addEventListener('change', event => {
     const selectedReading = event.target.value;
     plot(soundModules.indexOf(soundModule));
     console.log(`Reading for ${soundModule.id} set to ${selectedReading}`);
@@ -195,33 +183,33 @@ function attachReadingListener(soundModule) {
 }
 
 function attachCollapseListener(soundModule) {
-  const collapseBtn = soundModule.querySelector(".collapse-btn");
-  collapseBtn.addEventListener("click", () => {
-    const options = soundModule.querySelector(".moduleBottomOptions");
-    const isVisible = options.style.display === "block";
-    options.style.display = isVisible ? "none" : "block";
-    collapseBtn.textContent = isVisible ? "▼" : "▲";
+  const collapseBtn = soundModule.querySelector('.collapse-btn');
+  collapseBtn.addEventListener('click', () => {
+    const options = soundModule.querySelector('.moduleBottomOptions');
+    const isVisible = options.style.display === 'block';
+    options.style.display = isVisible ? 'none' : 'block';
+    collapseBtn.textContent = isVisible ? '▼' : '▲';
 
     setTimeout(() => {
-      const plotDiv = soundModule.querySelector(".plot");
+      const plotDiv = soundModule.querySelector('.plot');
       if (plotDiv && plotDiv.data) {
         Plotly.Plots.resize(plotDiv);
       }
-    }, 100);
+    }, 0);
   });
 }
 
 function attachSoundTypeListener(soundModule) {
-  const soundTypeSelect = soundModule.querySelector(".soundTypes");
-  soundTypeSelect.addEventListener("change", (event) => {
+  const soundTypeSelect = soundModule.querySelector('.soundTypes');
+  soundTypeSelect.addEventListener('change', event => {
     // Release all notes before changing the synth type
     synths[soundModules.indexOf(soundModule)].releaseAll();
 
     const selectedSoundType = event.target.value;
     const moduleId = soundModules.indexOf(soundModule);
 
-    console.log("Selected sound type: " + selectedSoundType);
-    console.log("Number of synths: " + synths.length);
+    console.log('Selected sound type: ' + selectedSoundType);
+    console.log('Number of synths: ' + synths.length);
 
     // Dispose of the previous synth/sampler if it exists
     if (synths[moduleId]) {
@@ -245,18 +233,16 @@ function attachSoundTypeListener(soundModule) {
 
 function attachNoteOptionListeners(soundModule) {
   // Attach listeners to all relevant elements within the soundModule
-  const elements = soundModule.querySelectorAll(
-    ".sensors, .readings, .tessitura, .tonic, .scale"
-  );
-  elements.forEach((element) => {
-    element.addEventListener("change", (event) => {
+  const elements = soundModule.querySelectorAll('.sensors, .readings, .tessitura, .tonic, .scale');
+  elements.forEach(element => {
+    element.addEventListener('change', event => {
       const moduleIdx = soundModules.indexOf(soundModule);
 
       if (moduleIdx !== -1) {
         // Call the update function with the correct module index
         updateSoundModule(moduleIdx);
       } else {
-        console.error("Sound module not found for the given element.");
+        console.error('Sound module not found for the given element.');
       }
     });
   });
@@ -269,7 +255,7 @@ function setupSynth(moduleId) {
     maxPolyphony: 32, // Maximum simultaneous voices
   });
 
-  polySynth.set(fmSynths["retro"]); // Set default synth settings
+  polySynth.set(fmSynths['retro']); // Set default synth settings
 
   // Store the polyphonic synth and gain node in arrays
   synths[moduleId] = polySynth;
@@ -279,7 +265,7 @@ function setupSynth(moduleId) {
 
 function attachGainNode(synth, moduleId) {
   // Get the volume slider value
-  const volume = soundModules[moduleId].querySelector(".volume").value;
+  const volume = soundModules[moduleId].querySelector('.volume').value;
   const gainNode = new Tone.Volume(volume).toDestination();
   synth.connect(gainNode);
   gainNodes[moduleId] = gainNode;
@@ -291,9 +277,9 @@ function midiToFreq(midiNote) {
 }
 
 // Event listener for play button
-document.getElementById("play").onclick = function () {
+document.getElementById('play').onclick = function () {
   if (soundModules.length === 0) {
-    console.error("No sound modules initialized.");
+    console.error('No sound modules initialized.');
     return;
   }
 
@@ -312,24 +298,34 @@ function updatePlaybackBar(moduleIndex, position) {
     return;
   }
 
-  const plotDiv = module.querySelector(".plot"); // Access the plot within the module
+  const plotDiv = module.querySelector('.plot'); // Access the plot within the module
   if (!plotDiv) {
     console.error(`Plot not found in module at index ${moduleIndex}.`);
     return;
   }
 
+  // Get the stored x-axis timestamp data
+  const xData = plotXData[moduleIndex];
+  if (!xData || xData.length === 0) {
+    console.error(`No x data found for module ${moduleIndex}`);
+    return;
+  }
+
+  // Use the actual timestamp value at this position
+  const xPosition = xData[position % xData.length];
+
   Plotly.relayout(plotDiv, {
     shapes: [
       {
-        type: "line",
-        x0: position, // Position of the playback bar
-        x1: position,
+        type: 'line',
+        x0: xPosition, // Position of the playback bar
+        x1: xPosition,
         y0: 0,
         y1: 1, // Full height of the graph
-        xref: "x",
-        yref: "paper", // Use `paper` to span the full height
+        xref: 'x',
+        yref: 'paper', // Use `paper` to span the full height
         line: {
-          color: "red", // Bar color
+          color: 'red', // Bar color
           width: 2, // Bar width
         },
       },
@@ -339,17 +335,17 @@ function updatePlaybackBar(moduleIndex, position) {
 
 // Play notes using Tone.js
 async function playNotes() {
-  console.log("Playing notes...");
+  console.log('Playing notes...');
 
   await Tone.start(); // Ensure Tone.js is ready to play audio
 
   // Clear previous synths and gain nodes
-  synths.forEach((synth) => {
+  synths.forEach(synth => {
     if (synth) {
       synth.dispose(); // Dispose of the previous synth
     }
   });
-  gainNodes.forEach((gainNode) => {
+  gainNodes.forEach(gainNode => {
     if (gainNode) {
       gainNode.dispose(); // Dispose of the previous gain node
     }
@@ -361,7 +357,7 @@ async function playNotes() {
 
   // Create a synth for each sound module
   soundModules.forEach((module, index) => {
-    const soundType = module.querySelector(".soundTypes").value;
+    const soundType = module.querySelector('.soundTypes').value;
 
     let synth;
     if (samplers[soundType]) {
@@ -374,7 +370,7 @@ async function playNotes() {
       synth = new Tone.PolySynth(Tone.FMSynth, {
         maxPolyphony: 32,
       });
-      synth.set(fmSynths[soundType] || fmSynths["retro"]);
+      synth.set(fmSynths[soundType] || fmSynths['retro']);
     }
 
     attachGainNode(synth, index); // Attach gain node to the synth
@@ -383,14 +379,14 @@ async function playNotes() {
   });
 
   if (synths.length === 0 || gainNodes.length === 0) {
-    console.error("Synths or gain nodes not initialized.");
+    console.error('Synths or gain nodes not initialized.');
     return;
   }
 
-  gainNodes.forEach((gainNode) => {
+  gainNodes.forEach(gainNode => {
     // Set the volume for each gain node according to the slider value
     gainNode.volume.value =
-      soundModules[gainNodes.indexOf(gainNode)].querySelector(".volume").value;
+      soundModules[gainNodes.indexOf(gainNode)].querySelector('.volume').value;
   });
 
   let i = 0; // Reset index
@@ -403,7 +399,7 @@ async function playNotes() {
   let lastPlayedNote = new Array(synths.length).fill(null); // Track last played notes
 
   // Schedule playback for each synth
-  Tone.Transport.scheduleRepeat((time) => {
+  Tone.Transport.scheduleRepeat(time => {
     if (!isPlaying) {
       Tone.Transport.stop();
       return;
@@ -416,21 +412,16 @@ async function playNotes() {
       const currentIndex = i % midiPitches.length;
       const currentNote = midiPitches[currentIndex];
 
-      // Calculate sustain duration
-      let sustainDuration = timeBetweenNotes / 1000; // Default duration (one step)
+      let sustainDuration = timeBetweenNotes / 1000;
 
       if (sustainNotes[moduleId]) {
-        // Check if sustain is enabled for this module
         let sustainFactor = 1;
         let lookaheadIndex = (currentIndex + 1) % midiPitches.length;
 
-        while (
-          midiPitches[lookaheadIndex] === currentNote &&
-          lookaheadIndex !== currentIndex
-        ) {
+        while (midiPitches[lookaheadIndex] === currentNote && lookaheadIndex !== currentIndex) {
           sustainFactor++;
           lookaheadIndex = (lookaheadIndex + 1) % midiPitches.length;
-          if (lookaheadIndex === currentIndex) break; // Prevent infinite loops
+          if (lookaheadIndex === currentIndex) break;
         }
 
         sustainDuration *= sustainFactor;
@@ -440,35 +431,19 @@ async function playNotes() {
       if (currentNote !== lastPlayedNote[moduleId]) {
         const freq = midiToFreq(currentNote);
         synth.triggerAttackRelease(freq, sustainDuration, time);
-        lastPlayedNote[moduleId] = currentNote; // Update last played note
+        lastPlayedNote[moduleId] = currentNote;
       }
+    });
 
-      // Playback bar update
-      // Get actual x-value from data for accurate positioning
-      soundModules.forEach((synth, moduleId) => {
-        const midiPitches = midiPitchesArray[moduleId];
-        if (!midiPitches || midiPitches.length === 0) return;
-
-        const currentIndex = i % midiPitches.length;
-
-        // Get the actual timestamp from retrievedData for the data point
-        const sensor = soundModules[moduleId].querySelector(".sensors").value;
-        const reading = soundModules[moduleId].querySelector(".readings").value;
-        const filteredData = retrievedData.filter(
-          (d) => d.hasOwnProperty(sensor) && d[sensor].hasOwnProperty(reading)
-        );
-
-        if (filteredData[currentIndex]) {
-          const xValue = new Date(
-            fixTimestamp(filteredData[currentIndex].Timestamp.time_local)
-          ).getTime();
-          updatePlaybackBar(moduleId, xValue);
-        }
-      });
+    // Update playback bar once per tick
+    soundModules.forEach((_, moduleId) => {
+      const len = midiPitchesArray[moduleId]?.length || 1;
+      updatePlaybackBar(moduleId, i % len);
     });
 
     i++;
-  }, timeBetweenNotes / 1000); // Use the time interval for scheduling
+  }, timeBetweenNotes / 1000);
+  // Use the time interval for scheduling
 
   // // === Visual Loop ===
   // let barStep = 0;
@@ -490,14 +465,14 @@ async function playNotes() {
 function stopSynths() {
   isPlaying = false;
 
-  gainNodes.forEach((gainNode) => {
+  gainNodes.forEach(gainNode => {
     // Fade out the volume
     gainNode.volume.rampTo(-Infinity, 0.1);
   });
 
   setTimeout(() => {
     // Stop the synths without disposing them
-    synths.forEach((synth) => {
+    synths.forEach(synth => {
       if (synth) {
         synth.triggerRelease(); // Release any currently playing notes
       }
@@ -505,19 +480,11 @@ function stopSynths() {
 
     Tone.Transport.stop();
     Tone.Transport.cancel(0); // Cancel all scheduled events
-
-    // Clear playback bars from all plots
-    soundModules.forEach((module, moduleId) => {
-      const plotDiv = module.querySelector(".plot");
-      if (plotDiv) {
-        Plotly.relayout(plotDiv, { shapes: [] });
-      }
-    });
   }, 50);
 }
 
 // Event listener for stop button
-document.getElementById("stop").addEventListener("click", stopSynths);
+document.getElementById('stop').addEventListener('click', stopSynths);
 
 function updateTimeBetween() {
   timeBetweenNotes = 60000 / bpm / speedMult;
@@ -525,16 +492,15 @@ function updateTimeBetween() {
 }
 
 // Adjust tempo
-document.getElementById("bpm").addEventListener("change", function () {
-  document.getElementById("bpmText").innerText =
-    document.getElementById("bpm").value;
-  bpm = document.getElementById("bpm").value;
+document.getElementById('bpm').addEventListener('change', function () {
+  document.getElementById('bpmText').innerText = document.getElementById('bpm').value;
+  bpm = document.getElementById('bpm').value;
   updateTimeBetween();
 });
 
 // Function to handle speed change
 function handleSpeedChange(event) {
-  if (event.target.name === "speed") {
+  if (event.target.name === 'speed') {
     const selectedSpeed = event.target.value;
     console.log(`Speed changed to: ${selectedSpeed}`);
     speedMult = parseInt(selectedSpeed);
@@ -543,24 +509,22 @@ function handleSpeedChange(event) {
 }
 
 // Attach a single event listener to the speedOptions container
-document
-  .getElementById("speedOptions")
-  .addEventListener("change", handleSpeedChange);
+document.getElementById('speedOptions').addEventListener('change', handleSpeedChange);
 
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener('DOMContentLoaded', () => {
   // Prioritize smooth playback
-  const context = new Tone.Context({ latencyHint: "playback" });
+  const context = new Tone.Context({ latencyHint: 'playback' });
   Tone.setContext(context);
 
   // Initialize sound type menu items
-  instrumentsMenuItems = Object.keys(samplers).map((key) => {
+  instrumentsMenuItems = Object.keys(samplers).map(key => {
     // Make the first letter uppercase
     const keyLabel = key.charAt(0).toUpperCase() + key.slice(1);
     return `<option value="${key}">${keyLabel} (Sampler)</option>`;
   });
 
   instrumentsMenuItems.push(
-    ...Object.keys(fmSynths).map((key) => {
+    ...Object.keys(fmSynths).map(key => {
       // Make the first letter uppercase
       const keyLabel = key.charAt(0).toUpperCase() + key.slice(1);
       return `<option value="${key}">${keyLabel} (FM Synth)</option>`;
@@ -568,19 +532,20 @@ document.addEventListener("DOMContentLoaded", () => {
   );
 
   // Initialize existing soundModules in the DOM
-  const existingModules = document.getElementsByClassName("soundModule");
+  const existingModules = document.getElementsByClassName('soundModule');
   for (let m of existingModules) {
     soundModules.push(m);
   }
 
   // Toggle collapsible container for databases and devices
-  const dataSource = document.getElementById("dataSource");
-  const toggleButton = document.getElementById("toggleDataSource");
-  toggleButton.addEventListener("click", () => {
-    dataSource.style.display =
-      dataSource.style.display === "none" ? "flex" : "none";
-    toggleButton.textContent = dataSource.style.display === "none" ? "▼" : "▲";
+  const dataSource = document.getElementById('dataSource');
+  const toggleButton = document.getElementById('toggleDataSource');
+  toggleButton.addEventListener('click', () => {
+    dataSource.style.display = dataSource.style.display === 'none' ? 'flex' : 'none';
+    toggleButton.textContent = dataSource.style.display === 'none' ? '▼' : '▲';
   });
+
+  const retrieveByNameDropdown = document.getElementById('retrieveByNameDropdown');
 
   // Fetch databases and populate the dropdown
   fetchDatabases();
@@ -600,33 +565,46 @@ document.addEventListener("DOMContentLoaded", () => {
   // Device is the collection within that database
   let predefinedPairs = [
     {
-      name: "Cascade Creek",
-      database: "TEK_Cascade",
-      device: "KutiChime13ISOTS",
+      name: 'Cascade Creek',
+      database: 'TEK_Cascade',
+      device: 'KutiChime13ISOTS',
     },
-    { name: "WhaleFest", database: "WhaleFest23", device: "KhutiChime7" },
+    { name: 'WhaleFest', database: 'WhaleFest23', device: 'KhutiChime7' },
     {
-      name: "OSU Solar Array 1 2025",
-      database: "Summer2025ChimeTest",
-      device: "EZ_Power_SD_29_Aug_2",
+      name: 'OSU Solar Array 1 2025',
+      database: 'Summer2025ChimeTest',
+      device: 'EZ_Power_SD_29_Aug_2',
     },
     {
-      name: "Cascade Creek",
-      database: "Summer2025ChimeTest",
-      device: "CAP_FIX_29_Aug_1",
+      name: 'OSU Solar Array 2 2025',
+      database: 'Summer2025ChimeTest',
+      device: 'CAP_FIX_29_Aug_1',
     },
   ];
 
   // Populate the "Retrieve by Name" dropdown with predefined database/device pairs
-  predefinedPairs.forEach((pair) => {
-    let option = document.createElement("option");
+  predefinedPairs.forEach(pair => {
+    let option = document.createElement('option');
     option.value = JSON.stringify(pair); // Store as a JSON string
     option.textContent = pair.name;
     retrieveByNameDropdown.appendChild(option);
   });
 
   // Handle selection from the named dropdown
-  retrieveByNameDropdown.addEventListener("change", handleDatasetChange);
+  retrieveByNameDropdown.addEventListener('change', async e => {
+    handleDatasetChange(e);
+    const metadata = await retrieveMetadata();
+
+    if (metadata == null) {
+      metadataBtn.style.backgroundColor = 'red';
+    } else {
+      metadataBtn.style.backgroundColor = 'green';
+    }
+
+    metadataBtn.style.color = 'white';
+
+    return;
+  });
 });
 
 // Listener for "Dataset Name" dropdown
@@ -634,10 +612,10 @@ async function handleDatasetChange(event) {
   const selectedPair = JSON.parse(event.target.value);
   if (selectedPair) {
     // Check if the database exists
-    const databasesDropdown = document.getElementById("databases");
-    const devicesDropdown = document.getElementById("devices");
+    const databasesDropdown = document.getElementById('databases');
+    const devicesDropdown = document.getElementById('devices');
     let databaseExists = [...databasesDropdown.options].some(
-      (option) => option.value.trim() === selectedPair.database.trim()
+      option => option.value.trim() === selectedPair.database.trim()
     );
 
     if (databaseExists) {
@@ -648,35 +626,34 @@ async function handleDatasetChange(event) {
 
       // Check if the selected device exists in the updated dropdown
       let deviceExists = [...devicesDropdown.options].some(
-        (option) => option.value.trim() === selectedPair.device.trim()
+        option => option.value.trim() === selectedPair.device.trim()
       );
 
       if (deviceExists) {
         devicesDropdown.value = selectedPair.device;
+        await setDateBoundsForSelection();
       } else {
         alert(
           `Warning: Device "${selectedPair.device}" not found in "${selectedPair.database}". Please select manually.`
         );
       }
     } else {
-      alert(
-        `Warning: Database "${selectedPair.database}" does not exist. Please select manually.`
-      );
+      alert(`Warning: Database "${selectedPair.database}" does not exist. Please select manually.`);
     }
   }
 }
 
 // Fetch databases from the server and populate the dropdown
 function fetchDatabases() {
-  fetch("/databases")
-    .then((response) => response.json())
-    .then((data) => {
-      const select = document.getElementById("databases");
+  fetch('/databases')
+    .then(response => response.json())
+    .then(data => {
+      const select = document.getElementById('databases');
       select.innerHTML = '<option value="default">Select a database</option>'; // Default option
 
       if (data.length > 0) {
         data.forEach((item, index) => {
-          const option = document.createElement("option");
+          const option = document.createElement('option');
           option.value = item;
           option.text = item;
           select.appendChild(option);
@@ -687,26 +664,32 @@ function fetchDatabases() {
           }
         });
 
-        // Fetch devices for the first available database
-        fetchDevices();
+        // // Fetch devices for the first available database
+        // fetchDevices();
+        // Do not auto-select a DB; clear devices/dates until user chooses
+        resetDevicesAndDates();
       }
     })
-    .catch((error) => console.error("Error fetching databases:", error));
+    .catch(error => {
+      console.error('Error fetching databases:', error);
+      // added 10/26
+      resetDevicesAndDates();
+    });
 }
 
 // Fetch devices based on the selected database and populate the dropdown
 function fetchDevices() {
-  return new Promise((resolve) => {
-    const select = document.getElementById("devices");
+  return new Promise(resolve => {
+    const select = document.getElementById('devices');
     select.innerHTML = '<option value="default">Select a sensor</option>';
 
-    let database = document.getElementById("databases").value;
-    if (database !== "default") {
+    let database = document.getElementById('databases').value;
+    if (database !== 'default') {
       fetch(`/collections?database=${database}`)
-        .then((response) => response.json())
-        .then((data) => {
-          data.forEach((item) => {
-            const option = document.createElement("option");
+        .then(response => response.json())
+        .then(async data => {
+          data.forEach(item => {
+            const option = document.createElement('option');
             option.value = item;
             option.text = item;
             select.appendChild(option);
@@ -715,12 +698,15 @@ function fetchDevices() {
           // Automatically select the first available device
           if (data.length > 0) {
             select.value = data[0];
+            await setDateBoundsForSelection();
           }
 
+          resetDates();
           resolve(); // Resolve the Promise when devices are populated
         })
-        .catch((error) => {
-          console.error("Error fetching devices:", error);
+        .catch(error => {
+          console.error('Error fetching devices:', error);
+          resetDates();
           resolve(); // Still resolve to avoid blocking execution
         });
     } else {
@@ -729,30 +715,56 @@ function fetchDevices() {
   });
 }
 
-document.getElementById("databases").addEventListener("change", fetchDevices);
+// added 10/26
+function resetDates() {
+  const start = document.getElementById('startTime');
+  const end = document.getElementById('endTime');
+  ['min', 'max', 'value'].forEach(k => {
+    start[k] = '';
+    end[k] = '';
+  });
+}
+
+// added 10/26
+function resetDevicesAndDates() {
+  const devSel = document.getElementById('devices');
+  devSel.innerHTML = '<option value="default">Select a sensor</option>';
+  resetDates();
+}
+
+// e.g., call after devices populated or when device changes:
+document.getElementById('devices').addEventListener('change', setDateBoundsForSelection);
+
+document.getElementById('databases').addEventListener('change', fetchDevices);
 
 // Event listener to each radio button
-document.getElementsByName("packetOption").forEach((radio) => {
+document.getElementsByName('packetOption').forEach(radio => {
   // Get the input fields
-  let numpacketsInput = document.getElementById("numpacketsInput");
-  let timeInputs = document.getElementById("timeInputs");
+  let numpacketsInput = document.getElementById('numpacketsInput');
+  let timeInputs = document.getElementById('timeInputs');
 
-  radio.addEventListener("change", function () {
+  radio.addEventListener('change', async function () {
     // If "lastXPackets" is selected, show the "numpackets" and "prescaler" input fields and hide the "startTime" and "endTime" input fields
-    if (this.value === "lastXPackets") {
-      numpacketsInput.style.display = "block";
-      timeInputs.style.display = "none";
+    if (this.value === 'lastXPackets') {
+      numpacketsInput.style.display = 'block';
+      timeInputs.style.display = 'none';
     }
     // If "timeRange" is selected, hide the "numpackets" input field and show the "startTime", "endTime" and "prescaler" input fields
-    else if (this.value === "timeRange") {
-      numpacketsInput.style.display = "none";
-      timeInputs.style.display = "block";
+    else if (this.value === 'timeRange') {
+      numpacketsInput.style.display = 'none';
+      timeInputs.style.display = 'block';
+      await setDateBoundsForSelection(); // added 10/26
+    } else {
+      // added 10/26
+      numpackets.style.display = 'block';
+      timeInputs.style.display = 'none';
+      resetDates();
     }
   });
 });
 
 // Main function to retrieve data and initialize modules
-document.getElementById("retrieve").onclick = async function () {
+document.getElementById('retrieve').onclick = async function () {
   // Stop audio playback
   stopSynths();
 
@@ -760,69 +772,71 @@ document.getElementById("retrieve").onclick = async function () {
 
   for (let m of soundModules) {
     // Clear the sensors and readings select elements
-    let sensorsSelect = m.querySelector(".sensors");
+    let sensorsSelect = m.querySelector('.sensors');
     while (sensorsSelect.options.length > 1) {
       sensorsSelect.removeChild(sensorsSelect.lastChild);
     }
 
-    let readingsSelect = m.querySelector(".readings");
+    let readingsSelect = m.querySelector('.readings');
     while (readingsSelect.options.length > 1) {
       readingsSelect.removeChild(readingsSelect.lastChild);
     }
   }
 
-  let db = document.getElementById("databases").value;
-  let collection = document.getElementById("devices").value;
-  let x = document.getElementById("numpackets").value;
-  let startTime = document.getElementById("startTime").value;
-  let endTime = document.getElementById("endTime").value;
+  let db = document.getElementById('databases').value;
+  let collection = document.getElementById('devices').value;
+  let x = document.getElementById('numpackets').value;
+  let startTime = document.getElementById('startTime').value;
+  let endTime = document.getElementById('endTime').value;
 
-  let packetOption = document.querySelector(
-    'input[name="packetOption"]:checked'
-  ).value;
-  let prescaler = document.getElementById("prescaler").value;
-
+  let packetOption = document.querySelector('input[name="packetOption"]:checked').value;
+  let prescaler = document.getElementById('prescaler').value;
   let url;
   let metadataUrl;
 
   // Error handling for inputs
-  if (packetOption === "lastXPackets") {
-    if (x === "" || isNaN(x)) {
-      alert("Number of packets must be an integer number");
+  if (packetOption === 'lastXPackets') {
+    if (x === '' || isNaN(x)) {
+      alert('Number of packets must be an integer number');
       return;
     }
     url = `/data/?database=${db}&collection=${collection}&x=${x}&prescaler=${prescaler}`;
-  } else if (packetOption === "timeRange") {
-    if (startTime === "" || endTime === "") {
-      alert("Please enter a valid start time and end time");
+  } else if (packetOption === 'timeRange') {
+    if (startTime === '' || endTime === '') {
+      alert('Please enter a valid start time and end time');
       return;
     }
 
     if (startTime >= endTime) {
-      alert("End time cannot be before start time");
+      alert('End time cannot be before start time');
       return;
     }
 
-    url = `/data/?database=${db}&collection=${collection}&startTime=${startTime}&endTime=${endTime}&prescaler=${prescaler}`;
+    // added 10/26
+    const toISO = v => new Date(v).toISOString();
+    url =
+      `/data/?database=${db}&collection=${collection}` +
+      `&startTime=${encodeURIComponent(toISO(startTime))}` +
+      `&endTime=${encodeURIComponent(toISO(endTime))}` +
+      `&prescaler=${prescaler}`;
   }
 
-  if (collection === "default") {
-    alert("Please select a device");
+  if (collection === 'default') {
+    alert('Please select a device');
     return;
   }
 
   // Fetch data from the server
   fetch(url)
-    .then((response) => response.json())
-    .then((data) => {
+    .then(response => response.json())
+    .then(data => {
       retrievedData = data;
 
       // If data is empty, show an alert and return
       if (data.length === 0) {
-        alert("No data available for the selected time range.");
+        alert('No data available for the selected time range.');
         return;
       }
-
       data.sort(
         (a, b) =>
           new Date(fixTimestamp(a.Timestamp.time_local)) -
@@ -837,19 +851,7 @@ document.getElementById("retrieve").onclick = async function () {
         restoreSelects(m);
       }
     })
-    .catch((error) => console.error("Error:", error));
-
-  // Retrieve metadata
-  fetch(metadataUrl)
-    .then((response) => response.json())
-    .then((data) => {
-      metadata = data;
-
-      if (data.length == 0) {
-        alert("Test");
-      }
-    })
-    .catch((error) => console.error("Error:", error));
+    .catch(error => console.error('Error:', error));
 };
 
 // Function to save currently selected sensor and reading
@@ -857,17 +859,17 @@ function saveSelects() {
   savedSensors = {};
   savedReadings = {};
 
-  soundModules.forEach((module) => {
+  soundModules.forEach(module => {
     let moduleId = module.id; // Use unique module ID
-    savedSensors[moduleId] = module.querySelector(".sensors").value;
-    savedReadings[moduleId] = module.querySelector(".readings").value;
+    savedSensors[moduleId] = module.querySelector('.sensors').value;
+    savedReadings[moduleId] = module.querySelector('.readings').value;
   });
 }
 
 // Function to restore previously selected sensor and reading
 function restoreSelects(module) {
-  let sensorsSelect = module.querySelector(".sensors");
-  let readingsSelect = module.querySelector(".readings");
+  let sensorsSelect = module.querySelector('.sensors');
+  let readingsSelect = module.querySelector('.readings');
   const moduleId = module.id;
 
   let restoredData = false;
@@ -875,9 +877,7 @@ function restoreSelects(module) {
   // Restore the previously selected sensor if it still exists
   if (
     savedSensors[moduleId] &&
-    [...sensorsSelect.options].some(
-      (option) => option.value === savedSensors[moduleId]
-    )
+    [...sensorsSelect.options].some(option => option.value === savedSensors[moduleId])
   ) {
     sensorsSelect.value = savedSensors[moduleId];
     setReadings(soundModules.indexOf(module)); // Reinitialize readings
@@ -887,9 +887,7 @@ function restoreSelects(module) {
   // Restore the previously selected reading if it still exists
   if (
     savedReadings[moduleId] &&
-    [...readingsSelect.options].some(
-      (option) => option.value === savedReadings[moduleId]
-    )
+    [...readingsSelect.options].some(option => option.value === savedReadings[moduleId])
   ) {
     readingsSelect.value = savedReadings[moduleId];
     restoredData = true;
@@ -901,7 +899,7 @@ function restoreSelects(module) {
 // Function to initialize a sound module with given data
 function initializeModuleSelects(module, data) {
   // Clear the sensors select element
-  let sensorsSelect = module.querySelector(".sensors");
+  let sensorsSelect = module.querySelector('.sensors');
   while (sensorsSelect.firstChild) {
     sensorsSelect.removeChild(sensorsSelect.firstChild);
   }
@@ -912,9 +910,9 @@ function initializeModuleSelects(module, data) {
     let keys = Object.keys(data[0]);
 
     // Add each key as an option to the sensors select element
-    keys.forEach((key) => {
-      if (key === "_id" || key === "Timestamp" || key === "WiFi") return;
-      let option = document.createElement("option");
+    keys.forEach(key => {
+      if (key === '_id' || key === 'Timestamp' || key === 'WiFi') return;
+      let option = document.createElement('option');
       option.value = key;
       option.text = key;
       sensorsSelect.appendChild(option);
@@ -923,17 +921,17 @@ function initializeModuleSelects(module, data) {
     // Initialize readings select element
     setReadings(soundModules.indexOf(module));
   } else {
-    console.error("No data available to initialize module selects.");
+    console.error('No data available to initialize module selects.');
   }
 }
 
 // Sets readings on all sound modules
 function setReadings(moduleIdx) {
   let m = soundModules[moduleIdx];
-  let sensor = m.querySelector(".sensors").value;
+  let sensor = m.querySelector('.sensors').value;
 
   // Get the select element for readings
-  let selectReadings = m.querySelector(".readings");
+  let selectReadings = m.querySelector('.readings');
 
   // Remove any existing options
   while (selectReadings.firstChild) {
@@ -941,18 +939,18 @@ function setReadings(moduleIdx) {
   }
 
   // If sensor is not "default"
-  if (sensor !== "default") {
+  if (sensor !== 'default') {
     // Get the first object in the data array that has the sensor as a key
-    let sensorData = retrievedData.find((d) => d.hasOwnProperty(sensor));
+    let sensorData = retrievedData.find(d => d.hasOwnProperty(sensor));
 
     // If sensorData exists and its value is an object
-    if (sensorData && typeof sensorData[sensor] === "object") {
+    if (sensorData && typeof sensorData[sensor] === 'object') {
       // Get the keys of the sensorData object
       let keys = Object.keys(sensorData[sensor]);
 
       // Add each key as an option to the select element
-      keys.forEach((key) => {
-        let option = document.createElement("option");
+      keys.forEach(key => {
+        let option = document.createElement('option');
         option.value = key;
         option.text = key;
         selectReadings.appendChild(option);
@@ -972,22 +970,20 @@ function updateSoundModule(moduleIdx) {
     synths[moduleIdx].releaseAll();
   }
 
-  const sensor = m.querySelector(".sensors").value;
-  const reading = m.querySelector(".readings").value;
+  const sensor = m.querySelector('.sensors').value;
+  const reading = m.querySelector('.readings').value;
 
   // Get and normalize the reading data
   const readingData = retrievedData
-    .filter(
-      (d) => d.hasOwnProperty(sensor) && d[sensor].hasOwnProperty(reading)
-    )
-    .map((d) => d[sensor][reading]);
+    .filter(d => d.hasOwnProperty(sensor) && d[sensor].hasOwnProperty(reading))
+    .map(d => d[sensor][reading]);
 
   const normalizedData = normalizeData(readingData);
 
   // Get scale settings
-  const tessitura = m.querySelector(".tessitura").value;
-  const tonic = m.querySelector(".tonic").value;
-  const scaleName = m.querySelector(".scale").value;
+  const tessitura = m.querySelector('.tessitura').value;
+  const tonic = m.querySelector('.tonic').value;
+  const scaleName = m.querySelector('.scale').value;
   const scale = createScaleArray(tonic, scaleName, tessitura);
 
   // Update the respective MIDI pitches array
@@ -997,17 +993,17 @@ function updateSoundModule(moduleIdx) {
 function plot(moduleIdx) {
   let m = soundModules[moduleIdx];
   // Clear the plot area
-  m.querySelector(".plot").innerHTML = "";
+  m.querySelector('.plot').innerHTML = '';
 
   // Get the selected sensor and reading
-  let sensor = m.querySelector(".sensors").value;
-  let reading = m.querySelector(".readings").value;
+  let sensor = m.querySelector('.sensors').value;
+  let reading = m.querySelector('.readings').value;
 
   // If sensor and reading are not "default"
-  if (sensor !== "default" && reading !== "default") {
+  if (sensor !== 'default' && reading !== 'default') {
     // Get the data for the selected sensor and reading
     let filteredData = retrievedData.filter(
-      (d) => d.hasOwnProperty(sensor) && d[sensor].hasOwnProperty(reading)
+      d => d.hasOwnProperty(sensor) && d[sensor].hasOwnProperty(reading)
     );
 
     console.log(filteredData);
@@ -1021,26 +1017,26 @@ function plot(moduleIdx) {
       );
 
       // Use actual timestamps instead of indices to account for spacing issues
-      let xData = filteredData.map((d) =>
-        new Date(fixTimestamp(d.Timestamp.time_local)).getTime()
-      );
-      let yData = filteredData.map((d) => d[sensor][reading]);
+      let xData = filteredData.map(d => new Date(fixTimestamp(d.Timestamp.time_local)).getTime());
+      let yData = filteredData.map(d => d[sensor][reading]);
+
+      // Save xData for updatePlaybackBar to use
+      plotXData[moduleIdx] = xData;
 
       // Convert timestamps to short readable format (MM/DD HH:mm:ss)
-      let xLabels = filteredData.map((d) =>
-        new Date(fixTimestamp(d.Timestamp.time_local)).toLocaleString("en-US", {
-          month: "2-digit",
-          day: "2-digit",
-          hour: "2-digit",
-          minute: "2-digit",
-          second: "2-digit",
+      let xLabels = filteredData.map(d =>
+        new Date(fixTimestamp(d.Timestamp.time_local)).toLocaleString('en-US', {
+          year: '2-digit',
+          month: '2-digit',
+          day: '2-digit',
+          hour: '2-digit',
+          minute: '2-digit',
+          second: '2-digit',
         })
       );
 
       // Create hover text for all points (show exact timestamp on hover)
-      let hoverTexts = filteredData.map(
-        (d, i) => `Date: ${xLabels[i]}<br>Value: ${yData[i]}`
-      );
+      let hoverTexts = filteredData.map((d, i) => `Date: ${xLabels[i]}<br>Value: ${yData[i]}`);
 
       // Reduce the number of x-axis labels for readability
       let tickStep = Math.max(1, Math.floor(xData.length / 6));
@@ -1052,11 +1048,11 @@ function plot(moduleIdx) {
         {
           x: xData,
           y: yData,
-          type: "scatter",
-          mode: "lines",
-          line: { width: 2, color: "blue" },
+          type: 'scatter',
+          mode: 'lines',
+          line: { width: 2, color: 'blue' },
           text: hoverTexts,
-          hoverinfo: "text",
+          hoverinfo: 'text',
         },
       ];
 
@@ -1068,19 +1064,20 @@ function plot(moduleIdx) {
         },
         // Commenting out x-axis to work on global/universal top x-axis
         xaxis: {
-          showticklabels: false, // This hides the values at the bottom
-          //   title: "",
-          //   tickmode: "array",
-          //   tickvals: tickVals,
-          //   ticktext: tickText, // Show actual timestamps at selected spots
-          //   tickangle: -25, // Rotate for readability
-          //   showgrid: true,
+          // Use when universal x-axis is imlpemented
+          // showticklabels: false, // This hides the values at the bottom
+          title: '',
+          tickmode: 'array',
+          tickvals: tickVals,
+          ticktext: tickText, // Show actual timestamps at selected spots
+          tickangle: -20, // Rotate for readability
+          showgrid: true,
         },
         margin: {
           l: 100, // left margin (adjust as needed for y-axis labels)
-          r: 40, // right margin
-          b: 30, // bottom margin
-          t: 80, // top margin
+          r: 30, // right margin
+          b: 90, // bottom margin (ideal 30 with hidden x-axis)
+          t: 70, // top margin
           // pad: 20 // padding between the plot area and the margin border
         },
         yaxis: {
@@ -1089,7 +1086,7 @@ function plot(moduleIdx) {
             standoff: 20,
           },
           showgrid: true,
-          linecolor: "white",
+          linecolor: 'white',
         },
         autosize: true,
         // margin: { l: 100, r: 50, t: 100, b: 100 } // Extra bottom margin for rotated labels
@@ -1101,44 +1098,94 @@ function plot(moduleIdx) {
       };
 
       // Plot the data using Plotly
-      Plotly.newPlot(m.querySelector(".plot"), plotData, layout, config);
+      Plotly.newPlot(m.querySelector('.plot'), plotData, layout, config);
 
       // Force resize after plot creation
       setTimeout(() => {
-        Plotly.Plots.resize(m.querySelector(".plot"));
+        Plotly.Plots.resize(m.querySelector('.plot'));
       }, 100);
     }
+  }
+}
+
+async function setDateBoundsForSelection() {
+  const database = document.getElementById('databases').value;
+  const collection = document.getElementById('devices').value;
+
+  // Only run when both are selected
+  if (!database || database === 'default' || !collection || collection === 'default') {
+    return;
+  }
+
+  try {
+    const res = await fetch(
+      `/date-range?database=${encodeURIComponent(database)}&collection=${encodeURIComponent(
+        collection
+      )}`
+    );
+
+    if (!res.ok) {
+      console.error('Failed to fetch date range:', res.status, res.statusText);
+      return;
+    }
+
+    const { minDate, maxDate } = await res.json();
+    const startInput = document.getElementById('startTime');
+    const endInput = document.getElementById('endTime');
+
+    if (!minDate || !maxDate) {
+      console.warn('No valid dates returned for this dataset.');
+      startInput.value = '';
+      endInput.value = '';
+      startInput.min = '';
+      startInput.max = '';
+      endInput.min = '';
+      endInput.max = '';
+      return;
+    }
+
+    // Convert ISO UTC -> local "yyyy-MM-ddTHH:mm" for <input type="datetime-local">
+    const toLocalInput = iso => {
+      const d = new Date(iso);
+      const offsetMs = d.getTimezoneOffset() * 60_000;
+      const local = new Date(d.getTime() - offsetMs);
+      return local.toISOString().slice(0, 16);
+    };
+
+    const minStr = toLocalInput(minDate);
+    const maxStr = toLocalInput(maxDate);
+
+    // Set bounds
+    startInput.min = minStr;
+    startInput.max = maxStr;
+    endInput.min = minStr;
+    endInput.max = maxStr;
+
+    // Autofill values
+    startInput.value = minStr;
+    endInput.value = maxStr;
+
+    console.log('Autofilled time range:', { minStr, maxStr });
+  } catch (err) {
+    console.error('Error fetching date range:', err);
   }
 }
 
 // Add a helper function to fix timestamp format
 function fixTimestamp(ts) {
   // Remove trailing 'Z' then split on 'T'
-  let [datePart, timePart] = ts.replace("Z", "").split("T");
+  let [datePart, timePart] = ts.replace('Z', '').split('T');
   if (!timePart) return ts; // fallback
   // Split time components and pad if necessary
-  let parts = timePart.split(":").map((p) => p.padStart(2, "0"));
-  return `${datePart}T${parts.join(":")}Z`;
+  let parts = timePart.split(':').map(p => p.padStart(2, '0'));
+  return `${datePart}T${parts.join(':')}Z`;
 }
 
 /**** MIDI pitch conversion ****/
 
 // Function to get MIDI number for a tonic note in the 2nd octave (MIDI numbers for C2 is 36)
 function getMidiNumber(tonic) {
-  const notes = [
-    "C",
-    "C#",
-    "D",
-    "D#",
-    "E",
-    "F",
-    "F#",
-    "G",
-    "G#",
-    "A",
-    "A#",
-    "B",
-  ];
+  const notes = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
   const baseMidi = 24; // MIDI number for C2 using the "General MIDI" standard, where C4 is MIDI 60
   return baseMidi + notes.indexOf(tonic);
 }
@@ -1152,32 +1199,32 @@ function getScaleIntervals(scaleName) {
     Mixolydian: [2, 2, 1, 2, 2, 1, 2],
     Aeolian: [2, 1, 2, 2, 1, 2, 2],
     Locrian: [1, 2, 2, 1, 2, 2, 2],
-    "Melodic Minor": [2, 1, 2, 2, 2, 2, 1],
-    "Harmonic Minor": [2, 1, 2, 2, 1, 3, 1],
-    "Harmonic Major": [2, 2, 1, 2, 1, 3, 1],
-    "Whole Tone": [2, 2, 2, 2, 2, 2],
+    'Melodic Minor': [2, 1, 2, 2, 2, 2, 1],
+    'Harmonic Minor': [2, 1, 2, 2, 1, 3, 1],
+    'Harmonic Major': [2, 2, 1, 2, 1, 3, 1],
+    'Whole Tone': [2, 2, 2, 2, 2, 2],
     Chromatic: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-    "Octatonic Major": [2, 1, 2, 1, 2, 1, 2, 1],
-    "Octatonic Minor": [1, 2, 1, 2, 1, 2, 1, 2],
+    'Octatonic Major': [2, 1, 2, 1, 2, 1, 2, 1],
+    'Octatonic Minor': [1, 2, 1, 2, 1, 2, 1, 2],
     Pentatonic: [2, 2, 3, 2, 3],
-    "Synthetic Minor": [3, 1, 2, 2, 1, 2, 1],
-    "Major Bitonal": [1, 3, 2, 1, 3, 1, 1],
-    "Minor Bitonal": [1, 2, 3, 1, 2, 1, 2],
+    'Synthetic Minor': [3, 1, 2, 2, 1, 2, 1],
+    'Major Bitonal': [1, 3, 2, 1, 3, 1, 1],
+    'Minor Bitonal': [1, 2, 3, 1, 2, 1, 2],
     Polytonal: [2, 1, 1, 1, 2, 1, 1, 1, 2],
     Ditone: [1, 3, 1, 3, 1, 3],
     Prometheus: [2, 2, 2, 3, 1, 2],
-    "Trans-Pentatonic": [3, 2, 1, 2, 2, 2],
+    'Trans-Pentatonic': [3, 2, 1, 2, 2, 2],
     Pelog: [1, 2, 4, 1, 4],
     Slendro: [2, 3, 2, 3, 2],
-    "Hungarian-Bartok": [2, 1, 3, 1, 1, 3, 1],
-    "Bulgarian-Bartok": [1, 2, 2, 2, 2, 1, 2],
-    "Asian-Bartok": [2, 1, 3, 1, 2, 2, 1],
+    'Hungarian-Bartok': [2, 1, 3, 1, 1, 3, 1],
+    'Bulgarian-Bartok': [1, 2, 2, 2, 2, 1, 2],
+    'Asian-Bartok': [2, 1, 3, 1, 2, 2, 1],
     Spain: [1, 2, 2, 2, 1, 3, 1],
-    "India-Dharmavati": [2, 1, 3, 1, 2, 2, 1],
+    'India-Dharmavati': [2, 1, 3, 1, 2, 2, 1],
     Japan: [2, 1, 1, 2, 2, 1, 2, 1],
     Peru: [3, 2, 2, 1, 2, 2],
     Alaska: [3, 2, 1, 2, 1, 2, 1],
-    "Jewish Ahavoh-Rabboh": [1, 3, 1, 2, 1, 2, 2],
+    'Jewish Ahavoh-Rabboh': [1, 3, 1, 2, 1, 2, 2],
     Slavic: [5, 2, 1, 2, 2],
     Blues: [3, 2, 1, 1, 3, 2],
   };
@@ -1217,7 +1264,7 @@ function createScaleArray(tonic, scaleName, tessitura) {
   }
 
   // Shift notes up by the desired number of octaves
-  const shiftedScale = scale.map((note) => note + octaveShift * 12);
+  const shiftedScale = scale.map(note => note + octaveShift * 12);
 
   return shiftedScale;
 }
@@ -1230,16 +1277,68 @@ function normalizeData(data) {
     // Return an array of 0.5s or handle as appropriate
     return data.map(() => 0.5);
   }
-  return data.map((x) => (x - minVal) / (maxVal - minVal));
+  return data.map(x => (x - minVal) / (maxVal - minVal));
 }
 
 // Map normalized data to MIDI pitches
 function dataToMidiPitches(normalizedData, scale) {
   const scaleLength = scale.length;
-  return normalizedData.map(
-    (value) => scale[Math.floor(value * (scaleLength - 1))]
-  );
+  return normalizedData.map(value => scale[Math.floor(value * (scaleLength - 1))]);
 }
 
-// Retrieve metadata
-function retrieveMetadata() {}
+const metadataBtn = document.getElementById('metadataButton');
+
+async function retrieveMetadata() {
+  let db = document.getElementById('databases').value;
+  let url = `/metadata?database=${db}`;
+
+  try {
+    const response = await fetch(url);
+
+    if (!response.ok) {
+      return null;
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error('Error: ', error);
+    return null;
+  }
+}
+
+metadataBtn.onclick = async function () {
+  const metadata = await retrieveMetadata();
+  console.log(metadata);
+  const metadataContainer = document.getElementById('metadataContainer');
+  metadataContainer.style.display = 'flex';
+
+  if (metadata == null) {
+    metadataContainer.innerHTML = `
+        <h3>No metadata :(</h3>
+        `;
+  } else {
+    let metadataDeploymentDate = metadata['deployment_date'];
+    let metadataLatitude = metadata['latitude'];
+    let metadataLongitude = metadata['longitude'];
+    let metadataOwner = metadata['owner'];
+
+    metadataContainer.innerHTML = `
+        <h1>Metadata</h1>
+        <br />
+
+        <h3>Deployment Date: </h3>
+        <p id="metadataDeploymentDate">${metadataDeploymentDate}</p>
+
+        <h3>Latitude: </h3>
+        <p id="metadataLatitude">${metadataLatitude}</p>
+
+        <h3>Longitude: </h3>
+        <p id="metadataLongitude">${metadataLongitude}</p>
+
+        <h3>Owner: </h3>
+        <p id="metadataOwner">${metadataOwner}</p>
+        `;
+  }
+
+  return;
+};
