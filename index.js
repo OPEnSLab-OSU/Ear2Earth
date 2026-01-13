@@ -1043,24 +1043,24 @@ function plot(moduleIdx) {
       let layout = {
         title: {
           text: `${sensor} - ${reading}`,
-          y: 0.9,
+          y: 0.91,
         },
         // Commenting out x-axis to work on global/universal top x-axis
         xaxis: {
           // Use when universal x-axis is imlpemented
-          // showticklabels: false, // This hides the values at the bottom
-          title: '',
-          tickmode: 'array',
-          tickvals: tickVals,
-          ticktext: tickText, // Show actual timestamps at selected spots
-          tickangle: -20, // Rotate for readability
-          showgrid: true,
+          showticklabels: false, // This hides the values at the bottom
+          // title: '',
+          // tickmode: 'array',
+          // tickvals: tickVals,
+          // ticktext: tickText, // Show actual timestamps at selected spots
+          // tickangle: -20, // Rotate for readability
+          // showgrid: true,
         },
         margin: {
           l: 100, // left margin (adjust as needed for y-axis labels)
           r: 30, // right margin
-          b: 90, // bottom margin (ideal 30 with hidden x-axis)
-          t: 70, // top margin
+          b: 20, // bottom margin (ideal 30 with hidden x-axis)
+          t: 55, // top margin
           // pad: 20 // padding between the plot area and the margin border
         },
         yaxis: {
