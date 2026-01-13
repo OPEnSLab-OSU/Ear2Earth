@@ -112,7 +112,8 @@ function createSoundModuleTemplate(moduleId) {
             
             <!-- RIGHT SIDE: Plot -->
             <div class="rightPlot">
-                <div class="plot"></div>
+                <div class="plot">
+                </div>
             </div>
         </div>`;
 }

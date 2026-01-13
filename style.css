@@ -46,7 +46,7 @@ main {
   border-radius: 5px;
   box-shadow: 0 1px 0 rgba(0, 0, 0, 0.04) inset;
   padding: var(--pad) 14px;
-  margin-bottom: 8px;
+  margin-bottom: 3px;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -300,9 +300,12 @@ main {
 }
 
 /* ================== UNIVERSAL X-AXIS ================== */
-/* .universalx {
-  
-} */
+#globalTimeline {
+  height: 40px;
+  background: #e0e0e0;
+  border-radius: 6px;
+  margin-bottom: 3px;
+}
 
 
 /* ================== MODULES / PLOT (unchanged) ================== */

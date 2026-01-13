@@ -973,6 +973,59 @@ function updateSoundModule(moduleIdx) {
   midiPitchesArray[moduleIdx] = dataToMidiPitches(normalizedData, scale);
 }
 
+function buildGlobalTimeline(xData) {
+  const dates = xData.map(t => new Date(t));
+  const dummy = new Array(dates.length).fill(0);
+
+  // ===== NEW: compute custom tick positions and labels like main plot =====
+  const tickStep = Math.max(1, Math.floor(dates.length / 6)); // max ~6 ticks
+  const tickVals = dates.filter((_, i) => i % tickStep === 0); // positions
+  const tickText = dates.map((d, i) => {
+    if (i === 0 || i === dates.length - 1) return ""; // hide first label
+    return d.toLocaleString('en-US', {
+      year: '2-digit',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  });
+  // ========================================================
+
+  Plotly.newPlot("globalTimeline", [{
+    x: dates,
+    y: Array(dates.length).fill(null),
+    mode: "markers",
+    marker: { opacity: 0 },
+    hoverinfo: "skip"
+  }], {
+    margin: { l: 290, r: 30, t: 40, b: 15 },
+    paper_bgcolor: "#e6e6e6",
+    yaxis: { visible: false },
+    xaxis: {
+      type: "date",
+      side: "top",
+      tickmode: 'array',
+      tickvals: tickVals,
+      ticktext: tickText,
+      ticklabelposition: "outside top",
+      tickangle: 0,  // horizontal
+      showgrid: true,
+      gridcolor: "#d0d0d0",
+      gridwidth: 1,
+      zeroline: false,
+      showline: false,
+      ticks: "outside",
+      range: [dates[0], dates[dates.length - 1]] // keep the axis exact
+    }
+  }, {
+    displayModeBar: false,
+    responsive: true
+  });
+
+  setTimeout(() => Plotly.Plots.resize("globalTimeline"), 100);
+}
+
 function plot(moduleIdx) {
   let m = soundModules[moduleIdx];
   // Clear the plot area
@@ -1005,6 +1058,14 @@ function plot(moduleIdx) {
 
       // Save xData for updatePlaybackBar to use
       plotXData[moduleIdx] = xData;
+
+      if (!window.timelineBuilt && xData.length > 1) {
+        setTimeout(() => {
+          buildGlobalTimeline(xData);
+          linkTimelineToPlots();
+          window.timelineBuilt = true;
+        }, 0);
+      }
 
       // Convert timestamps to short readable format (MM/DD HH:mm:ss)
       let xLabels = filteredData.map(d =>
@@ -1047,6 +1108,7 @@ function plot(moduleIdx) {
         },
         // Commenting out x-axis to work on global/universal top x-axis
         xaxis: {
+          type: "date", 
           // Use when universal x-axis is imlpemented
           showticklabels: false, // This hides the values at the bottom
           // title: '',
@@ -1061,7 +1123,6 @@ function plot(moduleIdx) {
           r: 30, // right margin
           b: 20, // bottom margin (ideal 30 with hidden x-axis)
           t: 55, // top margin
-          // pad: 20 // padding between the plot area and the margin border
         },
         yaxis: {
           title: {
@@ -1072,7 +1133,6 @@ function plot(moduleIdx) {
           linecolor: 'white',
         },
         autosize: true
-        // margin: { l: 100, r: 50, t: 100, b: 100 } // Extra bottom margin for rotated labels
       };
 
       // Add CSV button to Plotly's default buttons
@@ -1167,6 +1227,7 @@ function fixTimestamp(ts) {
   let parts = timePart.split(':').map(p => p.padStart(2, '0'));
   return `${datePart}T${parts.join(':')}Z`;
 }
+
 
 async function setDateBoundsForSelection() {
   const database = document.getElementById('databases').value;
