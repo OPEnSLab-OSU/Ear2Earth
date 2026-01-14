@@ -1161,7 +1161,7 @@ function plot(moduleIdx) {
         },
         margin: {
           l: 95, // left margin (adjust as needed for y-axis labels)
-          r: 40, // right margin
+          r: 37, // right margin
           b: 20, // bottom margin (ideal 30 with hidden x-axis)
           t: 55, // top margin
         },

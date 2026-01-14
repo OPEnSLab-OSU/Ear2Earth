@@ -126,8 +126,8 @@ main {
   font-size: 1.2rem;
   cursor: pointer;
   text-align: center;
-  margin: 10px 0px 0px 0px !important;
-  padding: 5px;
+  margin: 5px 0px 0px 0px !important;
+  padding: 0px;
   display: block; /* Ensure it spans the full width for better click target */
 }
 
@@ -205,7 +205,8 @@ main {
   display: flex;
   flex-direction: column;
   height: auto;
-  min-height: 300px;
+  height: 250px;
+  min-height: 200px;
   border-radius: 5px;
   /* min-height: 400px; */
 }
@@ -215,7 +216,7 @@ main {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: 5px;
+  gap: 0px;
 }
 
 .volumeContainer label {
@@ -250,11 +251,12 @@ main {
 }
 
 .moduleTopOptions {
-  margin-top: 30px;
+  margin-top: 20px; /* Space between "volume" top */
+  margin-bottom: 5px; /* Space between "volume" bottom */
   display: flex;
   justify-content: space-between;
   align-items: left;
-  height: 80px;
+  height: 40px; /* Height of all options */
 }
 
 .removeModule::before {
@@ -267,6 +269,7 @@ main {
 
 /* LEFT SIDE: All menu items */
 .leftMenu {
+  height: 213px;
   width: 220px;
   flex-shrink: 0;
   background-color: #e0e0e0;
@@ -344,7 +347,7 @@ main {
   flex: 1; /* Make each container take up equal space */
   display: flex; /* Optional: Flexbox within each container if you want finer control */
   flex-direction: column; /* Keep label and select in vertical alignment */
-  gap: 5px; /* Space between label and select */
+  gap: 3px; /* Space between label and select */
   width: 100%;
 }
 
@@ -358,7 +361,7 @@ main {
 .sensorsContainer select,
 .readingsContainer select {
   width: 100%;
-  padding: 8px;
+  padding: 5px;
   border: 1px solid #999;
   border-radius: 3px;
   background-color: #fff;
