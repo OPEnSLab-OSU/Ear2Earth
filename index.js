@@ -973,57 +973,98 @@ function updateSoundModule(moduleIdx) {
   midiPitchesArray[moduleIdx] = dataToMidiPitches(normalizedData, scale);
 }
 
-function buildGlobalTimeline(xData) {
-  const dates = xData.map(t => new Date(t));
-  const dummy = new Array(dates.length).fill(0);
+// <--------- GLOBAL X-AXIS ---------->
+let globalX = [];
 
-  // ===== NEW: compute custom tick positions and labels like main plot =====
-  const tickStep = Math.max(1, Math.floor(dates.length / 6)); // max ~6 ticks
-  const tickVals = dates.filter((_, i) => i % tickStep === 0); // positions
-  const tickText = dates.map((d, i) => {
-    if (i === 0 || i === dates.length - 1) return ""; // hide first label
-    return d.toLocaleString('en-US', {
+function buildGlobalTimeline(xData) {
+  globalX = xData; // store for syncing
+
+  let timelineTrace = {
+    x: xData,
+    y: new Array(xData.length).fill(0),
+    type: "scatter",
+    mode: "markers",
+    marker: { opacity: 0 },
+    hoverinfo: "skip"
+  };
+
+  let xLabels = xData.map(t =>
+    new Date(t).toLocaleString('en-US', {
       year: '2-digit',
       month: '2-digit',
       day: '2-digit',
       hour: '2-digit',
       minute: '2-digit'
-    });
-  });
-  // ========================================================
+    })
+  );
 
-  Plotly.newPlot("globalTimeline", [{
-    x: dates,
-    y: Array(dates.length).fill(null),
-    mode: "markers",
-    marker: { opacity: 0 },
-    hoverinfo: "skip"
-  }], {
-    margin: { l: 290, r: 30, t: 40, b: 15 },
-    paper_bgcolor: "#e6e6e6",
-    yaxis: { visible: false },
+  // Reduce number of ticks for readability 
+  let tickStep = Math.max(2, Math.floor(xData.length / 6));
+  let tickVals = xData.filter((_, i) => i % tickStep === 0);
+
+  // Hide odd labels, keep even ones
+  let tickText = tickVals.map((label, i) => (i % 2 === 0 ? "" : xLabels[xData.indexOf(label)]));
+
+  let xMin = xData[0];
+  let xMax = xData[xData.length - 1];
+
+  // Align to bottom plots
+  let layout = {
+    height: 35,
+    margin: {
+      l: 123, 
+      r: 45,
+      b: 0,
+      t: 35
+    },
+
     xaxis: {
       type: "date",
-      side: "top",
-      tickmode: 'array',
+      tickmode: "array",
       tickvals: tickVals,
       ticktext: tickText,
-      ticklabelposition: "outside top",
-      tickangle: 0,  // horizontal
+      tickangle: 0,
       showgrid: true,
       gridcolor: "#d0d0d0",
       gridwidth: 1,
-      zeroline: false,
-      showline: false,
       ticks: "outside",
-      range: [dates[0], dates[dates.length - 1]] // keep the axis exact
-    }
-  }, {
+      side: "top",
+      showline: false,
+      zeroline: false,
+      range: [xMin, xMax],
+      ticklabelposition: "inside top"
+    },
+
+    yaxis: { visible: false },
+
+    paper_bgcolor: "#e0e0e0",
+    plot_bgcolor: "#e0e0e0"
+  };
+
+  Plotly.newPlot("globalTimeline", [timelineTrace], layout, {
     displayModeBar: false,
     responsive: true
   });
+}
 
-  setTimeout(() => Plotly.Plots.resize("globalTimeline"), 100);
+
+function linkTimelineToPlots() {
+  let timeline = document.getElementById("globalTimeline");
+
+  timeline.on("plotly_relayout", e => {
+    if (!e["xaxis.range[0]"]) return;
+
+    let range = [
+      e["xaxis.range[0]"],
+      e["xaxis.range[1]"]
+    ];
+
+    document.querySelectorAll(".plot").forEach(plotDiv => {
+      Plotly.relayout(plotDiv, {
+        "xaxis.range": range
+      });
+    });
+  });
 }
 
 function plot(moduleIdx) {
@@ -1119,8 +1160,8 @@ function plot(moduleIdx) {
           // showgrid: true,
         },
         margin: {
-          l: 100, // left margin (adjust as needed for y-axis labels)
-          r: 30, // right margin
+          l: 95, // left margin (adjust as needed for y-axis labels)
+          r: 40, // right margin
           b: 20, // bottom margin (ideal 30 with hidden x-axis)
           t: 55, // top margin
         },

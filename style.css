@@ -299,9 +299,28 @@ main {
   }
 }
 
+.timeline-row {
+  display: grid;
+  grid-template-columns: var(--sidebar-width) 1fr;
+  width: 100%;
+  background-color: #e0e0e0;
+  margin-bottom: 3px;
+}
+
+/* same width as your sidebar */
+:root {
+  --sidebar-width: 260px;   /* ← change to whatever your menu is */
+}
+
+.timeline-spacer {
+  width: 100%;
+  margin-bottom: 3px;
+}
+
+
 /* ================== UNIVERSAL X-AXIS ================== */
 #globalTimeline {
-  height: 40px;
+  height: 35px;
   background: #e0e0e0;
   border-radius: 6px;
   margin-bottom: 3px;
