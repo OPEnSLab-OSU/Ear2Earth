@@ -305,16 +305,19 @@ main {
   width: 100%;
   background-color: #e0e0e0;
   margin-bottom: 3px;
+  border-radius: 5px;
 }
 
 /* same width as your sidebar */
 :root {
   --sidebar-width: 260px;   /* ← change to whatever your menu is */
+  border-radius: 5px;
 }
 
 .timeline-spacer {
   width: 100%;
   margin-bottom: 3px;
+  border-radius: 5px;
 }
 
 
@@ -322,7 +325,7 @@ main {
 #globalTimeline {
   height: 35px;
   background: #e0e0e0;
-  border-radius: 6px;
+  border-radius: 5px;
   margin-bottom: 3px;
 }
 
