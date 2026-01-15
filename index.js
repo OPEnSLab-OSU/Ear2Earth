@@ -553,6 +553,50 @@ document.addEventListener('DOMContentLoaded', () => {
   // Create one soundModule on startup
   addSoundModule();
 
+  function clearWorkspace() {
+    const confirmed = confirm("Are you sure you want to clear your workspace?");
+    if (!confirmed) return;
+
+    // 1) Stop any playback
+    stopSynths();
+
+    // 2) Clear global “loaded data” state
+    retrievedData = null;
+    midiPitchesArray = [];
+    plotXData = [];
+
+    // 3) Reset each module UI + plot
+    soundModules.forEach((module) => {
+      // Clear Plotly graph safely
+      const plotDiv = module.querySelector(".plot");
+      if (plotDiv) {
+        try {
+          if (plotDiv.data) Plotly.purge(plotDiv);
+        } catch (e) {
+          console.warn("Plotly purge failed (safe to ignore):", e);
+        }
+        plotDiv.innerHTML = "";
+      }
+
+      // Reset sensors dropdown
+      const sensorsSelect = module.querySelector(".sensors");
+      if (sensorsSelect) {
+        sensorsSelect.innerHTML = `<option value="default">Select a sensor</option>`;
+        sensorsSelect.value = "default";
+      }
+
+      // Reset readings dropdown
+      const readingsSelect = module.querySelector(".readings");
+      if (readingsSelect) {
+        readingsSelect.innerHTML = `<option value="default">Select a reading</option>`;
+        readingsSelect.value = "default";
+      }
+  });
+  console.log("Workspace cleared.");
+}
+
+  document.getElementById('clearWorkspace').addEventListener('click', clearWorkspace);
+
   /**************
    *
    *
