@@ -433,7 +433,8 @@ main {
 }
 
 #metadataButton {
-  display: none;
+  background-color: red;
+  color: white;
 }
 
 #metadataContainer {
