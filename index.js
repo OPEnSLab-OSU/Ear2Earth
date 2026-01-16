@@ -1043,7 +1043,7 @@ function buildGlobalTimeline(xData) {
 
   Plotly.newPlot("globalTimeline", [timelineTrace], layout, {
     displayModeBar: false,
-    responsive: true
+    staticPlot: true
   });
 }
 
@@ -1100,11 +1100,10 @@ function plot(moduleIdx) {
       // Save xData for updatePlaybackBar to use
       plotXData[moduleIdx] = xData;
 
-      if (!window.timelineBuilt && xData.length > 1) {
+      if (xData.length > 1) {
         setTimeout(() => {
           buildGlobalTimeline(xData);
           linkTimelineToPlots();
-          window.timelineBuilt = true;
         }, 0);
       }
 
