@@ -432,15 +432,32 @@ main {
   filter: none; 
 }
 
+#metadataButton {
+  display: none;
+}
+
 #metadataContainer {
   display: none;
-  flex-direction: column;
+  margin: 0 0 10px 0;
+  flex-direction: row;
+  justify-content: space-evenly;
 
-  max-width: 450px;
   padding: 5px;
 
   border: 1px solid #ccc;
+  border-radius: 8px;
   background-color: #fff;
+}
 
+#metadataSection {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
 
+  margin: 0 5px;
+  text-align: center;
+}
+
+#metadataSection > h3 {
+  margin-right: 10px;
 }

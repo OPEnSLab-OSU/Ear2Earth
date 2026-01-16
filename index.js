@@ -1,5 +1,8 @@
 /**** Global variables ****/
 
+// Metadata
+let metadata;
+
 // Playback boolean
 let isPlaying = false;
 
@@ -593,12 +596,21 @@ document.addEventListener('DOMContentLoaded', () => {
   // Handle selection from the named dropdown
   retrieveByNameDropdown.addEventListener('change', async e => {
     handleDatasetChange(e);
-    const metadata = await retrieveMetadata();
+    isMetadataDisplayed = false;
+    metadataContainer.style.display = 'none';
+    
+    metadataBtn.style.display = "block";
+    metadataBtn.style.backgroundColor = '#FFF';
+    metadataBtn.style.color = '#000';
+    metadataBtn.textContent = 'Loading...';
+    metadata = await retrieveMetadata();
 
     if (metadata == null) {
       metadataBtn.style.backgroundColor = 'red';
+      metadataBtn.textContent = 'No Metadata'
     } else {
       metadataBtn.style.backgroundColor = 'green';
+      metadataBtn.textContent = 'View Metadata';
     }
 
     metadataBtn.style.color = 'white';
@@ -1287,6 +1299,7 @@ function dataToMidiPitches(normalizedData, scale) {
 }
 
 const metadataBtn = document.getElementById('metadataButton');
+let isMetadataDisplayed = false;
 
 async function retrieveMetadata() {
   let db = document.getElementById('databases').value;
@@ -1307,10 +1320,27 @@ async function retrieveMetadata() {
 }
 
 metadataBtn.onclick = async function () {
-  const metadata = await retrieveMetadata();
-  console.log(metadata);
   const metadataContainer = document.getElementById('metadataContainer');
+
+  if (isMetadataDisplayed) {
+    metadataContainer.style.display = 'none';
+    isMetadataDisplayed = false;
+    metadataBtn.style.backgroundColor = 'green';
+    metadataBtn.textContent = 'View Metadata';
+    return;
+  }
+
+  if (metadataBtn.style.backgroundColor == "green") {
+      metadataBtn.style.backgroundColor = "#90EE90";
+  }
+
+  if (metadataBtn.style.backgroundColor == 'red') {
+    return;
+  }
+
+  metadataBtn.textContent = "Loading...";
   metadataContainer.style.display = 'flex';
+  metadataBtn.textContent = "Close";
 
   if (metadata == null) {
     metadataContainer.innerHTML = `
@@ -1323,22 +1353,28 @@ metadataBtn.onclick = async function () {
     let metadataOwner = metadata['owner'];
 
     metadataContainer.innerHTML = `
-        <h1>Metadata</h1>
-        <br />
+        <div id="metadataSection">
+          <h3>Deployment Date: </h3>
+          <p id="metadataDeploymentDate">${metadataDeploymentDate}</p>
+        </div>
 
-        <h3>Deployment Date: </h3>
-        <p id="metadataDeploymentDate">${metadataDeploymentDate}</p>
+        <div id="metadataSection">
+          <h3>Latitude: </h3>
+          <p id="metadataLatitude">${metadataLatitude}</p>
+        </div>
 
-        <h3>Latitude: </h3>
-        <p id="metadataLatitude">${metadataLatitude}</p>
+        <div id="metadataSection">
+          <h3>Longitude: </h3>
+          <p id="metadataLongitude">${metadataLongitude}</p>
+        </div>
 
-        <h3>Longitude: </h3>
-        <p id="metadataLongitude">${metadataLongitude}</p>
-
-        <h3>Owner: </h3>
-        <p id="metadataOwner">${metadataOwner}</p>
+        <div id="metadataSection">
+          <h3>Owner: </h3>
+          <p id="metadataOwner">${metadataOwner}</p>
+        </div>
         `;
   }
-
+  
+  isMetadataDisplayed = true;
   return;
 };
