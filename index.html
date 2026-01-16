@@ -33,7 +33,14 @@
   <body>
     <header>
       <title id="title">Ear2Earth</title>
-      <h2>Ear2Earth, Environmental Sensor Data Sonification Platform</h2>
+      <h2>ear2earth</h2>
+      <nav id="nav">
+        <ul>
+          <li><a href="#">User Guide</a></li>
+          <li><a href="#">Contributors</a></li>
+          <li><a href="#">About</a></li>
+        </ul>
+      </nav>
     </header>
 
     <main>
@@ -44,36 +51,67 @@
           <div class="row">
             <!-- Preset -->
             <div class="group">
-              <label class="u-sr-only" for="retrieveByNameDropdown"
-                >Preset</label
-              >
-              <select id="retrieveByNameDropdown">
-                <option value="default" id="default_preset">
-                  Select a Preset
-                </option>
-              </select>
+              <button id="openPresetModal" class="primary-btn">
+                Select a Preset
+              </button>
             </div>
 
-            <!-- Collapsible Database/Device (kept for index.js; starts hidden) -->
-            <button
-              class="icon-btn collapse-btn"
-              id="toggleDataSource"
-              title="Show databases & devices"
-            >
-              ▼
-            </button>
-            <div id="dataSource" style="display: none">
-              <div id="databaseElements">
-                <label for="databases">Database:</label>
-                <select id="databases">
-                  <option value="default">Select a database</option>
-                </select>
+            <!-- Modal for Database & Device Selection -->
+            <div id="dataSourceModal" class="modal" style="display: none;">
+              <div class="modal-content">
+                <span class="close-modal">&times;</span>
+                <h3>Configure Data Source</h3>
+
+                <!-- Preset selection in modal -->
+                <div id="presetElements">
+                  <label for="modalPreset">Preset:</label>
+                  <select id="modalPreset">
+                    <option value="default">Select a Preset</option>
+                  </select>
+                </div>
+                
+                <div id="databaseElements">
+                  <label for="databases">Database:</label>
+                  <select id="databases">
+                    <option value="default">Select a database</option>
+                  </select>
+                </div>
+                
+                <div id="deviceElements">
+                  <label for="devices">Device:</label>
+                  <select id="devices">
+                    <option value="default">Select a device</option>
+                  </select>
+                </div>
+                
+                <button id="confirmDataSource" class="primary-btn">Confirm</button>
               </div>
-              <div id="deviceElements">
-                <label for="devices">Device:</label>
-                <select id="devices">
-                  <option value="default">Select a device</option>
-                </select>
+            </div>
+
+            <!-- Modal for Date/Time Range Selection -->
+            <div id="dateTimeModal" class="modal" style="display: none;">
+              <div class="modal-content">
+                <span class="close-modal" id="closeDateModal">&times;</span>
+                <h3>Select Date & Time Range</h3>
+                
+                <div class="modal-form">
+                  <div class="form-group">
+                    <label for="modalStartTime">Start Date & Time:</label>
+                    <input type="datetime-local" id="modalStartTime" />
+                  </div>
+                  
+                  <div class="form-group">
+                    <label for="modalEndTime">End Date & Time:</label>
+                    <input type="datetime-local" id="modalEndTime" />
+                  </div>
+                  
+                  <div class="form-group">
+                    <label for="modalPrescaler">Use of every:</label>
+                    <input type="number" id="modalPrescaler" value="1" min="1" />
+                  </div>
+                </div>
+                
+                <button id="confirmDateTime" class="primary-btn">Apply</button>
               </div>
             </div>
 
@@ -87,7 +125,7 @@
                   value="lastXPackets"
                   checked
                 />
-                Last X Packets
+                Last Packets
               </label>
               <label>
                 <input
@@ -96,32 +134,29 @@
                   name="packetOption"
                   value="timeRange"
                 />
-                Time Range
+                <span id="dateRangeText">Date Range</span>
               </label>
             </div>
 
             <!--Test-->
 
-            <!-- # Packets -->
-            <div class="group" id="numpacketsInput">
-              <label for="numpackets"># Packets</label>
-              <input type="text" id="numpackets" name="numpackets" value="16" />
+            <div class="packet-inputs-group">
+              <!-- # Packets -->
+              <div class="group" id="numpacketsInput">
+                <label for="numpackets"># Packets</label>
+                <input type="text" id="numpackets" name="numpackets" value="16" />
+              </div>
+
+              <!-- Prescaler -->
+              <div class="group" id="skipPackets">
+                <span class="muted">Use of every: </span>
+                <input type="number" id="prescaler" name="prescaler" value="1" />
+              </div>
             </div>
 
-            <!-- Prescaler -->
-            <div class="group" id="skipPackets">
-              <span class="muted">Use 1 of every</span>
-              <input type="number" id="prescaler" name="prescaler" value="1" />
-              <span class="muted">packets</span>
-            </div>
-
-            <!-- Time range (kept with exact ID for index.js; calendar picker) -->
-            <div class="group time" id="timeInputs" style="display: none">
-              <span class="muted">Time Range</span>
-              <input type="datetime-local" id="startTime" />
-              <span class="muted">–</span>
-              <input type="datetime-local" id="endTime" />
-            </div>
+            <!-- Hidden inputs for backend -->
+            <input type="datetime-local" id="startTime" style="display: none;" />
+            <input type="datetime-local" id="endTime" style="display: none;" />
 
             <!-- Retrieve -->
             <button id="retrieve" class="primary-btn">Retrieve Data</button>

@@ -18,14 +18,29 @@ body {
   padding: 10px;
 }
 header {
-  background: #005f73;
-  color: #fff;
+  background: lightgray;
+  color: #030303;
   padding: 10px 20px;
   font-size: 15px;
-  text-align: center;
+  text-align: left;
+  display: flex;
+  justify-content: space-between;
 }
 header h2 {
   margin: 0;
+}
+nav#nav ul {
+  list-style-type: none;
+  display: flex;
+  gap: 15px;
+  text-align: right;
+  margin: 0;
+  padding: 5px 0px;
+  font-weight: bold;
+}
+nav#nav ul li a {
+  text-decoration: none;
+  color: #030303;
 }
 main {
   margin-top: 8px;
@@ -45,18 +60,18 @@ main {
   border: 1px solid var(--border);
   border-radius: 5px;
   box-shadow: 0 1px 0 rgba(0, 0, 0, 0.04) inset;
-  padding: var(--pad) 14px;
+  padding: 8px 10px;
   margin-bottom: 8px;
   display: flex;
-  flex-direction: column;
-  justify-content: center;
+  flex-direction: row;
+  align-items: stretch;
 }
 
 .topmenu .row {
   display: flex;
   align-items: center;
-  gap: 14px;
-  flex-wrap: wrap;
+  gap: 10px;
+  flex-wrap: nowrap;
 }
 
 .topmenu .group {
@@ -83,27 +98,137 @@ main {
   align-items: center;
 }
 
+/* Style for the preset button */
+#openPresetModal {
+  width: 110px;
+  height: 70px;
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  background: white;
+  color: black;
+  cursor: pointer;
+  text-align: center;
+  font-size: 14px;
+  border: none;
+}
+
+/* Stack radio buttons vertically */
+/* Make radio options look like buttons */
+#dataOptions {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 0;
+  background: transparent;
+  border: none;
+}
+
+#dataOptions label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 10px;
+  cursor: pointer;
+  font-size: 13px;
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  transition: all 0.2s ease;
+  width: 80px; 
+  height: auto;
+  justify-content: flex-start; /* Align text to left */
+  color: black;
+}
+
+#dataOptions label:hover {
+  background: #f5f5f5;
+}
+
+/* Hide the radio circles */
+#dataOptions input[type="radio"] {
+  display: none;
+}
+
+/* Highlight selected button */
+#dataOptions label:has(input[type="radio"]:checked) {
+  background: #cfcdcd;
+  color: black;
+  border-color: #cfcdcd;
+}
+
 .topmenu #numpackets,
 .topmenu #prescaler {
   width: 56px;
 }
 
+#numpacketsInput label {
+  margin-bottom: 4px;
+}
+
+.topmenu .row {
+  flex-wrap: nowrap !important;
+}
+
+/* Create a vertical sub-group */
+#numpacketsInput,
+#skipPackets {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 8px;
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  height: auto; /* Match button height */
+  color: black;
+}
+
+#numpacketsInput {
+  margin-bottom: 4px;
+}
+
+#numpackets {
+  background-color: white;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+#skipPackets {
+  margin-top: -2px; /* Pull them closer together */
+}
+
+.packet-inputs-group {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-left: -8px; /* Pull closer to left */
+}
+
 .topmenu .primary-btn {
-  padding: 10px 14px;
+  width: 80px; 
+  height: 70px;
+  padding: 0;
   font-size: 16px;
   background: var(--primary);
   color: #fff;
   border: none;
-  border-radius: 8px;
+  border-radius: 2px;
   cursor: pointer;
+  margin-left: -4px;
 }
+
 .topmenu .primary-btn:hover {
   background: var(--primary-hover);
 }
 
 .topmenu .pill-btn {
-  padding: 6px 12px;
-  border-radius: 8px;
+  width: 80px; 
+  height: 70px; 
+  padding: 0px;
+  border-radius: 2px;
   border: 1px solid #cfd3d8;
   background: #fff;
   cursor: pointer;
@@ -111,12 +236,24 @@ main {
 
 /* Info icon */
 #infoButton {
-  width: 28px;
-  height: 28px;
+  width: 12px;
+  height: 12px;
   border: 0px;
   border-radius: 6px;
   background: url("images/info-button.png") center/cover no-repeat;
   cursor: pointer;
+  position: absolute;
+  top: 0px;       /* adjust as needed */
+  right: -16px;     /* adjust as needed */
+}
+
+.group {
+  position: relative;
+  display: inline-block;
+}
+
+#metadataButton {
+  padding-right: 0px; 
 }
 
 /* For the collapse button */
@@ -430,4 +567,136 @@ main {
 #addModule:hover {
   background-color: #cfcdcd; 
   filter: none; 
+}
+
+/* ================== POP-UP FOR PRESET, DATABASE, DEVICE ================== */
+.modal {
+  position: fixed;
+  z-index: 1000;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal-content {
+  background-color: white;
+  padding: 30px;
+  border-radius: var(--radius);
+  width: 400px;
+  max-width: 90%;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  position: relative;
+}
+
+.modal-content h3 {
+  margin-top: 0;
+  margin-bottom: 20px;
+  color: #333;
+  font-size: 20px;
+}
+
+.close-modal {
+  position: absolute;
+  right: 15px;
+  top: 15px;
+  font-size: 28px;
+  font-weight: bold;
+  color: #999;
+  cursor: pointer;
+  line-height: 1;
+  transition: color 0.2s ease;
+}
+
+.close-modal:hover {
+  color: #333;
+}
+
+.modal-content #presetElements,
+.modal-content #databaseElements,
+.modal-content #deviceElements {
+  margin-bottom: 20px;
+}
+
+.modal-content label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: bold;
+  font-size: 14px;
+}
+
+.modal-content select {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  font-size: 14px;
+  background-color: white;
+}
+
+.modal-content #confirmDataSource {
+  width: 100%;
+  height: auto;
+  padding: 12px;
+  margin-top: 10px;
+}
+
+/* ==== POPUP for date range selection ==== */
+ 
+.modal-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin: 20px 0;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.form-group label {
+  font-weight: 500;
+  font-size: 14px;
+}
+
+.form-group input {
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+  width: 96%;
+}
+
+/* Custom square dropdown for prescaler in modal */
+#modalPrescaler {
+  background-color: white;
+  border: 1px solid #ccc;
+  padding: 8px 8px 8px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+#prescaler {
+  background-color: white;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+/* Date range button styling */
+#timeRangeButton button {
+  white-space: nowrap;
+}
+
+.modal-content #confirmDateTime {
+  width: 100%;
+  height: auto;
+  padding: 12px;
+  margin-top: 10px;
 }

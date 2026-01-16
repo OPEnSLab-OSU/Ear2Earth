@@ -538,14 +538,130 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // Toggle collapsible container for databases and devices
-  const dataSource = document.getElementById('dataSource');
+  /* const dataSource = document.getElementById('dataSource');
   const toggleButton = document.getElementById('toggleDataSource');
   toggleButton.addEventListener('click', () => {
     dataSource.style.display = dataSource.style.display === 'none' ? 'flex' : 'none';
     toggleButton.textContent = dataSource.style.display === 'none' ? '▼' : '▲';
+  }); */
+  
+  // === POP-UP Functionally for Preset, Database, and Device ===
+  const modal = document.getElementById('dataSourceModal');
+  const closeBtn = document.querySelector('.close-modal');
+  const confirmBtn = document.getElementById('confirmDataSource');
+  const openPresetBtn = document.getElementById('openPresetModal');  // Changed this line
+  const modalPresetDropdown = document.getElementById('modalPreset');
+
+  // Show modal when clicking the preset button
+  openPresetBtn.addEventListener('click', () => {
+    modal.style.display = 'flex';
   });
 
-  const retrieveByNameDropdown = document.getElementById('retrieveByNameDropdown');
+  // Close modal when X is clicked
+  closeBtn.addEventListener('click', () => {
+    modal.style.display = 'none';
+  });
+
+  // Close modal when clicking outside
+  window.addEventListener('click', (event) => {
+    if (event.target === modal) {
+      modal.style.display = 'none';
+    }
+  });
+
+  // Confirm selection and close modal
+  confirmBtn.addEventListener('click', () => {
+    const selectedDatabase = document.getElementById('databases').value;
+    const selectedDevice = document.getElementById('devices').value;
+    const selectedPreset = document.getElementById('modalPreset').value;
+    
+    if (selectedDatabase !== 'default' && selectedDevice !== 'default') {
+      // Update the button text to show what was selected
+      if (selectedPreset !== 'default') {
+        const presetData = JSON.parse(selectedPreset);
+        openPresetBtn.textContent = presetData.name;  // Shows preset name
+      } else {
+        openPresetBtn.textContent = `${selectedDatabase} - ${selectedDevice}`;
+      }
+      modal.style.display = 'none';
+    } else {
+      alert('Please select both a database and a device');
+    }
+  });
+
+  // const retrieveByNameDropdown = document.getElementById('retrieveByNameDropdown');
+
+  // === Date/Time Range Modal Functionality ===
+  const dateTimeModal = document.getElementById('dateTimeModal');
+  const closeDateModal = document.getElementById('closeDateModal');
+  const confirmDateTime = document.getElementById('confirmDateTime');
+  const dateRangeText = document.getElementById('dateRangeText');
+
+  const startTimeInput = document.getElementById('startTime');
+  const endTimeInput = document.getElementById('endTime');
+  const modalStartTime = document.getElementById('modalStartTime');
+  const modalEndTime = document.getElementById('modalEndTime');
+  const modalPrescaler = document.getElementById('modalPrescaler');
+  const prescalerInput = document.getElementById('prescaler');
+
+  // Close modal when X is clicked
+  closeDateModal.addEventListener('click', () => {
+    dateTimeModal.style.display = 'none';
+    // If they cancel, switch back to Last Packets
+    document.getElementById('lastXPackets').checked = true;
+    document.getElementById('numpacketsInput').style.display = 'block';
+    document.getElementById('skipPackets').style.display = 'block';
+    // Reset the label text
+    dateRangeText.textContent = 'Date Range';
+  });
+
+  // Apply selections and close modal
+  confirmDateTime.addEventListener('click', () => {
+    // Validate that both dates are selected
+    if (!modalStartTime.value || !modalEndTime.value) {
+      alert('Please select both start and end times');
+      return;
+    }
+
+    if (modalStartTime.value >= modalEndTime.value) {
+      alert('End time must be after start time');
+      return;
+    }
+
+    // Apply values to hidden inputs
+    startTimeInput.value = modalStartTime.value;
+    endTimeInput.value = modalEndTime.value;
+    prescalerInput.value = modalPrescaler.value;
+
+    // Update the radio button label text to show selected dates
+    const startDate = new Date(modalStartTime.value).toLocaleDateString('en-US', {
+      month: 'numeric',
+      day: 'numeric',
+      year: 'numeric'
+    });
+    const endDate = new Date(modalEndTime.value).toLocaleDateString('en-US', {
+      month: 'numeric',
+      day: 'numeric',
+      year: 'numeric'
+    });
+    
+    dateRangeText.textContent = `${startDate} - ${endDate}`;
+
+    dateTimeModal.style.display = 'none';
+  });
+
+  // Close modal when clicking outside
+  window.addEventListener('click', (e) => {
+    if (e.target === dateTimeModal) {
+      dateTimeModal.style.display = 'none';
+      // If they cancel, switch back to Last Packets
+      document.getElementById('lastXPackets').checked = true;
+      document.getElementById('numpacketsInput').style.display = 'block';
+      document.getElementById('skipPackets').style.display = 'block';
+      // Reset the label text
+      dateRangeText.textContent = 'Date Range';
+    }
+  });
 
   // Fetch databases and populate the dropdown
   fetchDatabases();
@@ -584,10 +700,26 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Populate the "Retrieve by Name" dropdown with predefined database/device pairs
   predefinedPairs.forEach(pair => {
+    // BEFORE: main preset dropdown
+    /* 
     let option = document.createElement('option');
     option.value = JSON.stringify(pair); // Store as a JSON string
     option.textContent = pair.name;
     retrieveByNameDropdown.appendChild(option);
+    */
+
+    // NEW: Add to modal preset dropdown
+    let modalOption = document.createElement('option');
+    modalOption.value = JSON.stringify(pair); // Store as a JSON string
+    modalOption.textContent = pair.name;
+    modalPresetDropdown.appendChild(modalOption);
+  });
+
+  // Handle preset selection inside the popup 
+  modalPresetDropdown.addEventListener('change', (event) => {
+    if (event.target.value === 'default') {
+      return; // Don't do anything if "Select a Preset" is chosen
+    }
   });
 
   // Handle selection from the named dropdown
@@ -596,6 +728,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // Listener for "Dataset Name" dropdown
 async function handleDatasetChange(event) {
+
+  if (event.target.value === 'default') {
+    return; 
+  }
+
+  // show the popup/modal
+  document.getElementById('dataSourceModal').style.display = 'flex';
+
   const selectedPair = JSON.parse(event.target.value);
   if (selectedPair) {
     // Check if the database exists
@@ -728,23 +868,56 @@ document.getElementById('databases').addEventListener('change', fetchDevices);
 document.getElementsByName('packetOption').forEach(radio => {
   // Get the input fields
   let numpacketsInput = document.getElementById('numpacketsInput');
-  let timeInputs = document.getElementById('timeInputs');
+  // let timeInputs = document.getElementById('timeInputs');
+  let skipPackets = document.getElementById('skipPackets');
 
   radio.addEventListener('change', async function () {
     // If "lastXPackets" is selected, show the "numpackets" and "prescaler" input fields and hide the "startTime" and "endTime" input fields
     if (this.value === 'lastXPackets') {
       numpacketsInput.style.display = 'block';
-      timeInputs.style.display = 'none';
+      skipPackets.style.display = 'block';
+      //timeInputs.style.display = 'none';
     }
     // If "timeRange" is selected, hide the "numpackets" input field and show the "startTime", "endTime" and "prescaler" input fields
     else if (this.value === 'timeRange') {
       numpacketsInput.style.display = 'none';
-      timeInputs.style.display = 'block';
-      await setDateBoundsForSelection(); // added 10/26
+      skipPackets.style.display = 'none';
+      //timeInputs.style.display = 'block';
+      
+      // await setDateBoundsForSelection(); // added 10/26
+
+      const modalStartTime = document.getElementById('modalStartTime');
+      const modalEndTime = document.getElementById('modalEndTime');
+      const modalPrescaler = document.getElementById('modalPrescaler');
+      const startTimeInput = document.getElementById('startTime');
+      const endTimeInput = document.getElementById('endTime');
+      const prescalerInput = document.getElementById('prescaler');
+      
+      modalStartTime.value = startTimeInput.value;
+      modalEndTime.value = endTimeInput.value;
+      modalPrescaler.value = prescalerInput.value;
+      
+      modalStartTime.min = startTimeInput.min;
+      modalStartTime.max = startTimeInput.max;
+      modalEndTime.min = endTimeInput.min;
+      modalEndTime.max = endTimeInput.max;
+      
+      // Show the modal
+      document.getElementById('dateTimeModal').style.display = 'flex';
+
+      setDateBoundsForSelection().then(() => {
+        // Update modal with new bounds after they load
+        modalStartTime.value = startTimeInput.value;
+        modalEndTime.value = endTimeInput.value;
+        modalStartTime.min = startTimeInput.min;
+        modalStartTime.max = startTimeInput.max;
+        modalEndTime.min = endTimeInput.min;
+        modalEndTime.max = endTimeInput.max;
+      });
     } else {
       // added 10/26
       numpackets.style.display = 'block';
-      timeInputs.style.display = 'none';
+    
       resetDates();
     }
   });
