@@ -463,7 +463,7 @@ deviceElements {
   flex-direction: row;
   height: auto;           /* Let the content define the height */
   min-height: 250px;      /* Minimum starting height */
-  margin-bottom: 3px;
+  margin-bottom: 0px;
   align-items: stretch;   /* Forces leftMenu and Plot to stay same height */
   overflow: visible;      /* Prevents clipping */
   align-items: stretch;
