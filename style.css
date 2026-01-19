@@ -313,7 +313,7 @@ main {
 
 /* same width as sidebar */
 :root {
-  --sidebar-width: 260px;   /* ← change to whatever your menu is */
+  --sidebar-width: 250px;   /* ← change to whatever your menu is */
   border-radius: 5px;
 }
 
