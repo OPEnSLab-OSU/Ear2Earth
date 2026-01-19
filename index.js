@@ -604,15 +604,58 @@ document.addEventListener('DOMContentLoaded', () => {
   const modalPrescaler = document.getElementById('modalPrescaler');
   const prescalerInput = document.getElementById('prescaler');
 
+  // Track if user has confirmed their selection
+  let dateRangeConfirmed = false;
+
+  // Open modal when Date Range radio is clicked (using the span to detect re-clicks)
+  const dateRangeLabel = document.getElementById('dateRangeLabel');
+  const timeRangeRadio = document.getElementById('timeRange');
+
+  dateRangeLabel.addEventListener('click', (e) => {
+    // Check if clicking on the label/span (not the radio itself) or if radio is already checked
+    if (e.target !== timeRangeRadio || timeRangeRadio.checked) {
+      setTimeout(() => {
+        dateTimeModal.style.display = 'flex';
+        dateRangeConfirmed = false;
+        
+        // Pre-populate modal with current values if they exist
+        if (startTimeInput.value) modalStartTime.value = startTimeInput.value;
+        if (endTimeInput.value) modalEndTime.value = endTimeInput.value;
+        if (prescalerInput.value) modalPrescaler.value = prescalerInput.value;
+      }, 10);
+    }
+  });
+
+  // Add listener to Last Packets radio to clear date range display
+  const lastXPacketsRadio = document.getElementById('lastXPackets');
+  lastXPacketsRadio.addEventListener('change', () => {
+    if (lastXPacketsRadio.checked) {
+      // Clear the date range display
+      dateRangeText.textContent = 'Date Range';
+      // Clear the hidden inputs
+      startTimeInput.value = '';
+      endTimeInput.value = '';
+      prescalerInput.value = '1';
+      // Clear the modal inputs
+      modalStartTime.value = '';
+      modalEndTime.value = '';
+      modalPrescaler.value = '1';
+      // Reset confirmation 
+      dateRangeConfirmed = false;
+    }
+  });
+
   // Close modal when X is clicked
   closeDateModal.addEventListener('click', () => {
     dateTimeModal.style.display = 'none';
-    // If they cancel, switch back to Last Packets
-    document.getElementById('lastXPackets').checked = true;
-    document.getElementById('numpacketsInput').style.display = 'block';
-    document.getElementById('skipPackets').style.display = 'block';
-    // Reset the label text
-    dateRangeText.textContent = 'Date Range';
+    
+    // Only reset if user hasn't confirmed a date range
+    if (!dateRangeConfirmed) {
+      lastXPacketsRadio.checked = true;
+      document.getElementById('numpacketsInput').style.display = 'block';
+      document.getElementById('skipPackets').style.display = 'block';
+      dateRangeText.textContent = 'Date Range';
+    }
   });
 
   // Apply selections and close modal
@@ -646,7 +689,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     
     dateRangeText.textContent = `${startDate} - ${endDate}`;
-
+    dateRangeConfirmed = true; // Mark as confirmed
     dateTimeModal.style.display = 'none';
   });
 
@@ -654,12 +697,14 @@ document.addEventListener('DOMContentLoaded', () => {
   window.addEventListener('click', (e) => {
     if (e.target === dateTimeModal) {
       dateTimeModal.style.display = 'none';
-      // If they cancel, switch back to Last Packets
-      document.getElementById('lastXPackets').checked = true;
-      document.getElementById('numpacketsInput').style.display = 'block';
-      document.getElementById('skipPackets').style.display = 'block';
-      // Reset the label text
-      dateRangeText.textContent = 'Date Range';
+      
+      // Only reset if user hasn't confirmed a date range
+      if (!dateRangeConfirmed) {
+        lastXPacketsRadio.checked = true;
+        document.getElementById('numpacketsInput').style.display = 'block';
+        document.getElementById('skipPackets').style.display = 'block';
+        dateRangeText.textContent = 'Date Range';
+      }
     }
   });
 
