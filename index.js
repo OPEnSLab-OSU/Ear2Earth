@@ -185,20 +185,43 @@ function attachReadingListener(soundModule) {
   });
 }
 
+// Left menu collapse (accordion) logic
 function attachCollapseListener(soundModule) {
   const collapseBtn = soundModule.querySelector('.collapse-btn');
+  
   collapseBtn.addEventListener('click', () => {
     const options = soundModule.querySelector('.moduleBottomOptions');
-    const isVisible = options.style.display === 'block';
-    options.style.display = isVisible ? 'none' : 'block';
-    collapseBtn.textContent = isVisible ? '▼' : '▲';
+    const isExpanding = options.style.display === 'none' || options.style.display === '';
 
+    if (isExpanding) {
+      // Close others
+      document.querySelectorAll('.soundModule').forEach(module => {
+        const otherOptions = module.querySelector('.moduleBottomOptions');
+        const otherBtn = module.querySelector('.collapse-btn');
+        if (otherOptions && otherOptions !== options) {
+          otherOptions.style.display = 'none';
+          if (otherBtn) {
+            otherBtn.innerHTML = ' More Options <span class="arrow-icon">▼</span>';
+          }
+        }
+      });
+
+      // Expand this one
+      options.style.display = 'block';
+      collapseBtn.innerHTML = ' Hide Options <span class="arrow-icon">▲</span>';
+    } else {
+      // Collapse this one
+      options.style.display = 'none';
+      collapseBtn.innerHTML = ' More Options <span class="arrow-icon">▼</span>';
+    }
+
+    // Resize Plotly
     setTimeout(() => {
       const plotDiv = soundModule.querySelector('.plot');
       if (plotDiv && plotDiv.data) {
         Plotly.Plots.resize(plotDiv);
       }
-    }, 0);
+    }, 50);
   });
 }
 
