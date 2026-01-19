@@ -394,11 +394,34 @@ deviceElements {
   /* Centers the box within the left menu */
   margin: 5px auto; 
   
+  
   padding: 10px;
   border: 1px solid #ddd;
   border-radius: 5px;
   background-color: #f4f4f4;
-  overflow: hidden; /* Ensures contents stay inside the rounded corners */
+
+  max-height: 170px;    /* Adjust this value based on how much space you want to take up */
+  overflow-y: auto;     /* Adds vertical scrollbar when content exceeds max-height */
+  overflow-x: hidden;   /* Prevents horizontal shifting */
+}
+
+/* Optional: Style the scrollbar to match your clean UI */
+.moduleBottomOptions::-webkit-scrollbar {
+  width: 6px;
+}
+
+.moduleBottomOptions::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 10px;
+}
+
+.moduleBottomOptions::-webkit-scrollbar-thumb {
+  background: #ccc;
+  border-radius: 10px;
+}
+
+.moduleBottomOptions::-webkit-scrollbar-thumb:hover {
+  background: #999;
 }
 
 .moduleBottomOptions label {
