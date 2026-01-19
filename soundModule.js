@@ -29,7 +29,9 @@ function createSoundModuleTemplate(moduleId) {
                 </div>
                 
                 <!-- Collapse button -->
-                <button class="collapse-btn">▼</button>
+                <button class="collapse-btn"> 
+                More Options <span class="arrow-icon">▼</span>
+                </button>
                 
                 <!-- Bottom options (collapsible) -->
                 <div class="moduleBottomOptions" style="display: none;">
@@ -109,10 +111,11 @@ function createSoundModuleTemplate(moduleId) {
                     </div>
                 </div>
             </div>
-            
+
             <!-- RIGHT SIDE: Plot -->
             <div class="rightPlot">
-                <div class="plot"></div>
+                <div class="plot">
+                </div>
             </div>
         </div>`;
 }
