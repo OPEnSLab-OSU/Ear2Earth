@@ -25,6 +25,7 @@ header {
   text-align: left;
   display: flex;
   justify-content: space-between;
+  border-radius: 5px;
 }
 header h2 {
   margin: 0;
@@ -95,6 +96,7 @@ main {
 .topmenu .muted {
   color: var(--muted);
   font-size: 13px;
+  margin-left: 6px;
 }
 
 .topmenu label,
@@ -112,11 +114,11 @@ main {
 
 /* Style for the preset button */
 #openPresetModal {
-  width: 75px;
+  width: 90px;
   height: 70px;
   padding: 0;
   border: 1px solid var(--border);
-  border-radius: 2px;
+  border-radius: 3px;
   background: white;
   color: black;
   cursor: pointer;
@@ -149,7 +151,7 @@ main {
   border: 1px solid var(--border);
   border-radius: 4px;
   transition: all 0.2s ease;
-  width: 80px; 
+  width: 90px; 
   height: auto;
   justify-content: center; /* Align text to left */
   color: black;
@@ -174,11 +176,12 @@ main {
 
 .topmenu #numpackets,
 .topmenu #prescaler {
-  width: 50px;
+  width: 20px;
 }
 
 #numpacketsInput label {
   margin-bottom: 2px;
+  width: 70px;
 }
 
 /* Create a vertical sub-group */
@@ -187,7 +190,7 @@ main {
   display: flex;
   flex-direction: row;
   align-items: center;
-  gap: 4px;
+  gap: 10px;
   padding: 2px 3px;
   background: white;
   border: 1px solid var(--border);
@@ -229,7 +232,7 @@ main {
   background: var(--primary);
   color: #fff;
   border: none;
-  border-radius: 2px;
+  border-radius: 3px;
   cursor: pointer;
   margin-left: -6px;
   text-wrap: wrap;
@@ -271,9 +274,10 @@ main {
 
 #metadataButton {
   padding-right: 0px; 
-  width: 80px;
+  width: 100px;
   height: 80px;
   position: relative;
+  border-radius: 3px;
 }
 
 /* Metadata toolbar */
@@ -362,7 +366,7 @@ main {
 
 #masterVolume {
   accent-color: var(--primary);
-  width: 90px; 
+  width: 115px; 
 }
 
 /* Transport buttons */
@@ -404,7 +408,7 @@ main {
   border: 1px solid var(--border);
   border-radius: 4px;
   height: auto;
-  width: 100px;
+  width: 115px;
   position: relative;
 }
 
@@ -658,7 +662,7 @@ main {
   transition: all 0.2s ease;
   white-space: wrap;
   height: auto;
-  width: 80px;
+  width: 100px;
   position: relative;
 }
 
