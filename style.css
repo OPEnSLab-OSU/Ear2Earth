@@ -43,19 +43,31 @@ nav#nav ul li a {
   color: #030303;
 }
 main {
-  margin-top: 8px;
+  margin-top: 2px;
 }
 
 /* ================== TOP MENU ================== */
 .topmenu {
   display: grid;
-  grid-template-columns: 1fr auto;
-  gap: var(--gap);
+  grid-template-columns: 1fr auto auto auto auto auto;
+  gap: 2px;
   align-items: stretch;
   width: 100%;
 }
 
+.toolbar-wrapper {
+  display: flex;
+  align-items: center;
+  height: 100%;
+  width: 100%;
+}
+
+.toolbar-wrapper * {
+  max-height: 50px; 
+}
+
 .topmenu .toolbar {
+  height: 40px;
   background: #e0e0e0;
   border: 1px solid var(--border);
   border-radius: 5px;
@@ -67,7 +79,7 @@ main {
   align-items: stretch;
 }
 
-.topmenu .row {
+.topmenu .toolbar .row {
   display: flex;
   align-items: center;
   gap: 10px;
@@ -100,7 +112,7 @@ main {
 
 /* Style for the preset button */
 #openPresetModal {
-  width: 110px;
+  width: 75px;
   height: 70px;
   padding: 0;
   border: 1px solid var(--border);
@@ -118,27 +130,30 @@ main {
 #dataOptions {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 2px;
   padding: 0;
   background: transparent;
   border: none;
+  height: auto;
+  margin-bottom: 2px;
 }
 
 #dataOptions label {
   display: flex;
   align-items: center;
-  gap: 6px;
-  padding: 8px 10px;
+  gap: 2px;
+  padding: 4px 2px;
   cursor: pointer;
-  font-size: 13px;
+  font-size: 12px;
   background: white;
   border: 1px solid var(--border);
   border-radius: 4px;
   transition: all 0.2s ease;
   width: 80px; 
   height: auto;
-  justify-content: flex-start; /* Align text to left */
+  justify-content: center; /* Align text to left */
   color: black;
+  margin-left: -6px; /* Pull closer to left */
 }
 
 #dataOptions label:hover {
@@ -159,15 +174,11 @@ main {
 
 .topmenu #numpackets,
 .topmenu #prescaler {
-  width: 56px;
+  width: 50px;
 }
 
 #numpacketsInput label {
-  margin-bottom: 4px;
-}
-
-.topmenu .row {
-  flex-wrap: nowrap !important;
+  margin-bottom: 2px;
 }
 
 /* Create a vertical sub-group */
@@ -176,17 +187,20 @@ main {
   display: flex;
   flex-direction: row;
   align-items: center;
-  gap: 6px;
-  padding: 6px 8px;
+  gap: 4px;
+  padding: 2px 3px;
   background: white;
   border: 1px solid var(--border);
   border-radius: 4px;
-  height: auto; /* Match button height */
+  height: 20px; /* Match button height */
   color: black;
+  margin-bottom: 2px;
+  font-size: 6px;
+  width: auto;
 }
 
 #numpacketsInput {
-  margin-bottom: 4px;
+  margin-bottom: 0px; /* Pull them closer together */
 }
 
 #numpackets {
@@ -208,16 +222,18 @@ main {
 }
 
 .topmenu .primary-btn {
-  width: 80px; 
+  width: 70px; 
   height: 70px;
   padding: 0;
-  font-size: 16px;
+  font-size: 14px;
   background: var(--primary);
   color: #fff;
   border: none;
   border-radius: 2px;
   cursor: pointer;
-  margin-left: -4px;
+  margin-left: -6px;
+  text-wrap: wrap;
+  text-align: center;
 }
 
 .topmenu .primary-btn:hover {
@@ -243,8 +259,9 @@ main {
   background: url("images/info-button.png") center/cover no-repeat;
   cursor: pointer;
   position: absolute;
-  top: 0px;       /* adjust as needed */
-  right: -16px;     /* adjust as needed */
+  top: 2px;       /* adjust as needed */
+  right: -12px;     /* adjust as needed */
+  z-index: 10; /* Ensure it's on top */
 }
 
 .group {
@@ -254,6 +271,14 @@ main {
 
 #metadataButton {
   padding-right: 0px; 
+  width: 80px;
+  height: 80px;
+  position: relative;
+}
+
+/* Metadata toolbar */
+.toolbar-metadata {
+  min-width: auto;
 }
 
 /* For the collapse button */
@@ -288,24 +313,71 @@ main {
   flex-wrap: wrap; /* prevent overflow */
 }
 
-#databaseElements,
-deviceElements {
+#databaseElements, #deviceElements {
   display: flex;
   flex-direction: column;
   gap: 4px;
   min-width: 180px;
 }
 
+/* Control groups for volume and BPM */
+.control-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 10px;
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  height: auto;
+}
+
+.control-group label {
+  font-size: 16px;
+  font-weight: bold;
+  white-space: nowrap;
+  color: #333;
+}
+
+.control-group input[type="range"] {
+  width: 100px;
+  height: 6px;
+  cursor: pointer;
+}
+
+/* Master Volume - stacked layout */
+.control-group:has(#masterVolume) {
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2px 8x;
+  gap: 10px;
+  height: 80px; 
+}
+
+.control-group:has(#masterVolume) label {
+  font-size: 13px;
+  line-height: 1.2;
+}
+
+#masterVolume {
+  accent-color: var(--primary);
+  width: 90px; 
+}
+
 /* Transport buttons */
 #play,
 #stop {
-  width: 46px;
-  height: 46px;
-  border: 0px;
-  border-radius: 10px;
+  width: 50px; /* Changed from 46px */
+  height: 55px; /* Changed from 46px */
+  border: 1px solid var(--border);
+  border-radius: 4px; /* Slightly smaller radius */
   background: center/cover no-repeat;
   cursor: pointer;
   transition: filter 0.2s ease;
+  flex-shrink: 0; /* Prevent shrinking */
+  background-color: white; /* White background */
+  background-size: 24px 24px; /* Adjust icon size */
 }
 
 #play {
@@ -322,19 +394,87 @@ deviceElements {
 }
 
 /* BPM section */
-#bpmLabel,
-#bpmText {
-  font-weight: 600;
-}
-
-#bpmText {
-  font-size: 16px;
-}
-
-#speedOptions {
-  display: inline-flex;
+#bpmContainer {
+  display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 6px;
+  gap: 4px;
+  padding: 6px 10px;
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  height: auto;
+  width: 100px;
+  position: relative;
+}
+
+#bpmLabel {
+  font-size: 14px;
+  font-weight: 600;
+  margin: 0;
+  display: inline-block;
+  margin-left: -28px;
+}
+
+#bpmText {
+  font-size: 14px; 
+  min-width: 30px;
+  text-align: center;
+  color: #333;
+  font-weight: 600;
+  position: absolute;
+  top: 6px; /* Adjusted to fit above the slider */
+  right: 34px;
+}
+
+#bpm {
+  accent-color: var(--primary);
+  width: 100px;
+  height: auto;
+  cursor: pointer;
+}
+
+/* Speed options - 2x2 grid layout */
+#speedOptions {
+  display: grid;
+  grid-template-columns: 1fr 1fr; /* Two columns */
+  grid-template-rows: 1fr 1fr; /* Two rows */
+  gap: 2px;
+  padding: 4px 8px;
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  height: auto;
+  width: 50px; 
+  align-items: center;
+  margin-left: -8px;
+}
+
+#speedOptions input[type="radio"] {
+  display: none; /* Hide the radio circles */
+}
+
+#speedOptions label {
+  font-size: 12px;
+  cursor: pointer;
+  color: #000000;
+  font-weight: 500;
+  margin: 0;
+  text-align: center;
+  padding: 2px 4px;
+  border-radius: 3px;
+  transition: all 0.2s;
+}
+
+/* Highlight selected speed */
+#speedOptions input[type="radio"]:checked + label {
+  color: var(--primary);
+  font-weight: 700;
+  background: #f0f0f0;
+}
+
+#speedOptions label:hover {
+  background: #f5f5f5;
 }
 
 #playbackContainer {
@@ -346,10 +486,226 @@ deviceElements {
 
 /* Playback toolbar width */
 .toolbar-transport {
-  min-width: 380px;
+  min-width: auto;
   justify-content: center;
 }
 
+/* Transport group spacing */
+.transport-group {
+  display: flex;
+  gap: 2px;
+  align-items: center;
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  height: auto;
+  margin-left: -10px;
+}
+
+/* Refresh buttons group */
+.refresh-group {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  height: auto;
+  justify-content: center;
+  width: 100px;
+}
+
+.refresh-btn {
+  display: flex;
+  align-items: center;
+  gap: 0px;
+  padding: 6px 8px;
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 10px;
+  height: auto;
+  width: auto;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.refresh-btn:hover {
+  background: #f5f5f5;
+  border-color: #999;
+}
+
+.refresh-icon {
+  font-size: 12px;
+}
+
+.refresh-label {
+  font-weight: 500;
+  color: #333;
+}
+
+/* Active state */
+.refresh-btn.active {
+  background: #e3f2fd;
+  border-color: var(--primary);
+}
+
+.refresh-btn.active .refresh-label {
+  color: var(--primary);
+  font-weight: 600;
+}
+
+/* Individual toolbar widths */
+.toolbar-refresh {
+  min-width: auto;
+}
+
+.toolbar-controls {
+  min-width: auto;
+}
+
+/* Zoom controls in 2x2 grid - NO background */
+.zoom-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr; /* 2 columns */
+  grid-template-rows: 1fr 1fr; /* 2 rows */
+  gap: 2px;
+  height: auto;
+  align-items: center;
+}
+
+.icon-btn-small {
+  width: auto;
+  height: auto;
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  color: #333;
+}
+
+.icon-btn-small:hover {
+  background: #f5f5f5;
+  border-color: #999;
+}
+
+.icon-btn-small:active {
+  background: #e0e0e0;
+  transform: scale(0.95);
+}
+
+/* Specific styling for zoom buttons */
+#undoZoom, #redoZoom {
+  font-size: 16px;
+}
+
+#zoomIn, #zoomOut {
+  font-size: 18px;
+  font-weight: 600;
+}
+
+/* Share button */
+.action-btn {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 0 6px;
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  height: 80px;
+  width: auto;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  margin-left: -6px;
+}
+
+.action-btn:hover {
+  background: #f5f5f5;
+  border-color: #999;
+}
+
+.action-btn:active {
+  background: #e0e0e0;
+  transform: scale(0.98);
+}
+
+.action-icon {
+  font-size: 14px;
+}
+
+.action-label {
+  font-weight: 500;
+  color: #333;
+  font-size: 12px;
+}
+
+/* Clear Workspace button */
+.clear-btn {
+  padding: 8px 8px;
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  color: #333;
+  transition: all 0.2s ease;
+  white-space: wrap;
+  height: auto;
+  width: 80px;
+  position: relative;
+}
+
+.clear-btn:hover {
+  background: #f5f5f5;
+  border-color: #d32f2f;
+  color: #d32f2f;
+}
+
+.clear-btn:active {
+  background: #ffebee;
+}
+
+/* Round info button */
+.icon-btn {
+  width: 12px;
+  height: 12px;
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  background: url("images/info-button.png") center/contain no-repeat;
+  background-color: transparent;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.icon-btn-round:hover {
+  background: #f5f5f5;
+  border-color: #999;
+}
+
+.group .icon-btn {
+  position: absolute;
+  top: 0px;
+  right: -12px;
+  width: 10px;
+  height: 10px;
+  border: 0px;
+  background-color: transparent;
+  z-index: 10;
+}
+
+/* Actions toolbar */
+.toolbar-actions {
+  min-width: auto;
+}
+
+/* ================== SOUND MODULES ================== */
 .rightPlot {
   flex: 1;
   display: flex;
@@ -724,6 +1080,10 @@ deviceElements {
   height: auto;
   padding: 12px;
   margin-top: 10px;
+  background-color: #00b4d8;
+  color: #fff;
+  border: 1px solid #00b4d8;
+  border-radius: 2px;
 }
 
 /* ==== POPUP for date range selection ==== */
@@ -780,4 +1140,8 @@ deviceElements {
   height: auto;
   padding: 12px;
   margin-top: 10px;
+  background-color: #00b4d8;
+  color: #fff;
+  border: 1px solid #00b4d8;
+  border-radius: 2px;
 }

@@ -48,162 +48,224 @@
       <div class="topmenu">
         <!-- Left: Dataset toolbar -->
         <section class="toolbar toolbar-data" aria-label="Dataset & retrieval">
-          <div class="row">
-            <!-- Preset -->
-            <div class="group">
-              <button id="openPresetModal" class="primary-btn">
-                Select a Preset
-              </button>
-            </div>
-
-            <!-- Modal for Database & Device Selection -->
-            <div id="dataSourceModal" class="modal" style="display: none;">
-              <div class="modal-content">
-                <span class="close-modal">&times;</span>
-                <h3>Configure Data Source</h3>
-
-                <!-- Preset selection in modal -->
-                <div id="presetElements">
-                  <label for="modalPreset">Preset:</label>
-                  <select id="modalPreset">
-                    <option value="default">Select a Preset</option>
-                  </select>
-                </div>
-                
-                <div id="databaseElements">
-                  <label for="databases">Database:</label>
-                  <select id="databases">
-                    <option value="default">Select a database</option>
-                  </select>
-                </div>
-                
-                <div id="deviceElements">
-                  <label for="devices">Device:</label>
-                  <select id="devices">
-                    <option value="default">Select a device</option>
-                  </select>
-                </div>
-                
-                <button id="confirmDataSource" class="primary-btn">Confirm</button>
-              </div>
-            </div>
-
-            <!-- Modal for Date/Time Range Selection -->
-            <div id="dateTimeModal" class="modal" style="display: none;">
-              <div class="modal-content">
-                <span class="close-modal" id="closeDateModal">&times;</span>
-                <h3>Select Date & Time Range</h3>
-                
-                <div class="modal-form">
-                  <div class="form-group">
-                    <label for="modalStartTime">Start Date & Time:</label>
-                    <input type="datetime-local" id="modalStartTime" />
-                  </div>
-                  
-                  <div class="form-group">
-                    <label for="modalEndTime">End Date & Time:</label>
-                    <input type="datetime-local" id="modalEndTime" />
-                  </div>
-                  
-                  <div class="form-group">
-                    <label for="modalPrescaler">Use of every:</label>
-                    <input type="number" id="modalPrescaler" value="1" min="1" />
-                  </div>
-                </div>
-                
-                <button id="confirmDateTime" class="primary-btn">Apply</button>
-              </div>
-            </div>
-
-            <!-- Packet option radios (required by index.js, so kept for now as well) -->
-            <div class="group" id="dataOptions">
-              <label for="lastXPackets">
-                <input
-                  type="radio"
-                  id="lastXPackets"
-                  name="packetOption"
-                  value="lastXPackets"
-                  checked
-                />
-                Last Packets
-              </label>
-              <label for="timeRange" id="dateRangeLabel">
-                <input
-                  type="radio"
-                  id="timeRange"
-                  name="packetOption"
-                  value="timeRange"
-                />
-                <span id="dateRangeText">Date Range</span>
-              </label>
-            </div>
-
-            <!--Test-->
-
-            <div class="packet-inputs-group">
-              <!-- # Packets -->
-              <div class="group" id="numpacketsInput">
-                <label for="numpackets"># Packets</label>
-                <input type="text" id="numpackets" name="numpackets" value="16" />
+          <div class="toolbar-wrapper">
+            <div class="row">
+              <!-- Preset -->
+              <div class="group">
+                <button id="openPresetModal" class="primary-btn">
+                  Select a Preset
+                </button>
               </div>
 
-              <!-- Prescaler -->
-              <div class="group" id="skipPackets">
-                <span class="muted">Use of every: </span>
-                <input type="number" id="prescaler" name="prescaler" value="1" />
+              <!-- Packet option radios -->
+              <div class="group" id="dataOptions">
+                <label for="lastXPackets">
+                  <input
+                    type="radio"
+                    id="lastXPackets"
+                    name="packetOption"
+                    value="lastXPackets"
+                    checked
+                  />
+                  Last Packets
+                </label>
+                <label for="timeRange" id="dateRangeLabel">
+                  <input
+                    type="radio"
+                    id="timeRange"
+                    name="packetOption"
+                    value="timeRange"
+                  />
+                  <span id="dateRangeText">Date Range</span>
+                </label>
               </div>
+
+              <div class="packet-inputs-group">
+                <!-- # Packets -->
+                <div class="group" id="numpacketsInput">
+                  <label for="numpackets"># of Packets</label>
+                  <input type="text" id="numpackets" name="numpackets" value="16" />
+                </div>
+
+                <!-- Prescaler -->
+                <div class="group" id="skipPackets">
+                  <span class="muted">Use of every: </span>
+                  <input type="number" id="prescaler" name="prescaler" value="1" />
+                </div>
+              </div>
+
+              <!-- Hidden inputs for backend -->
+              <input type="datetime-local" id="startTime" style="display: none;" />
+              <input type="datetime-local" id="endTime" style="display: none;" />
+
+              <!-- Retrieve -->
+              <button id="retrieve" class="primary-btn">Retrieve Data</button>
             </div>
+          </div>
+        </section>
 
-            <!-- Hidden inputs for backend -->
-            <input type="datetime-local" id="startTime" style="display: none;" />
-            <input type="datetime-local" id="endTime" style="display: none;" />
-
-            <!-- Retrieve -->
-            <button id="retrieve" class="primary-btn">Retrieve Data</button>
-
-            <!-- Info / Metadata -->
-            <div class="group">
-              <button id="infoButton" class="icon-btn" title="Help"></button>
-              <button id="metadataButton" class="pill-btn">
-                View Metadata
-              </button>
+        <!-- Metadata toolbar -->
+        <section class="toolbar toolbar-metadata" aria-label="Metadata">
+          <div class="toolbar-wrapper">
+            <div class="row">
+              <div class="group">
+                <button id="infoButton" class="icon-btn" title="Help"></button>
+                <button id="metadataButton" class="pill-btn">
+                  View Metadata
+                </button>
+              </div>
             </div>
           </div>
         </section>
 
         <!-- Right: Playback toolbar -->
         <section class="toolbar toolbar-transport" aria-label="Playback">
-          <div class="row">
-            <div class="transport-group">
-              <button id="play" class="square-btn" title="Play"></button>
-              <button id="stop" class="square-btn" title="Stop"></button>
-            </div>
+          <div class="toolbar-wrapper">
+            <div class="row">
+              <!-- Master Volume -->
+              <div class="control-group">
+                <label for="masterVolume">Master Volume</label>
+                <input type="range" id="masterVolume" name="masterVolume" min="-60" max="0" value="-10" />
+              </div>
 
-            <div id="bpmContainer" class="transport-group">
-              <label id="bpmLabel" for="bpm">BPM</label>
-              <input type="range" id="bpm" name="bpm" min="50" max="200" />
-              <div id="bpmText">125</div>
+              <div class="transport-group">
+                <button id="play" class="square-btn" title="Play"></button>
+                <button id="stop" class="square-btn" title="Stop"></button>
+              </div>
+
+              <div id="bpmContainer" class="transport-group">
+                <label id="bpmLabel" for="bpm">BPM</label>
+                <input type="range" id="bpm" name="bpm" min="50" max="200" />
+                <div id="bpmText">125</div>
+              </div>
 
               <!-- Speed options (IDs required by index.js) -->
               <div id="speedOptions" class="speed">
+                <input type="radio" id="speed1x" name="speed" value="1" checked />
                 <label for="speed1x">1x</label>
-                <input
-                  type="radio"
-                  id="speed1x"
-                  name="speed"
-                  value="1"
-                  checked
-                />
-                <label for="speed2x">2x</label>
                 <input type="radio" id="speed2x" name="speed" value="2" />
-                <label for="speed4x">4x</label>
+                <label for="speed2x">2x</label>
                 <input type="radio" id="speed4x" name="speed" value="4" />
-                <label for="speed8x">8x</label>
+                <label for="speed4x">4x</label>
                 <input type="radio" id="speed8x" name="speed" value="8" />
+                <label for="speed8x">8x</label>
               </div>
             </div>
           </div>
         </section>
+
+        <!-- Right: Refresh toolbar -->
+        <section class="toolbar toolbar-refresh" aria-label="Refresh Controls">
+          <div class="toolbar-wrapper">
+            <div class="row">
+              <div class="refresh-group">
+                <button id="autoRefresh" class="refresh-btn" title="Automatic Refresh">
+                  <span class="refresh-icon"></span>
+                  <span class="refresh-label">Automatic Refresh</span>
+                </button>
+                <button id="scheduledRefresh" class="refresh-btn" title="Scheduled Refresh">
+                  <span class="refresh-icon"></span>
+                  <span class="refresh-label">Scheduled Refresh</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Zoom & Share toolbar -->
+        <section class="toolbar toolbar-controls" aria-label="Zoom and Share">
+          <div class="toolbar-wrapper">
+            <div class="row">
+              <!-- Zoom controls -->
+              <div class="zoom-grid">
+                <button id="undoZoom" class="icon-btn-small" title="Undo Zoom">↶</button>
+                <button id="redoZoom" class="icon-btn-small" title="Redo Zoom">↷</button>
+                <button id="zoomIn" class="icon-btn-small" title="Zoom In">+</button>
+                <button id="zoomOut" class="icon-btn-small" title="Zoom Out">−</button>
+              </div>
+
+              <!-- Share button -->
+              <button id="share" class="action-btn" title="Share">
+                <span class="action-icon"></span>
+                <span class="action-label">Share</span>
+              </button>
+            </div>
+          </div>
+        </section>
+
+        <!-- Clear Workspace & Info toolbar -->
+        <section class="toolbar toolbar-actions" aria-label="Workspace Actions">
+          <div class="toolbar-wrapper">
+            <div class="row">
+              <div class="group">
+                <button id="clearWorkspace" class="clear-btn" title="Clear Workspace">
+                  Clear Workspace
+                </button>
+                <button id="helpButton" class="icon-btn" title="Help"></button>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <!-- MODALS - OUTSIDE THE TOOLBAR -->
+      <!-- Modal for Database & Device Selection -->
+      <div id="dataSourceModal" class="modal" style="display: none;">
+        <div class="modal-content">
+          <span class="close-modal">&times;</span>
+          <h3>Configure Data Source</h3>
+
+          <!-- Preset selection in modal -->
+          <div id="presetElements">
+            <label for="modalPreset">Preset:</label>
+            <select id="modalPreset">
+              <option value="default">Select a Preset</option>
+            </select>
+          </div>
+          
+          <div id="databaseElements">
+            <label for="databases">Database:</label>
+            <select id="databases">
+              <option value="default">Select a database</option>
+            </select>
+          </div>
+          
+          <div id="deviceElements">
+            <label for="devices">Device:</label>
+            <select id="devices">
+              <option value="default">Select a device</option>
+            </select>
+          </div>
+          
+          <button id="confirmDataSource" class="primary-btn">Confirm</button>
+        </div>
+      </div>
+
+      <!-- Modal for Date/Time Range Selection -->
+      <div id="dateTimeModal" class="modal" style="display: none;">
+        <div class="modal-content">
+          <span class="close-modal" id="closeDateModal">&times;</span>
+          <h3>Select Date & Time Range</h3>
+          
+          <div class="modal-form">
+            <div class="form-group">
+              <label for="modalStartTime">Start Date & Time:</label>
+              <input type="datetime-local" id="modalStartTime" />
+            </div>
+            
+            <div class="form-group">
+              <label for="modalEndTime">End Date & Time:</label>
+              <input type="datetime-local" id="modalEndTime" />
+            </div>
+            
+            <div class="form-group">
+              <label for="modalPrescaler">Use of every:</label>
+              <input type="number" id="modalPrescaler" value="1" min="1" />
+            </div>
+          </div>
+          
+          <button id="confirmDateTime" class="primary-btn">Apply</button>
+        </div>
       </div>
       <!-- ============================================ -->
 
