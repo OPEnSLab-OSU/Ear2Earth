@@ -29,6 +29,7 @@
         <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.11.1/addons/p5.sound.min.js"></script>-->
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.45/Tone.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
   </head>
   <body>
     <header>
@@ -48,6 +49,7 @@
       <div class="topmenu">
         <!-- Left: Dataset toolbar -->
         <section class="toolbar toolbar-data" aria-label="Dataset & retrieval">
+          <button class="toolbar-drag-handle" aria-label="Drag to reorder"></button>
           <div class="toolbar-wrapper">
             <div class="row">
               <!-- Preset -->
@@ -83,7 +85,7 @@
               <div class="packet-inputs-group">
                 <!-- # Packets -->
                 <div class="group" id="numpacketsInput">
-                  <label for="numpackets"># of Packets</label>
+                  <label for="numpackets"># of packets:</label>
                   <input type="text" id="numpackets" name="numpackets" value="16" />
                 </div>
 
@@ -106,6 +108,7 @@
 
         <!-- Metadata toolbar -->
         <section class="toolbar toolbar-metadata" aria-label="Metadata">
+          <button class="toolbar-drag-handle" aria-label="Drag to reorder"></button>
           <div class="toolbar-wrapper">
             <div class="row">
               <div class="group">
@@ -120,6 +123,7 @@
 
         <!-- Right: Playback toolbar -->
         <section class="toolbar toolbar-transport" aria-label="Playback">
+          <button class="toolbar-drag-handle" aria-label="Drag to reorder"></button>
           <div class="toolbar-wrapper">
             <div class="row">
               <!-- Master Volume -->
@@ -156,6 +160,7 @@
 
         <!-- Right: Refresh toolbar -->
         <section class="toolbar toolbar-refresh" aria-label="Refresh Controls">
+          <button class="toolbar-drag-handle" aria-label="Drag to reorder"></button>
           <div class="toolbar-wrapper">
             <div class="row">
               <div class="refresh-group">
@@ -174,6 +179,7 @@
 
         <!-- Zoom & Share toolbar -->
         <section class="toolbar toolbar-controls" aria-label="Zoom and Share">
+          <button class="toolbar-drag-handle" aria-label="Drag to reorder"></button>
           <div class="toolbar-wrapper">
             <div class="row">
               <!-- Zoom controls -->
@@ -195,6 +201,7 @@
 
         <!-- Clear Workspace & Info toolbar -->
         <section class="toolbar toolbar-actions" aria-label="Workspace Actions">
+          <button class="toolbar-drag-handle" aria-label="Drag to reorder"></button>
           <div class="toolbar-wrapper">
             <div class="row">
               <div class="group">

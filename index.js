@@ -737,6 +737,39 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
+  // Initialize draggable toolbar sections
+  const topmenu = document.querySelector('.topmenu');
+  
+  Sortable.create(topmenu, {
+    animation: 150,
+    handle: '.toolbar-drag-handle',
+    ghostClass: 'sortable-ghost',
+    dragClass: 'sortable-drag',
+    direction: 'horizontal',
+    
+    // OPTIONAL ====
+    /* onEnd: function(evt) {
+      console.log('Toolbar section moved from position', evt.oldIndex, 'to', evt.newIndex);
+      
+      // Optional: Save the toolbar layout to localStorage
+      const toolbarOrder = Array.from(topmenu.children).map(section => 
+        section.className.split(' ').find(c => c.startsWith('toolbar-'))
+      );
+      localStorage.setItem('toolbarLayout', JSON.stringify(toolbarOrder));
+    } */
+  });
+
+  // OPTIONAL ====
+  // Restore saved toolbar layout from localStorage
+  /* const savedLayout = localStorage.getItem('toolbarLayout');
+  if (savedLayout) {
+    const order = JSON.parse(savedLayout);
+    order.forEach(className => {
+      const section = topmenu.querySelector(`.${className}`);
+      if (section) topmenu.appendChild(section);
+    });
+  } */
+
   // Fetch databases and populate the dropdown
   fetchDatabases();
 

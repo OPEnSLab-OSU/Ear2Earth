@@ -70,7 +70,7 @@ main {
   height: 40px;
   background: #e0e0e0;
   border: 1px solid var(--border);
-  border-radius: 5px;
+  border-radius: 2px;
   box-shadow: 0 1px 0 rgba(0, 0, 0, 0.04) inset;
   padding: var(--pad) 14px;
   margin-bottom: 3px;
@@ -123,6 +123,7 @@ main {
   text-align: center;
   font-size: 14px;
   border: none;
+  margin-left: 0px;
 }
 
 /* Stack radio buttons vertically */
@@ -174,11 +175,16 @@ main {
 
 .topmenu #numpackets,
 .topmenu #prescaler {
-  width: 50px;
+  width: 40px;
+  height: auto;
+  padding: 2px 2px;
+  font-size: 12px;
 }
 
 #numpacketsInput label {
-  margin-bottom: 2px;
+  margin-bottom: 0px;
+  font-size: 11px;
+  white-space: nowrap;
 }
 
 /* Create a vertical sub-group */
@@ -188,15 +194,16 @@ main {
   flex-direction: row;
   align-items: center;
   gap: 4px;
-  padding: 2px 3px;
+  padding: 2px 5px;
   background: white;
   border: 1px solid var(--border);
   border-radius: 4px;
-  height: 20px; /* Match button height */
+  height: 24px; /* Match button height */
   color: black;
   margin-bottom: 2px;
-  font-size: 6px;
+  font-size: 11px;
   width: auto;
+  white-space: nowrap;
 }
 
 #numpacketsInput {
@@ -212,6 +219,11 @@ main {
 
 #skipPackets {
   margin-top: -2px; /* Pull them closer together */
+}
+
+#skipPackets .muted {
+  font-size: 11px; /* Match the container font size */
+  white-space: nowrap;
 }
 
 .packet-inputs-group {
@@ -664,12 +676,7 @@ main {
 
 .clear-btn:hover {
   background: #f5f5f5;
-  border-color: #d32f2f;
-  color: #d32f2f;
-}
-
-.clear-btn:active {
-  background: #ffebee;
+  border-color: #999;
 }
 
 /* Round info button */
@@ -703,6 +710,58 @@ main {
 /* Actions toolbar */
 .toolbar-actions {
   min-width: auto;
+}
+
+/* Toolbar drag handle styling */
+.toolbar {
+  position: relative;
+}
+
+.toolbar-drag-handle {
+  position: absolute;
+  left: 2px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 20px;
+  height: 40px;
+  cursor: grab;
+  background: transparent;
+  border: none;
+  color: #484848;
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+  padding: 0;
+}
+
+.toolbar-drag-handle::before {
+  content: "⋮⋮";
+  letter-spacing: -2px;
+}
+
+.toolbar-drag-handle:hover {
+  color: #666;
+}
+
+.toolbar-drag-handle:active {
+  cursor: grabbing;
+}
+
+/* Add left padding to toolbar-wrapper to make room for handle */
+.toolbar .toolbar-wrapper {
+  padding-left: 10px;
+}
+
+/* Dragging states for toolbars */
+.sortable-ghost.toolbar {
+  opacity: 0.4;
+}
+
+.sortable-drag.toolbar {
+  opacity: 0.9;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
 }
 
 /* ================== SOUND MODULES ================== */
