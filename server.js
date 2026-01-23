@@ -73,7 +73,7 @@ app.get("/data", async (req, res) => {
   const startTime = req.query.startTime;
   const endTime = req.query.endTime;
   const prescaler = req.query.prescaler ? parseInt(req.query.prescaler) : 1;
-  const metadata = parseInt(req.query.metadata);
+    const metadata = parseInt(req.query.metadata);
 
   const mongoclient = new MongoClient(uri);
 
@@ -86,35 +86,48 @@ app.get("/data", async (req, res) => {
 
     let packets;
 
-    if (x) {
-      // Get the last x documents from the collection
-      packets = (
-        await collection
-          .find({}, { projection: { Analog: 0, Packet: 0 } })
-          .sort({ 'Timestamp.time_local': -1 })
-          .limit(x)
-          .toArray()
-      ).reverse();
-    } else if (startTime && endTime) {
-      // Get documents between startTime and endTime
-      packets = (
-        await collection
-          .find(
-            { 'Timestamp.time_local': { $gte: startTime, $lt: endTime } },
-            { projection: { Analog: 0, Packet: 0, WiFi: 0 } }
-          )
-          .sort({ 'Timestamp.time_local': -1 })
-          .toArray()
-      ).reverse();
-      // Apply the prescaler to the packets
-    } else {
-      // No valid mode provided, don’t crash: tell the client
-      return res.status(400).json({
-        error: 'Must provide either x or startTime and endTime for /data',
-      });
-    }
+      if (x) {
+          // Get the last x documents from the collection
+          packets = (await collection.find({}, { projection: { Analog: 0, Packet: 0 }}).sort({"Timestamp.time_local": -1}).limit(x).toArray()).reverse();
+      } else if (startTime && endTime) {
+          const start = new Date(startTime);
+          const end = new Date(endTime);
+          // Get documents between startTime and endTime
+                    packets = (
+            await collection.aggregate([
+              {
+                // Parse Timestamp.time_local into a Date for correct comparisons
+                $addFields: {
+                  _t: {
+                    $dateFromString: {
+                      dateString: "$Timestamp.time_local",
+                      onError: null,
+                      onNull: null,
+                    },
+                  },
+                },
+              },
+              { $match: { _t: { $gte: start, $lt: end } } }, // [start, end)
+              { $sort: { _t: -1 } },                         // newest first (same pattern as x branch)
+              {
+                $project: {
+                  _t: 0,
+                  Analog: 0,
+                  Packet: 0,
+                  WiFi: 0,
+                },
+              },
+            ]).toArray()
+          ).reverse();
+          // Apply the prescaler to the packets
+      } else {
+        // No valid mode provided, don’t crash: tell the client
+        return res.status(400).json({
+          error: "Must provide either x or startTime and endTime for /data",
+        });
+      }
 
-    if (packets) packets = packets.filter((_, index) => index % prescaler === 0);
+      if (packets) packets = packets.filter((_, index) => index % prescaler === 0);
 
     // Send the packets as JSON
     res.status(200).json(packets);

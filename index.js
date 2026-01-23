@@ -36,6 +36,9 @@ let midiPitchesArray = [];
 // Array to hold sound modules
 var soundModules = [];
 
+// Store min/max for each moduleIdx
+let plotRanges = {}; 
+
 // Sustain notes for each sound module
 let sustainNotes = [];
 
@@ -46,7 +49,7 @@ let timeBetweenNotes = 500;
 var retrievedData;
 
 // Array to hold x-axis data for each plot
-let plotXData = [];
+let plotXData = {};
 
 // Function to initialize a sound module
 async function addSoundModule() {
@@ -824,13 +827,10 @@ document.getElementById('retrieve').onclick = async function () {
       return;
     }
 
-    // added 10/26
-    const toISO = v => new Date(v).toISOString();
-    url =
-      `/data/?database=${db}&collection=${collection}` +
-      `&startTime=${encodeURIComponent(toISO(startTime))}` +
-      `&endTime=${encodeURIComponent(toISO(endTime))}` +
-      `&prescaler=${prescaler}`;
+    url = `/data/?database=${db}&collection=${collection}` +
+          `&startTime=${encodeURIComponent(startTime)}` +
+          `&endTime=${encodeURIComponent(endTime)}` +
+          `&prescaler=${prescaler}`;
   }
 
   if (collection === 'default') {
@@ -1002,6 +1002,219 @@ function updateSoundModule(moduleIdx) {
   midiPitchesArray[moduleIdx] = dataToMidiPitches(normalizedData, scale);
 }
 
+// <--------- GLOBAL X-AXIS ---------->
+
+/* ================== GLOBAL STATE & RESIZE ================== */
+let isSyncing = false;
+let resizeTimer;
+
+window.addEventListener('resize', function() {
+  clearTimeout(resizeTimer);
+  resizeTimer = setTimeout(function() {
+    // 1. Find the current range from any active plot
+    const firstPlot = document.querySelector(".plot.js-plotly-plot");
+    if (!firstPlot) return;
+
+    const xMin = firstPlot.layout.xaxis.range[0];
+    const xMax = firstPlot.layout.xaxis.range[1];
+
+    // 2. Recalculate ticks
+    const tMin = new Date(xMin).getTime();
+    const tMax = new Date(xMax).getTime();
+    const allData = Object.values(plotXData).flat();
+    const masterTicks = getGlobalTicks(tMin, tMax, allData);
+
+    // 3. Force Resize and Relayout for Universal Axis
+    const timelineDiv = document.getElementById('globalTimeline');
+    if (timelineDiv && timelineDiv.classList.contains('js-plotly-plot')) {
+        Plotly.relayout(timelineDiv, {
+            'xaxis.range': [xMin, xMax],
+            'xaxis.tickvals': masterTicks.tickVals,
+            'xaxis.ticktext': masterTicks.tickText
+        });
+        Plotly.Plots.resize(timelineDiv);
+    }
+
+    // 4. Force Resize for all module plots
+    document.querySelectorAll(".plot").forEach(p => {
+      if (p.classList.contains('js-plotly-plot')) {
+        Plotly.Plots.resize(p);
+      }
+    });
+  }, 150); 
+});
+
+/* ================== HELPER FUNCTIONS ================== */
+
+function getGlobalTicks(globalMin, globalMax, xData) {
+  let visibleData = [];
+  for (let i = 0; i < xData.length; i++) {
+    if (xData[i] >= globalMin && xData[i] <= globalMax) {
+      visibleData.push(xData[i]);
+    }
+  }
+
+  // If no data is visible, return empty
+  if (visibleData.length === 0) return { tickVals: [], tickText: [] };
+
+  // If only one point is visible show it regardless 
+  if (visibleData.length === 1) {
+    let d = new Date(visibleData[0]);
+    let label = d.toLocaleString('en-US', {
+      year: '2-digit', 
+      month: '2-digit', 
+      day: '2-digit', 
+      hour: '2-digit', 
+      minute: '2-digit', 
+      second: '2-digit'
+    });
+    return { tickVals: [visibleData[0]], tickText: [label] };
+  }
+
+  // Max gridlines based on screensize 
+  const MAX_GRID_LINES = 9; 
+  const containerWidth = document.getElementById('globalTimeline').offsetWidth || 1000;
+  
+  // Line density for data points that are close in time
+  let calculatedLineCount = Math.max(6, Math.floor(containerWidth / 110));
+  let targetLineCount = Math.min(calculatedLineCount, MAX_GRID_LINES);
+  
+  let tickStep = visibleData.length > targetLineCount 
+                 ? Math.floor(visibleData.length / targetLineCount) 
+                 : 1;
+
+  let baseTickVals = [];
+  for (let i = 0; i < visibleData.length; i += tickStep) {
+    baseTickVals.push(visibleData[i]);
+  }
+
+  // Overlap protection for date tickvals
+  const minPixelGap = containerWidth < 500 ? 140 : 110;
+  const overlapThreshold = (globalMax - globalMin) * (minPixelGap / containerWidth); 
+  
+  let finalTickVals = [];
+  let finalTickText = [];
+  let lastKeptTime = -Infinity;
+
+  baseTickVals.forEach((val) => {
+    let d = new Date(val);
+    let currentLabel = d.toLocaleString('en-US', {
+      year: '2-digit', 
+      month: '2-digit', 
+      day: '2-digit', 
+      hour: '2-digit', 
+      minute: '2-digit', 
+      second: '2-digit'
+    });
+
+    if (val - lastKeptTime >= overlapThreshold) {
+      // Show show date on 2nd, 4th, 6th, 8th kept line
+      let isDateSlot = (finalTickVals.length % 2 !== 0);
+
+      finalTickVals.push(val); 
+      finalTickText.push(isDateSlot ? currentLabel : ""); 
+      
+      lastKeptTime = val;
+    }
+  });
+
+  // Show date if there's only one data point (not skipping the first if it's
+  // the only data point)
+  if (finalTickText.length > 0 && finalTickText.every(t => t === "")) {
+      finalTickText[0] = new Date(finalTickVals[0]).toLocaleString('en-US', {
+        year: '2-digit', 
+        month: '2-digit', 
+        day: '2-digit', 
+        hour: '2-digit', 
+        minute: '2-digit', 
+        second: '2-digit'
+      });
+  }
+
+  return { tickVals: finalTickVals, tickText: finalTickText };
+}
+
+// Universal axis
+function buildGlobalTimeline(xData, xMin, xMax, masterTicks) {
+  let timelineTrace = {
+    x: xData,
+    y: new Array(xData.length).fill(0),
+    type: "scatter",
+    mode: "markers",
+    marker: { opacity: 0 },
+    hoverinfo: "skip"
+  };
+
+  let layout = {
+    height: 35, 
+    // Do not change
+    margin: { l: 95, r: 37, b: 0, t: 27 },
+    xaxis: {
+      type: "date",
+      range: [xMin, xMax],
+      side: "top",
+      tickmode: "array",
+      tickvals: masterTicks.tickVals,
+      ticktext: masterTicks.tickText,
+      tickangle: 0,
+      automargin: false,
+      gridcolor: "rgba(0, 0, 0, 0.56)",
+      fixedrange: true 
+    },
+    yaxis: { visible: false, fixedrange: true, range: [0, 1] },
+    paper_bgcolor: "rgba(0,0,0,0)",
+    plot_bgcolor: "rgba(0,0,0,0)"
+  };
+
+  Plotly.react("globalTimeline", [timelineTrace], layout, { responsive: true, displayModeBar: false });
+}
+
+// Sync universal x-axis and bottom plots
+function syncThisPlot(plotElement, moduleIdx) {
+  plotElement.removeAllListeners('plotly_relayout');
+  plotElement.on('plotly_relayout', function(eventdata) {
+    if (isSyncing) return;
+    if (!(eventdata['xaxis.range[0]'] || eventdata['xaxis.autorange'] || eventdata['xaxis.range'])) return;
+
+    isSyncing = true;
+    try {
+      let xData = plotXData[moduleIdx] || [];
+      let xMin, xMax;
+
+      if (eventdata['xaxis.range[0]']) {
+        xMin = new Date(eventdata['xaxis.range[0]']).getTime();
+        xMax = new Date(eventdata['xaxis.range[1]']).getTime();
+      } else {
+        xMin = Math.min(...xData);
+        xMax = Math.max(...xData);
+      }
+
+      if (isNaN(xMin) || isNaN(xMax)) { isSyncing = false; return; }
+
+      let masterTicks = getGlobalTicks(xMin, xMax, xData);
+
+      // Update Header
+      Plotly.relayout('globalTimeline', {
+        'xaxis.range': [xMin, xMax],
+        'xaxis.tickvals': masterTicks.tickVals,
+        'xaxis.ticktext': masterTicks.tickText
+      });
+
+      // Update All Plots
+      document.querySelectorAll(".plot").forEach(otherPlot => {
+        if (otherPlot.classList.contains('js-plotly-plot')) {
+          Plotly.relayout(otherPlot, {
+            'xaxis.range': [xMin, xMax],
+            'xaxis.tickvals': masterTicks.tickVals
+          });
+        }
+      });
+    } finally {
+      setTimeout(() => { isSyncing = false; }, 20);
+    }
+  });
+}
+
 function plot(moduleIdx) {
   let m = soundModules[moduleIdx];
   // Clear the plot area
@@ -1032,93 +1245,152 @@ function plot(moduleIdx) {
       let xData = filteredData.map(d => new Date(fixTimestamp(d.Timestamp.time_local)).getTime());
       let yData = filteredData.map(d => d[sensor][reading]);
 
-      // Save xData for updatePlaybackBar to use
-      plotXData[moduleIdx] = xData;
-
-      // Convert timestamps to short readable format (MM/DD HH:mm:ss)
-      let xLabels = filteredData.map(d =>
-        new Date(fixTimestamp(d.Timestamp.time_local)).toLocaleString('en-US', {
-          year: '2-digit',
-          month: '2-digit',
-          day: '2-digit',
-          hour: '2-digit',
-          minute: '2-digit',
-          second: '2-digit',
-        })
-      );
-
-      // Create hover text for all points (show exact timestamp on hover)
+      // Prepare Plot Data and Layout
+      let xLabels = filteredData.map(d => new Date(fixTimestamp(d.Timestamp.time_local)).toLocaleString('en-US', { /*...*/ }));
       let hoverTexts = filteredData.map((d, i) => `Date: ${xLabels[i]}<br>Value: ${yData[i]}`);
 
-      // Reduce the number of x-axis labels for readability
-      let tickStep = Math.max(1, Math.floor(xData.length / 6));
-      let tickVals = xData.filter((_, i) => i % tickStep === 0);
-      let tickText = xLabels.filter((_, i) => i % tickStep === 0);
+      let plotData = [{
+        x: xData,
+        y: yData,
+        type: 'scatter',
+        mode: 'lines',
+        line: { 
+          width: 2, 
+          color: 'blue' },
+        text: hoverTexts,
+        hoverinfo: 'text',
+      }];
 
-      // Create the data array for the plot
-      let plotData = [
-        {
-          x: xData,
-          y: yData,
-          type: 'scatter',
-          mode: 'lines',
-          line: { width: 2, color: 'blue' },
-          text: hoverTexts,
-          hoverinfo: 'text',
-        },
-      ];
-
-      // Create the layout object for the plot
       let layout = {
-        title: {
-          text: `${sensor} - ${reading}`,
-          y: 0.9,
+        title: { 
+          text: `${sensor} - ${reading}`, 
+          y: 0.91 
         },
-        // Commenting out x-axis to work on global/universal top x-axis
         xaxis: {
-          // Use when universal x-axis is imlpemented
-          // showticklabels: false, // This hides the values at the bottom
-          title: '',
-          tickmode: 'array',
-          tickvals: tickVals,
-          ticktext: tickText, // Show actual timestamps at selected spots
-          tickangle: -20, // Rotate for readability
+          type: "date",
+          showticklabels: false, 
+          tickmode: "array",     
           showgrid: true,
+          gridcolor: "#E1E1E1",  
+          gridwidth: 1,
+          layer: 'below traces'  
         },
-        margin: {
-          l: 100, // left margin (adjust as needed for y-axis labels)
-          r: 30, // right margin
-          b: 90, // bottom margin (ideal 30 with hidden x-axis)
-          t: 70, // top margin
-          // pad: 20 // padding between the plot area and the margin border
+        margin: { 
+          l: 95, 
+          r: 37,
+          b: 20, 
+          t: 55 
         },
-        yaxis: {
-          title: {
-            text: `${reading} Value`,
-            standoff: 20,
-          },
-          showgrid: true,
-          linecolor: 'white',
+        yaxis: { 
+          automargin: true, 
+          title: { 
+            text: `${reading} Value`, 
+            standoff: 20 
+          } 
         },
-        autosize: true,
-        // margin: { l: 100, r: 50, t: 100, b: 100 } // Extra bottom margin for rotated labels
+        autosize: true
       };
 
-      // Add config parameter
-      let config = {
-        responsive: true,
-      };
+      let config = { responsive: true, 
+        modeBarButtons: [
+          ['zoom2d', 
+            'pan2d', 
+            'zoomIn2d', 
+            'zoomOut2d', 
+            'autoScale2d'
+          ]
+        ] };
 
-      // Plot the data using Plotly
+      // Build plot
       Plotly.newPlot(m.querySelector('.plot'), plotData, layout, config);
 
-      // Force resize after plot creation
-      setTimeout(() => {
-        Plotly.Plots.resize(m.querySelector('.plot'));
-      }, 100);
+      let currentPlotDiv = m.querySelector('.plot');
+
+      plotXData[moduleIdx] = xData;
+      let allTimestamps = Object.values(plotXData).flat();
+      
+      if (allTimestamps.length > 0) {
+        let globalMin = Math.min(...allTimestamps);
+        let globalMax = Math.max(...allTimestamps);
+    
+        let masterTicks = getGlobalTicks(globalMin, globalMax, xData);
+    
+        buildGlobalTimeline(xData, globalMin, globalMax, masterTicks);
+    
+        setTimeout(() => {
+          document.querySelectorAll(".plot").forEach(p => {
+            if (p.classList.contains('js-plotly-plot')) {
+              Plotly.relayout(p, { 
+                'xaxis.range': [globalMin, globalMax],
+                'xaxis.tickmode': 'array',
+                'xaxis.tickvals': masterTicks.tickVals 
+              });
+            }
+          });
+        }, 100);
+    }
+    syncThisPlot(currentPlotDiv, moduleIdx);
     }
   }
 }
+
+
+function csvDownload(m) {
+  const moduleEl = m.closest('.soundModule'); // or whatever class wraps one module
+  if (!moduleEl) {
+    console.error("Could not find parent module");
+    return;
+  }
+
+  let reading = moduleEl.parentNode.querySelector('.readings').value;
+  let sensor = moduleEl.parentNode.querySelector('.sensors').value;
+
+  const traces = m.data;
+  if (!traces) return;
+
+  // Set column names to Timestamp, Reading
+  let csvContent = `Timestamp,${reading} Reading\n`;
+
+  traces.forEach(trace => {
+      for (let i = 0; i < trace.x.length; i++) {
+          let timestamp = trace.x[i] ?? "";
+
+          // Keep same format as x-axis timestamps
+          if (typeof timestamp === "number") {
+              timestamp = new Date(timestamp).toLocaleString("en-US", { 
+                  year: "2-digit",
+                  month: "2-digit", 
+                  day: "2-digit", 
+                  hour: "2-digit", 
+                  minute: "2-digit", 
+                  second: "2-digit",
+                  hour12: true
+          }).replace(",", "");
+      }
+
+      csvContent += `${timestamp},${trace.y[i]}\n`;
+    }
+  });
+
+  const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+  const link = document.createElement("a");
+  link.href = URL.createObjectURL(blob);
+  link.download = `${sensor}_${reading}.csv`;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+}
+
+// Add a helper function to fix timestamp format
+function fixTimestamp(ts) {
+  // Remove trailing 'Z' then split on 'T'
+  let [datePart, timePart] = ts.replace('Z', '').split('T');
+  if (!timePart) return ts; // fallback
+  // Split time components and pad if necessary
+  let parts = timePart.split(':').map(p => p.padStart(2, '0'));
+  return `${datePart}T${parts.join(':')}Z`;
+}
+
 
 async function setDateBoundsForSelection() {
   const database = document.getElementById('databases').value;
@@ -1181,16 +1453,6 @@ async function setDateBoundsForSelection() {
   } catch (err) {
     console.error('Error fetching date range:', err);
   }
-}
-
-// Add a helper function to fix timestamp format
-function fixTimestamp(ts) {
-  // Remove trailing 'Z' then split on 'T'
-  let [datePart, timePart] = ts.replace('Z', '').split('T');
-  if (!timePart) return ts; // fallback
-  // Split time components and pad if necessary
-  let parts = timePart.split(':').map(p => p.padStart(2, '0'));
-  return `${datePart}T${parts.join(':')}Z`;
 }
 
 /**** MIDI pitch conversion ****/
