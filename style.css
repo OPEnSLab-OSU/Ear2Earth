@@ -46,7 +46,7 @@ main {
   border-radius: 5px;
   box-shadow: 0 1px 0 rgba(0, 0, 0, 0.04) inset;
   padding: var(--pad) 14px;
-  margin-bottom: 8px;
+  margin-bottom: 3px;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -123,12 +123,25 @@ main {
 .collapse-btn {
   background: none;
   border: none;
-  font-size: 1.2rem;
+  font-size: 14px;
+  font-weight: bolder;
+  font-family: "Dosis", sans-serif;
+  color: #333;
   cursor: pointer;
-  text-align: center;
-  margin: 10px 0px 0px 0px !important;
-  padding: 5px;
-  display: block; /* Ensure it spans the full width for better click target */
+  text-align: left;
+  /* Match the margin-left of your labels for alignment */
+  margin: 0px 0px 0px 0px !important; 
+  margin-left: 3px !important;
+  padding: 0px;
+  display: block;
+  width: fit-content; /* Only takes up as much space as the text needs */
+}
+
+.arrow-icon {
+  color: #036dee; /* Change this to your preferred triangle color */
+  margin-left: 5px;
+  font-size: 14px; /* You can also make the triangle slightly smaller/larger */
+  vertical-align: middle;
 }
 
 #dataSource {
@@ -139,7 +152,7 @@ main {
 }
 
 #databaseElements,
-#deviceElements {
+deviceElements {
   display: flex;
   flex-direction: column;
   gap: 4px;
@@ -204,10 +217,10 @@ main {
   flex: 1;
   display: flex;
   flex-direction: column;
-  height: auto;
-  min-height: 300px;
+  /* REMOVE the fixed height: 250px; */
+  min-height: 250px; /* Keeps a base size when menu is small */
   border-radius: 5px;
-  /* min-height: 400px; */
+  /* height: 100%; is usually not needed if parent is flex and align-items is stretch */
 }
 
 .volumeContainer {
@@ -215,7 +228,7 @@ main {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: 5px;
+  gap: 0px;
 }
 
 .volumeContainer label {
@@ -232,47 +245,49 @@ main {
   height: 30px;
   color: black;
   border: none;
-  border-radius: 50%;
   cursor: pointer;
-  font-size: 16px;
   font-weight: bold;
+  
+  /* Resetting flex behavior */
   display: flex;
+  justify-content: flex-start; /* Aligns the 'X' to the left of the 30px box */
   align-items: center;
-  justify-content: center;
-  transition: background-color 0.3s ease, filter 0.3s ease;
-  position: absolute;
-  top: 0;
-  left: 0;
-  z-index: 10;
-  padding: 0;
-  margin: 5px 10px 5px 5px;
+  
+  position: relative; 
   background: transparent;
-}
-
-.moduleTopOptions {
-  margin-top: 30px;
-  display: flex;
-  justify-content: space-between;
-  align-items: left;
-  height: 80px;
+  
+  /* Use a negative margin to 'pull' it over the parent's padding if necessary */
+  margin-bottom: -4px;
+  
+  padding: 0;
+  z-index: 20;
 }
 
 .removeModule::before {
-  content: "×"; /* This creates the X symbol */
-  font-size: 20px;
-  color: black;
-  font: optional;
+  content: "×";
+  font-size: 23px; /* Making it a bit bolder to match your screenshots */
   line-height: 1;
+  color: black;
+}
+
+.moduleTopOptions {
+  margin-top: 10px; /* Space between "volume" top */
+  margin-bottom: 5px; /* Space between "volume" bottom */
+  display: flex;
+  justify-content: space-between;
+  align-items: left;
+  height: 40px; /* Height of all options */
 }
 
 /* LEFT SIDE: All menu items */
 .leftMenu {
   width: 220px;
   flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
   background-color: #e0e0e0;
-  padding: 18px;
+  padding: 15px;
   border-radius: 5px;
-  position: relative;
 }
 
 /* Screen Reader utility (like blind or low-vision users) */
@@ -299,6 +314,40 @@ main {
   }
 }
 
+.timeline-row {
+  display: grid;
+  grid-template-columns: var(--sidebar-width) 1fr;
+  width: 100%;
+  background-color: #e0e0e0;
+  margin-bottom: 3px;
+  border-radius: 5px;
+}
+
+/* same width as sidebar */
+:root {
+  --sidebar-width: 250px;   /* ← change to whatever your menu is */
+  border-radius: 5px;
+}
+
+.timeline-spacer {
+  width: 100%;
+  margin-bottom: 3px;
+  border-radius: 5px;
+  display: block;
+}
+
+
+/* UNIVERSAL X-AXIS  */
+#globalTimeline {
+  height: 35px; /* Ensure this matches your buildGlobalTimeline height */
+  width: 100%;
+  display: block;
+  background: #e0e0e0;
+  border-radius: 5px;
+  margin-bottom: 3px;
+  overflow: hidden; /* Prevents overflow artifacts during snap-resizing */
+}
+
 
 /* ================== MODULES / PLOT (unchanged) ================== */
 /* Adjusted layout for module options */
@@ -314,7 +363,7 @@ main {
   flex: 1; /* Make each container take up equal space */
   display: flex; /* Optional: Flexbox within each container if you want finer control */
   flex-direction: column; /* Keep label and select in vertical alignment */
-  gap: 5px; /* Space between label and select */
+  gap: 3px; /* Space between label and select */
   width: 100%;
 }
 
@@ -328,21 +377,51 @@ main {
 .sensorsContainer select,
 .readingsContainer select {
   width: 100%;
-  padding: 8px;
+  padding: 5px;
   border: 1px solid #999;
   border-radius: 3px;
   background-color: #fff;
 }
 
 .moduleBottomOptions {
-  max-height: 200px;
-  overflow-y: auto;
+  display: none; 
+  /* Use border-box so padding doesn't add to the width */
+  box-sizing: border-box; 
+  
+  /* Calculate width: 100% minus the left and right margins you want */
+  width: calc(100% - 3px); 
+  
+  /* Centers the box within the left menu */
+  margin: 5px auto; 
+  
+  
   padding: 10px;
   border: 1px solid #ddd;
   border-radius: 5px;
   background-color: #f4f4f4;
-  margin-top: 10px;
-  display: none; /* Initially hidden */
+
+  max-height: 170px;    /* Adjust this value based on how much space you want to take up */
+  overflow-y: auto;     /* Adds vertical scrollbar when content exceeds max-height */
+  overflow-x: hidden;   /* Prevents horizontal shifting */
+}
+
+/* Optional: Style the scrollbar to match your clean UI */
+.moduleBottomOptions::-webkit-scrollbar {
+  width: 6px;
+}
+
+.moduleBottomOptions::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 10px;
+}
+
+.moduleBottomOptions::-webkit-scrollbar-thumb {
+  background: #ccc;
+  border-radius: 10px;
+}
+
+.moduleBottomOptions::-webkit-scrollbar-thumb:hover {
+  background: #999;
 }
 
 .moduleBottomOptions label {
@@ -362,12 +441,13 @@ main {
 }
 
 .plot {
+  width: 100%;
+  height: 100%;
   flex: 1;
   min-height: 0;
   border-radius: 8px;
   background-color: #fff;
   border: 1px solid #ccc;
-  margin-top: 0px; /* Spacing between the top options and the plot */
 }
 
 /* Maintain flexbox styling for module layout */
@@ -380,11 +460,12 @@ main {
 
 .soundModule {
   display: flex;
-  gap: 2.5px;
-  background-color: none;
-  padding: 0;
-  margin-bottom: 0;
-  position: relative;
+  flex-direction: row;
+  height: auto;           /* Let the content define the height */
+  min-height: 250px;      /* Minimum starting height */
+  margin-bottom: 0px;
+  align-items: stretch;   /* Forces leftMenu and Plot to stay same height */
+  overflow: visible;      /* Prevents clipping */
   align-items: stretch;
 }
 
@@ -430,4 +511,35 @@ main {
 #addModule:hover {
   background-color: #cfcdcd; 
   filter: none; 
+}
+
+#metadataButton {
+  background-color: red;
+  color: white;
+}
+
+#metadataContainer {
+  display: none;
+  margin: 0 0 10px 0;
+  flex-direction: row;
+  justify-content: space-evenly;
+
+  padding: 5px;
+
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  background-color: #fff;
+}
+
+#metadataSection {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+
+  margin: 0 5px;
+  text-align: center;
+}
+
+#metadataSection > h3 {
+  margin-right: 10px;
 }
