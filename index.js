@@ -14,6 +14,9 @@ let speedMult = 1;
 let synths = []; // Array of FM synths
 let gainNodes = []; // Array of gain nodes
 
+// Boolean to track if data is displayed
+let workspaceHasData = false
+
 // Import synths and samplers
 import { samplers, fmSynths } from './instruments.js';
 
@@ -540,6 +543,96 @@ function handleSpeedChange(event) {
   }
 }
 
+
+function clearWorkspace() {
+  const confirmed = confirm("Are you sure you want to clear your workspace?");
+  if (!confirmed) return;
+
+  // Stop any playback
+  stopSynths();
+
+  // Clear global “loaded data” state
+  retrievedData = null;
+  midiPitchesArray = [];
+  plotXData = [];
+
+  // Clear the universal x-axis timeline
+  const globalTimeline = document.getElementById('globalTimeline');
+  if (globalTimeline) {
+    try {
+      Plotly.purge(globalTimeline);
+    } catch (e) {
+      console.warn("Plotly purge failed (safe to ignore):", e);
+    }
+    globalTimeline.innerHTML = "";
+  }
+
+  // Remove extra modules so only one remains
+  const modulesContainer = document.getElementById('modulesContainer');
+  if (modulesContainer) {
+  while (modulesContainer.children.length > 1) {
+    modulesContainer.removeChild(modulesContainer.lastElementChild);
+    }
+  }
+
+  // Rebuild soundMOdules to match what is in the DOM
+  soundModules = [];
+  const remainingModules = document.getElementsByClassName('soundModule');
+  for (let m of remainingModules) {
+    soundModules.push(m);
+  }
+
+
+  // Ensure IDs + remove button data attributes are correct
+  soundModules.forEach((module, index) => {
+    module.id = `module${index}`;
+    const removeBtn = module.querySelector('.removeModule');
+    if (removeBtn) removeBtn.dataset.moduleId = index;
+  });
+
+  if (soundModules.length > 0) {
+    const module = soundModules[0];
+  
+    // Clear Plotly graph safely
+    const plotDiv = module.querySelector(".plot");
+    if (plotDiv) {
+      try {
+        if (plotDiv.data) Plotly.purge(plotDiv);
+      } catch (e) {
+        console.warn("Plotly purge failed (safe to ignore):", e);
+      }
+      plotDiv.innerHTML = "";
+    }
+
+    // Reset sensors dropdown
+    const sensorsSelect = module.querySelector(".sensors");
+    if (sensorsSelect) {
+      sensorsSelect.innerHTML = `<option value="default">Select a sensor</option>`;
+      sensorsSelect.value = "default";
+    }
+
+    // Reset readings dropdown
+    const readingsSelect = module.querySelector(".readings");
+    if (readingsSelect) {
+      readingsSelect.innerHTML = `<option value="default">Select a reading</option>`;
+      readingsSelect.value = "default";
+    }
+  }
+  console.log("Workspace cleared.");
+
+  // Grey button out when workspace is cleared
+  workspaceHasData = false;
+  updateClearWorkspaceButton();
+}
+
+function updateClearWorkspaceButton() {
+  const btn = document.getElementById("clearWorkspace");
+  if (!btn) return;
+
+  btn.disabled = !workspaceHasData;
+  btn.classList.toggle("disabled", btn.disabled);
+}
+
 // Attach a single event listener to the speedOptions container
 document.getElementById('speedOptions').addEventListener('change', handleSpeedChange);
 
@@ -585,74 +678,8 @@ document.addEventListener('DOMContentLoaded', () => {
   // Create one soundModule on startup
   addSoundModule();
 
-  function clearWorkspace() {
-    const confirmed = confirm("Are you sure you want to clear your workspace?");
-    if (!confirmed) return;
-
-    // Stop any playback
-    stopSynths();
-
-    // Clear global “loaded data” state
-    retrievedData = null;
-    midiPitchesArray = [];
-    plotXData = [];
-
-    // Remove extra modules so only one remains
-    const modulesContainer = document.getElementById('modulesContainer');
-    if (modulesContainer) {
-    while (modulesContainer.children.length > 1) {
-      modulesContainer.removeChild(modulesContainer.lastElementChild);
-      }
-    }
-
-    // Rebuild soundMOdules to match what is in the DOM
-    soundModules = [];
-    const remainingModules = document.getElementsByClassName('soundModule');
-    for (let m of remainingModules) {
-      soundModules.push(m);
-    }
-
-
-    // Ensure IDs + remove button data attributes are correct
-    soundModules.forEach((module, index) => {
-      module.id = `module${index}`;
-      const removeBtn = module.querySelector('.removeModule');
-      if (removeBtn) removeBtn.dataset.moduleId = index;
-    });
-
-    if (soundModules.length > 0) {
-      const module = soundModules[0];
-    
-      // Clear Plotly graph safely
-      const plotDiv = module.querySelector(".plot");
-      if (plotDiv) {
-        try {
-          if (plotDiv.data) Plotly.purge(plotDiv);
-        } catch (e) {
-          console.warn("Plotly purge failed (safe to ignore):", e);
-        }
-        plotDiv.innerHTML = "";
-      }
-
-      // Reset sensors dropdown
-      const sensorsSelect = module.querySelector(".sensors");
-      if (sensorsSelect) {
-        sensorsSelect.innerHTML = `<option value="default">Select a sensor</option>`;
-        sensorsSelect.value = "default";
-      }
-
-      // Reset readings dropdown
-      const readingsSelect = module.querySelector(".readings");
-      if (readingsSelect) {
-        readingsSelect.innerHTML = `<option value="default">Select a reading</option>`;
-        readingsSelect.value = "default";
-      }
-    }
-    console.log("Workspace cleared.");
-  }
-
   document.getElementById('clearWorkspace').addEventListener('click', clearWorkspace);
-
+  
   /**************
    *
    *
@@ -714,6 +741,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     return;
   });
+
+  workspaceHasData = false;
+  updateClearWorkspaceButton();
 });
 
 // Listener for "Dataset Name" dropdown
@@ -781,7 +811,6 @@ function fetchDatabases() {
     })
     .catch(error => {
       console.error('Error fetching databases:', error);
-      // added 10/26
       resetDevicesAndDates();
     });
 }
@@ -824,7 +853,6 @@ function fetchDevices() {
   });
 }
 
-// added 10/26
 function resetDates() {
   const start = document.getElementById('startTime');
   const end = document.getElementById('endTime');
@@ -834,7 +862,6 @@ function resetDates() {
   });
 }
 
-// added 10/26
 function resetDevicesAndDates() {
   const devSel = document.getElementById('devices');
   devSel.innerHTML = '<option value="default">Select a sensor</option>';
@@ -941,6 +968,8 @@ document.getElementById('retrieve').onclick = async function () {
       // If data is empty, show an alert and return
       if (data.length === 0) {
         alert('No data available for the selected time range.');
+        workspaceHasData = false;
+        updateClearWorkspaceButton();
         return;
       }
       data.sort(
@@ -956,6 +985,9 @@ document.getElementById('retrieve').onclick = async function () {
         initializeModuleSelects(m, data);
         restoreSelects(m);
       }
+      
+      workspaceHasData = true;
+      updateClearWorkspaceButton();
     })
     .catch(error => console.error('Error:', error));
 };
@@ -1397,7 +1429,7 @@ function plot(moduleIdx) {
 
       // Build plot
       Plotly.newPlot(m.querySelector('.plot'), plotData, layout, config);
-
+ 
       let currentPlotDiv = m.querySelector('.plot');
 
       plotXData[moduleIdx] = xData;
