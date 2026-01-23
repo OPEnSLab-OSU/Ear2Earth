@@ -557,16 +557,40 @@ document.addEventListener('DOMContentLoaded', () => {
     const confirmed = confirm("Are you sure you want to clear your workspace?");
     if (!confirmed) return;
 
-    // 1) Stop any playback
+    // Stop any playback
     stopSynths();
 
-    // 2) Clear global “loaded data” state
+    // Clear global “loaded data” state
     retrievedData = null;
     midiPitchesArray = [];
     plotXData = [];
 
-    // 3) Reset each module UI + plot
-    soundModules.forEach((module) => {
+    // Remove extra modules so only one remains
+    const modulesContainer = document.getElementById('modulesContainer');
+    if (modulesContainer) {
+    while (modulesContainer.children.length > 1) {
+      modulesContainer.removeChild(modulesContainer.lastElementChild);
+      }
+    }
+
+    // Rebuild soundMOdules to match what is in the DOM
+    soundModules = [];
+    const remainingModules = document.getElementsByClassName('soundModule');
+    for (let m of remainingModules) {
+      soundModules.push(m);
+    }
+
+
+    // Ensure IDs + remove button data attributes are correct
+    soundModules.forEach((module, index) => {
+      module.id = `module${index}`;
+      const removeBtn = module.querySelector('.removeModule');
+      if (removeBtn) removeBtn.dataset.moduleId = index;
+    });
+
+    if (soundModules.length > 0) {
+      const module = soundModules[0];
+    
       // Clear Plotly graph safely
       const plotDiv = module.querySelector(".plot");
       if (plotDiv) {
@@ -591,9 +615,9 @@ document.addEventListener('DOMContentLoaded', () => {
         readingsSelect.innerHTML = `<option value="default">Select a reading</option>`;
         readingsSelect.value = "default";
       }
-  });
-  console.log("Workspace cleared.");
-}
+    }
+    console.log("Workspace cleared.");
+  }
 
   document.getElementById('clearWorkspace').addEventListener('click', clearWorkspace);
 
