@@ -585,6 +585,74 @@ document.addEventListener('DOMContentLoaded', () => {
   // Create one soundModule on startup
   addSoundModule();
 
+  function clearWorkspace() {
+    const confirmed = confirm("Are you sure you want to clear your workspace?");
+    if (!confirmed) return;
+
+    // Stop any playback
+    stopSynths();
+
+    // Clear global “loaded data” state
+    retrievedData = null;
+    midiPitchesArray = [];
+    plotXData = [];
+
+    // Remove extra modules so only one remains
+    const modulesContainer = document.getElementById('modulesContainer');
+    if (modulesContainer) {
+    while (modulesContainer.children.length > 1) {
+      modulesContainer.removeChild(modulesContainer.lastElementChild);
+      }
+    }
+
+    // Rebuild soundMOdules to match what is in the DOM
+    soundModules = [];
+    const remainingModules = document.getElementsByClassName('soundModule');
+    for (let m of remainingModules) {
+      soundModules.push(m);
+    }
+
+
+    // Ensure IDs + remove button data attributes are correct
+    soundModules.forEach((module, index) => {
+      module.id = `module${index}`;
+      const removeBtn = module.querySelector('.removeModule');
+      if (removeBtn) removeBtn.dataset.moduleId = index;
+    });
+
+    if (soundModules.length > 0) {
+      const module = soundModules[0];
+    
+      // Clear Plotly graph safely
+      const plotDiv = module.querySelector(".plot");
+      if (plotDiv) {
+        try {
+          if (plotDiv.data) Plotly.purge(plotDiv);
+        } catch (e) {
+          console.warn("Plotly purge failed (safe to ignore):", e);
+        }
+        plotDiv.innerHTML = "";
+      }
+
+      // Reset sensors dropdown
+      const sensorsSelect = module.querySelector(".sensors");
+      if (sensorsSelect) {
+        sensorsSelect.innerHTML = `<option value="default">Select a sensor</option>`;
+        sensorsSelect.value = "default";
+      }
+
+      // Reset readings dropdown
+      const readingsSelect = module.querySelector(".readings");
+      if (readingsSelect) {
+        readingsSelect.innerHTML = `<option value="default">Select a reading</option>`;
+        readingsSelect.value = "default";
+      }
+    }
+    console.log("Workspace cleared.");
+  }
+
+  document.getElementById('clearWorkspace').addEventListener('click', clearWorkspace);
+
   /**************
    *
    *
