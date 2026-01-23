@@ -119,6 +119,12 @@ main {
   cursor: pointer;
 }
 
+/* For the clear workspace button */
+button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
 /* For the collapse button */
 .collapse-btn {
   background: none;
