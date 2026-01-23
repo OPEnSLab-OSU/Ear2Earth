@@ -1,5 +1,8 @@
 /**** Global variables ****/
 
+// Metadata
+let metadata;
+
 // Playback boolean
 let isPlaying = false;
 
@@ -620,7 +623,29 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   // Handle selection from the named dropdown
-  retrieveByNameDropdown.addEventListener('change', handleDatasetChange);
+  retrieveByNameDropdown.addEventListener('change', async e => {
+    handleDatasetChange(e);
+    isMetadataDisplayed = false;
+    metadataContainer.style.display = 'none';
+    
+    metadataBtn.style.display = "block";
+    metadataBtn.style.backgroundColor = '#FFF';
+    metadataBtn.style.color = '#000';
+    metadataBtn.textContent = 'Loading...';
+    metadata = await retrieveMetadata();
+
+    if (metadata == null) {
+      metadataBtn.style.backgroundColor = 'red';
+      metadataBtn.textContent = 'No Metadata'
+    } else {
+      metadataBtn.style.backgroundColor = 'green';
+      metadataBtn.textContent = 'View Metadata';
+    }
+
+    metadataBtn.style.color = 'white';
+
+    return;
+  });
 });
 
 // Listener for "Dataset Name" dropdown
@@ -808,6 +833,7 @@ document.getElementById('retrieve').onclick = async function () {
   let packetOption = document.querySelector('input[name="packetOption"]:checked').value;
   let prescaler = document.getElementById('prescaler').value;
   let url;
+  let metadataUrl;
 
   // Error handling for inputs
   if (packetOption === 'lastXPackets') {
@@ -1559,3 +1585,84 @@ function dataToMidiPitches(normalizedData, scale) {
   const scaleLength = scale.length;
   return normalizedData.map(value => scale[Math.floor(value * (scaleLength - 1))]);
 }
+
+const metadataBtn = document.getElementById('metadataButton');
+let isMetadataDisplayed = false;
+
+async function retrieveMetadata() {
+  let db = document.getElementById('databases').value;
+  let url = `/metadata?database=${db}`;
+
+  try {
+    const response = await fetch(url);
+
+    if (!response.ok) {
+      return null;
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error('Error: ', error);
+    return null;
+  }
+}
+
+metadataBtn.onclick = async function () {
+  const metadataContainer = document.getElementById('metadataContainer');
+
+  if (isMetadataDisplayed) {
+    metadataContainer.style.display = 'none';
+    isMetadataDisplayed = false;
+    metadataBtn.style.backgroundColor = 'green';
+    metadataBtn.textContent = 'View Metadata';
+    return;
+  }
+
+  if (metadataBtn.style.backgroundColor == "green") {
+      metadataBtn.style.backgroundColor = "#90EE90";
+  }
+
+  if (metadataBtn.style.backgroundColor == 'red') {
+    return;
+  }
+
+  metadataBtn.textContent = "Loading...";
+  metadataContainer.style.display = 'flex';
+  metadataBtn.textContent = "Close";
+
+  if (metadata == null) {
+    metadataContainer.innerHTML = `
+        <h3>No metadata :(</h3>
+        `;
+  } else {
+    let metadataDeploymentDate = metadata['deployment_date'];
+    let metadataLatitude = metadata['latitude'];
+    let metadataLongitude = metadata['longitude'];
+    let metadataOwner = metadata['owner'];
+
+    metadataContainer.innerHTML = `
+        <div id="metadataSection">
+          <h3>Deployment Date: </h3>
+          <p id="metadataDeploymentDate">${metadataDeploymentDate}</p>
+        </div>
+
+        <div id="metadataSection">
+          <h3>Latitude: </h3>
+          <p id="metadataLatitude">${metadataLatitude}</p>
+        </div>
+
+        <div id="metadataSection">
+          <h3>Longitude: </h3>
+          <p id="metadataLongitude">${metadataLongitude}</p>
+        </div>
+
+        <div id="metadataSection">
+          <h3>Owner: </h3>
+          <p id="metadataOwner">${metadataOwner}</p>
+        </div>
+        `;
+  }
+  
+  isMetadataDisplayed = true;
+  return;
+};
