@@ -30,6 +30,7 @@
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.45/Tone.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
   </head>
   <body>
     <header>
@@ -55,6 +56,7 @@
               <!-- Preset -->
               <div class="group">
                 <button id="openPresetModal" class="primary-btn">
+                  <i data-lucide="folder-search"></i>
                   Select a Preset
                 </button>
               </div>
@@ -69,6 +71,7 @@
                     value="lastXPackets"
                     checked
                   />
+                  <i data-lucide="package"></i>
                   Last Packets
                 </label>
                 <label for="timeRange" id="dateRangeLabel">
@@ -78,6 +81,7 @@
                     name="packetOption"
                     value="timeRange"
                   />
+                  <i data-lucide="calendar"></i>
                   <span id="dateRangeText">Date Range</span>
                 </label>
               </div>
@@ -114,6 +118,7 @@
               <div class="group">
                 <button id="infoButton" class="icon-btn" title="Help"></button>
                 <button id="metadataButton" class="pill-btn">
+                  <i data-lucide="codeXml"></i>
                   View Metadata
                 </button>
               </div>
@@ -158,42 +163,23 @@
           </div>
         </section>
 
-        <!-- Right: Refresh toolbar -->
-        <section class="toolbar toolbar-refresh" aria-label="Refresh Controls">
+        <!-- Share/download/undo/redo & Packet Refresh toolbar -->
+        <section class="toolbar toolbar-controls" aria-label="Multi Functional Selections">
           <button class="toolbar-drag-handle" aria-label="Drag to reorder"></button>
           <div class="toolbar-wrapper">
             <div class="row">
-              <div class="refresh-group">
-                <button id="autoRefresh" class="refresh-btn" title="Automatic Refresh">
-                  <span class="refresh-icon"></span>
-                  <span class="refresh-label">Automatic Refresh</span>
-                </button>
-                <button id="scheduledRefresh" class="refresh-btn" title="Scheduled Refresh">
-                  <span class="refresh-icon"></span>
-                  <span class="refresh-label">Scheduled Refresh</span>
-                </button>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <!-- Zoom & Share toolbar -->
-        <section class="toolbar toolbar-controls" aria-label="Zoom and Share">
-          <button class="toolbar-drag-handle" aria-label="Drag to reorder"></button>
-          <div class="toolbar-wrapper">
-            <div class="row">
-              <!-- Zoom controls -->
-              <div class="zoom-grid">
-                <button id="undoZoom" class="icon-btn-small" title="Undo Zoom">↶</button>
-                <button id="redoZoom" class="icon-btn-small" title="Redo Zoom">↷</button>
-                <button id="zoomIn" class="icon-btn-small" title="Zoom In">+</button>
-                <button id="zoomOut" class="icon-btn-small" title="Zoom Out">−</button>
+              <!-- share/download/undo/redo controls -->
+              <div class="multi-function-grid">
+                <button id="share" class="icon-btn-small" title="Share"><i data-lucide="share-2"></i></button>
+                <button id="download" class="icon-btn-small" title="Download"><i data-lucide="file-down"></i></button>
+                <button id="undo" class="icon-btn-small" title="Undo"><i data-lucide="undo-2"></i></button>
+                <button id="redo" class="icon-btn-small" title="Redo"><i data-lucide="redo-2"></i></button>
               </div>
 
               <!-- Share button -->
-              <button id="share" class="action-btn" title="Share">
-                <span class="action-icon"></span>
-                <span class="action-label">Share</span>
+              <button id="refresh" class="action-btn" title="Packet Refresh">
+                <i data-lucide="refresh-cw"></i>
+                <span class="action-label"></i>Packet Refresh</span>
               </button>
             </div>
           </div>
@@ -206,6 +192,7 @@
             <div class="row">
               <div class="group">
                 <button id="clearWorkspace" class="clear-btn" title="Clear Workspace">
+                <i data-lucide="Paintbrush"></i>
                   Clear Workspace
                 </button>
                 <button id="helpButton" class="icon-btn" title="Help"></button>

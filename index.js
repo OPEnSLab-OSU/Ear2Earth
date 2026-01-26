@@ -541,6 +541,10 @@ function handleSpeedChange(event) {
 document.getElementById('speedOptions').addEventListener('change', handleSpeedChange);
 
 document.addEventListener('DOMContentLoaded', () => {
+
+  // Initialize Lucide icons
+  lucide.createIcons();
+
   // Prioritize smooth playback
   const context = new Tone.Context({ latencyHint: 'playback' });
   Tone.setContext(context);
