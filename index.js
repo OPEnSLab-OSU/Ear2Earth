@@ -823,12 +823,50 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   // Handle preset selection inside the popup 
-  modalPresetDropdown.addEventListener('change', (event) => {
-    if (event.target.value === 'default') {
-      return; // Don't do anything if "Select a Preset" is chosen
+  modalPresetDropdown.addEventListener('change', async (event) => {
+    if (event.target.value !== 'default') {
+      const presetData = JSON.parse(event.target.value);
+
+      const databaseDropdown = document.getElementById('databases');
+      const deviceDropdown = document.getElementById('devices');
+      
+      // Check if the database exists
+      let databaseExists = [...databaseDropdown.options].some(
+        option => option.value.trim() === presetData.database.trim()
+      );
+      
+      if (databaseExists) {
+        databaseDropdown.value = presetData.database;
+        
+        // Wait for devices to load before checking for the device
+        await fetchDevices();
+        
+        // Check if the selected device exists in the updated dropdown
+        let deviceExists = [...deviceDropdown.options].some(
+          option => option.value.trim() === presetData.device.trim()
+        );
+        
+        if (deviceExists) {
+          deviceDropdown.value = presetData.device;
+          await setDateBoundsForSelection();
+        } else {
+          alert(
+            `Warning: Device "${presetData.device}" not found in "${presetData.database}". Please select manually.`
+          );
+        }
+      } else {
+        alert(
+          `Warning: Database "${presetData.database}" does not exist. Please select manually.`
+        );
+      }
+      
+    } else {
+      // Reset and enable if "Select a preset" is chosen
+      databaseDropdown.value = 'default';
+      deviceDropdown.value = 'default';
+      
     }
   });
-
   // Handle selection from the named dropdown
   retrieveByNameDropdown.addEventListener('change', handleDatasetChange);
 });
