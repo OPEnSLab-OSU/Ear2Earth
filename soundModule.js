@@ -30,7 +30,7 @@ function createSoundModuleTemplate(moduleId) {
                 
                 <!-- Collapse button -->
                 <button class="collapse-btn"> 
-                More Options <span class="arrow-icon">▼</span>
+                Sound Options <span class="arrow-icon">▼</span>
                 </button>
                 
                 <!-- Bottom options (collapsible) -->

@@ -11,17 +11,25 @@
 
 /* Base */
 body {
-  font-family: "Dosis", sans-serif;
   background: #f4f4f9;
   color: #333;
   margin: 0;
   padding: 0px;
+  font-family: "DM Sans", sans-serif;
+  font-optical-sizing: auto;
+  font-style: light;
+  font-weight: 700px !important;
 }
 header {
   background: lightgray;
   color: #030303;
   padding: 15px 20px;
   font-size: 15px;
+  font-family: "DM Sans", sans-serif;
+  font-optical-sizing: auto;
+  font-style: light;
+  font-weight: 100px !important;
+  letter-spacing: -.5px;
   text-align: left;
   display: flex;
   justify-content: space-between;
@@ -122,7 +130,7 @@ main {
   color: black;
   cursor: pointer;
   text-align: center;
-  font-size: 12px;
+  font-size: 13px;
   border: none;
   margin-left: 0px;
   display: flex;
@@ -190,6 +198,7 @@ main {
 #dataOptions label[for="timeRange"], label[for="lastXPackets"] {
   width: auto;
   min-width: 110px;
+  font-size: 13px;
 }
 
 /* Size the icons */
@@ -204,18 +213,17 @@ main {
   width: 25px;
   height: 18px;
   padding: 2px 2px;
-  font-size: 12px;
   border-radius: 2px;
-  margin-left: 10px;
+  margin-left: 2px;
 }
 
 .topmenu #prescaler {
   width: 25px;
   height: 18px;
   padding: 2px 2px;
-  font-size: 12px;
+  font-size: 13px !important;
   border-radius: 2px;
-  margin-left: 15px;
+  margin-left: 5px;
   align-items: center !important;
 }
 
@@ -224,6 +232,7 @@ main {
   margin-left: 5px;
   font-size: 12px;
   white-space: nowrap;
+  font-size: 13px !important;
 }
 
 /* Create a vertical sub-group */
@@ -240,7 +249,7 @@ main {
   height: 70px; /* Match button height */
   color: black;
   font-size: 12px;
-  width: 110px;
+  width: 122px;
   white-space: nowrap;
   border-radius: 2px;
 }
@@ -264,7 +273,7 @@ main {
 }
 
 #skipPackets .muted {
-  font-size: 11px; /* Match the container font size */
+  font-size: 13px !important;
   white-space: nowrap;
   color: #000000;
   margin-left: 5px;
@@ -403,8 +412,9 @@ main {
   background: none;
   border: none;
   font-size: 14px;
-  font-weight: bolder;
-  font-family: "Dosis", sans-serif;
+  font-weight: 600;
+  font-family: "DM Sans", sans-serif;
+  letter-spacing: -.5px;
   color: #333;
   cursor: pointer;
   text-align: left;
@@ -441,6 +451,8 @@ main {
 .control-group {
   display: flex;
   align-items: center;
+  font-weight: 500;
+  letter-spacing: -0.5px;
   gap: 8px;
   padding: 0 12px;
   background: #ccc;
@@ -450,8 +462,6 @@ main {
 }
 
 .control-group label {
-  font-size: 16px;
-  font-weight: bold;
   white-space: nowrap;
   color: #333;
 }
@@ -474,14 +484,13 @@ main {
 }
 
 .control-group:has(#masterVolume) label {
-  font-size: 13px;
   line-height: 1.2;
   color: #000000;
 }
 
 #masterVolume {
   accent-color: var(--primary);
-  width: 170px; 
+  width: 170px;
 }
 
 /* Transport buttons */
@@ -522,38 +531,36 @@ main {
   background: #ccc;
   border: 1px;
   border-radius: 2px;
-  width: 180px; 
+  width: 193px; 
   position: relative;
   
 }
 
 #bpmLabel {
-  font-size: 14px;
-  font-weight: 600;
+  font-size: 13px;
+  font-weight: 500;
   margin: 0;
   display: inline-block;
   margin-left: -28px;
   color: #000000;
-  margin-top: 10px;
+  margin-top: 14px;
 }
 
 #bpmText {
-  font-size: 14px; 
+  font-size: 13px;
+  font-weight: 500;
   min-width: 30px;
   text-align: center;
   color: #000000;
-  font-weight: 600;
   position: absolute;
-  margin-top: 10px;
-  right: 34px;
+  margin-top: 14px;
+  right: 65px;
 }
 
 #bpm {
   accent-color: var(--primary);
-  width: 150px;
-  height: auto;
-  cursor: pointer;
-  margin-top: -5px;
+  width: 170px;
+  height: 6px;
 }
 
 
@@ -857,7 +864,7 @@ main {
 
 .volumeContainer label {
   font-size: 14px;
-  font-weight: bold;
+  font-weight: 600;
 }
 
 .volumeContainer input[type="range"] {
@@ -912,6 +919,7 @@ main {
   background-color: #e0e0e0;
   padding: 15px;
   border-radius: 5px;
+  font-family: "DM Sans", sans-serif;
 }
 
 /* Screen Reader utility (like blind or low-vision users) */
@@ -994,7 +1002,7 @@ main {
 .sensorsContainer label,
 .readingsContainer label {
   font-size: 14px;
-  font-weight: bold;
+  font-weight: 600;
   margin: 0;
 }
 
