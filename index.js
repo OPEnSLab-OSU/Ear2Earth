@@ -23,6 +23,9 @@ import { samplers, fmSynths } from './instruments.js';
 // HTML template for a sound module
 import { createSoundModuleTemplate } from './soundModule.js';
 
+// Import sensor display name function
+import { sensorDisplayName } from "./sensorNames.js";
+
 // Menu items for the instruments
 let instrumentsMenuItems = [];
 
@@ -1052,7 +1055,7 @@ function initializeModuleSelects(module, data) {
       if (key === '_id' || key === 'Timestamp' || key === 'WiFi') return;
       let option = document.createElement('option');
       option.value = key;
-      option.text = key;
+      option.textContent = sensorDisplayName(key);
       sensorsSelect.appendChild(option);
     });
 
