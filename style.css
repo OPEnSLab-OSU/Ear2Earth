@@ -20,7 +20,7 @@ body {
 header {
   background: lightgray;
   color: #030303;
-  padding: 10px 20px;
+  padding: 15px 20px;
   font-size: 15px;
   text-align: left;
   display: flex;
@@ -64,11 +64,11 @@ main {
 }
 
 .toolbar-wrapper * {
-  max-height: 50px; 
+  max-height: 58px; 
 }
 
 .topmenu .toolbar {
-  height: 40px;
+  height: 50px;
   background: #ffffff;
   box-shadow: 0px 1px 0px rgba(0, 0, 0, 0.04) inset;
   padding: var(--pad) 14px;
@@ -88,7 +88,7 @@ main {
 .topmenu .group {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
+  gap: 5px;
 }
 
 .topmenu .muted {
@@ -108,11 +108,12 @@ main {
   margin: 0;
   font-size: 14px;
   align-items: center;
+  text-align: center;
 }
 
 /* Style for the preset button */
 #openPresetModal {
-  width: 90px;
+  width: 112px;
   height: 70px;
   padding: 0;
   border: 1px solid var(--border);
@@ -142,12 +143,13 @@ main {
 #dataOptions {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 3px;
   padding: 0;
   background: transparent;
   border: none;
   height: 70px;
-  margin: 0px;
+  margin: 1px;
+  margin-right: -1px;
 }
 
 #dataOptions label {
@@ -176,18 +178,18 @@ main {
 /* Hide the radio circles */
 #dataOptions input[type="radio"] {
   display: none;
+  
 }
 
 /* Highlight selected button */
 #dataOptions label:has(input[type="radio"]:checked) {
   background: #eeeded;
   color: black;
-  border-color: #9d9d9d;
 }
 
 #dataOptions label[for="timeRange"], label[for="lastXPackets"] {
   width: auto;
-  min-width: 90px;
+  min-width: 110px;
 }
 
 /* Size the icons */
@@ -198,17 +200,28 @@ main {
   align-items: flex-start;
 }
 
-.topmenu #numpackets,
-.topmenu #prescaler {
+.topmenu #numpackets {
   width: 25px;
-  height: 12px;
+  height: 18px;
   padding: 2px 2px;
   font-size: 12px;
-  border-radius: 1px;
+  border-radius: 2px;
+  margin-left: 10px;
+}
+
+.topmenu #prescaler {
+  width: 25px;
+  height: 18px;
+  padding: 2px 2px;
+  font-size: 12px;
+  border-radius: 2px;
+  margin-left: 15px;
+  align-items: center !important;
 }
 
 #numpacketsInput label {
   margin-bottom: 0px;
+  margin-left: 5px;
   font-size: 12px;
   white-space: nowrap;
 }
@@ -220,21 +233,22 @@ main {
   flex-direction: row;
   align-items: center;
   gap: 4px;
-  padding: 2px 6px;
+  padding: 2px;
   background: #ccc;
   border: 1px;
   border-radius: 4px;
   height: 70px; /* Match button height */
   color: black;
   font-size: 12px;
-  width: 95px;
+  width: 110px;
   white-space: nowrap;
   border-radius: 2px;
 }
 
 #numpacketsInput {
   margin: 0px; /* Pull them closer together */
-  font-size: 12px;;
+  font-size: 12px;
+  text-align: center !important;
 }
 
 #numpackets {
@@ -242,6 +256,7 @@ main {
   border: 1px solid #ccc;
   border-radius: 1px;
   cursor: pointer;
+  text-align: center !important;
 }
 
 #skipPackets {
@@ -252,19 +267,21 @@ main {
   font-size: 11px; /* Match the container font size */
   white-space: nowrap;
   color: #000000;
+  margin-left: 5px;
+  
 }
 
 .packet-inputs-group {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 3px;
   margin-left: -8px; /* Pull closer to left */
 }
 
 .topmenu .primary-btn {
-  width: 70px; 
+  width: 80px; 
   height: 70px;
-  padding: 0;
+  padding: 5px;
   font-size: 12px;
   background: var(--primary);
   color: #fff;
@@ -274,6 +291,7 @@ main {
   margin-left: -8px;
   text-wrap: wrap;
   text-align: center;
+  margin-right: -3px;
 }
 
 .topmenu .primary-btn:hover {
@@ -309,12 +327,45 @@ main {
   align-items: center;
   justify-content: center;
   gap: 2px;
+  margin-left: 15px;
+  margin-right: 10px !important;
 }
 
 #infoButton svg {
   width: 12px;
   height: 12px;
   flex-shrink: 0;
+  margin-left: 0px;
+}
+
+
+#infoButton2 {
+  width: 12px;
+  height: 12px;
+  border: 0px;
+  border-radius: 2px;
+  cursor: pointer;
+  position: absolute;
+  top: 0px;       /* adjust as needed */
+  z-index: 10; /* Ensure it's on top */
+  margin: 0 auto;
+  left: 102px;  /* position to the right of the button */
+  background-color: #ccc;
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  margin-left: 15px;
+  margin-right: 100px !important;
+}
+
+#infoButto2 svg {
+  width: 12px;
+  height: 12px;
+  flex-shrink: 0;
+  margin-left: 0px;
 }
 
 .group {
@@ -324,7 +375,7 @@ main {
 
 #metadataButton {
   padding-right: 0px; 
-  width: 100px;
+  width: 112px;
   height: 80px;
   position: relative;
   border-radius: 2px;
@@ -419,6 +470,7 @@ main {
   padding: 2px 8x;
   gap: 10px;
   height: 70px; 
+  margin-right: 1px;
 }
 
 .control-group:has(#masterVolume) label {
@@ -429,12 +481,12 @@ main {
 
 #masterVolume {
   accent-color: var(--primary);
-  width: 115px; 
+  width: 170px; 
 }
 
 /* Transport buttons */
 .square-btn {
-  width: 50px; /* Changed from 46px */
+  width: 60px; /* Changed from 46px */
   height: 70px; /* Changed from 46px */
   border-radius: 2px;
   cursor: pointer;
@@ -446,6 +498,7 @@ main {
   justify-content: center;
   outline: none;  
   border-radius: 2px;
+  margin-right: 1px;
 }
 
 .square-btn svg {
@@ -463,14 +516,15 @@ main {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
-  padding: 6px 10px;
+  padding: 2px 8x;
+  gap: 10px;
+  height: 70px; 
   background: #ccc;
   border: 1px;
   border-radius: 2px;
-  height: auto;
-  width: 115px;
+  width: 180px; 
   position: relative;
+  
 }
 
 #bpmLabel {
@@ -480,6 +534,7 @@ main {
   display: inline-block;
   margin-left: -28px;
   color: #000000;
+  margin-top: 10px;
 }
 
 #bpmText {
@@ -489,58 +544,63 @@ main {
   color: #000000;
   font-weight: 600;
   position: absolute;
-  top: 6px; /* Adjusted to fit above the slider */
+  margin-top: 10px;
   right: 34px;
 }
 
 #bpm {
   accent-color: var(--primary);
-  width: 100px;
+  width: 150px;
   height: auto;
   cursor: pointer;
+  margin-top: -5px;
 }
 
-/* Speed options - 2x2 grid layout */
+
 #speedOptions {
-  display: grid;
-  grid-template-columns: 1fr 1fr; /* Two columns */
-  grid-template-rows: 1fr 1fr; /* Two rows */
-  gap: 1px;
-  padding: 4px 4px;
-  background: #ccc;
-  border: 1px;
-  border-radius: 2px;
-  height: 42px;
-  width: 50px; 
-  align-items: center;
-  margin-left: -10px;
+  height: 70px; 
+  width: 60px;
+  gap: 3px;
+  padding: 0; 
+  background: none; 
 }
 
 #speedOptions input[type="radio"] {
-  display: none; /* Hide the radio circles */
+  display: none;
 }
 
+/* Make labels look and act like .icon-btn-small */
 #speedOptions label {
-  font-size: 12px;
-  cursor: pointer;
-  color: #000000;
-  font-weight: 500;
-  margin: 0;
-  text-align: center;
-  padding: 2px 4px;
+  width: 100%;
+  height: 100%;
+  background: #ccc;
   border-radius: 2px;
-  transition: all 0.2s;
-}
-
-/* Highlight selected speed */
-#speedOptions input[type="radio"]:checked + label {
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
   color: #000000;
-  font-weight: 700;
-  background: #f0f0f0;
+  font-size: 12px;
+  font-weight: 500;
+  margin: 0; 
+  margin-left: -8px;
 }
 
+/* Hover state to match .icon-btn-small:hover */
 #speedOptions label:hover {
-  background: #f5f5f5;
+  background: #999;
+}
+
+/* Active/Selected state logic */
+#speedOptions input[type="radio"]:checked + label {
+  background: #f0f0f0; /* Keeping your highlight color */
+  font-weight: 700;
+}
+
+/* Add the click "scale" effect to the labels too */
+#speedOptions label:active {
+  transform: scale(0.95);
 }
 
 #playbackContainer {
@@ -573,8 +633,8 @@ main {
   display: grid;
   grid-template-columns: 1fr 1fr; /* 2 columns */
   grid-template-rows: 1fr 1fr; /* 2 rows */
-  gap: 2px;
-  height: 50px;
+  gap: 3px;
+  height: 70px;
   width: 50px;
 }
 
@@ -621,7 +681,7 @@ main {
   cursor: pointer;
   font-size: 12px;
   height: 70px;
-  width: 90px;
+  width: 112px;
   transition: all 0.2s ease;
   white-space: nowrap;
   flex-direction: column;
@@ -657,7 +717,7 @@ main {
   transition: all 0.2s ease;
   white-space: nowrap;
   height: 70px;
-  width: 100px;
+  width: 112px;
   position: relative;
   display: flex;
   flex-direction: column;
@@ -665,7 +725,6 @@ main {
   text-align: center;
   gap: 2px;
   align-items: center;
-  margin-right: 10px;
 }
 
 .clear-btn:hover {
@@ -738,18 +797,20 @@ main {
   cursor: grab;
   background: transparent;
   border: none;
-  color: #484848;
-  font-size: 16px;
+  color: #484848b7;
+  font-size: 19px;
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 10;
-  padding: 0;
+  margin-left: 5px;
+  margin-right: 5px !important;
 }
 
 .toolbar-drag-handle::before {
   content: "⋮⋮";
   letter-spacing: -2px;
+  margin-right: 8px !important;
 }
 
 .toolbar-drag-handle:hover {
@@ -1198,6 +1259,7 @@ main {
   border: 1px solid #ccc;
   border-radius: 4px;
   cursor: pointer;
+  text-align: center !important;
 }
 
 /* Date range button styling */
