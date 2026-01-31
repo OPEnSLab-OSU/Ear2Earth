@@ -712,6 +712,8 @@ main {
   flex-shrink: 0;
 }
 
+
+
 /* Clear Workspace button */
 .clear-btn {
   padding: 4px 4px;
@@ -761,7 +763,7 @@ main {
   margin: 0 auto;
   background-color: #ccc;
   padding: 8px;
-  left: 102px;  /* position to the right of the button */
+  left: 116px;  /* position to the right of the button */
 }
 
 .icon-btn svg {
@@ -782,6 +784,33 @@ main {
   border: 0px;
   background-color: #ccc;
   z-index: 10;
+}
+
+#toolButton {
+  width: 12px;
+  height: 12px;
+  border: 0px;
+  border-radius: 2px;
+  cursor: pointer;
+  position: absolute;
+  top: 8px;       /* adjust as needed */
+  z-index: 10; /* Ensure it's on top */
+  margin: 0 auto;
+  left: 185px;  /* position to the right of the button */
+  background-color: #ccc;
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  margin-left: 18px;
+}
+
+#toolButton svg {
+  width: 12px;
+  height: 12px;  
+  flex-shrink: 0;
 }
 
 /* Actions toolbar */
