@@ -80,7 +80,7 @@ main {
   background: #ffffff;
   box-shadow: 0px 1px 0px rgba(0, 0, 0, 0.04) inset;
   padding: var(--pad) 14px;
-  margin-bottom: 3px;
+  margin-bottom: 0px;
   display: flex;
   flex-direction: row;
   align-items: stretch;
@@ -277,7 +277,6 @@ main {
   white-space: nowrap;
   color: #000000;
   margin-left: 5px;
-  
 }
 
 .packet-inputs-group {
@@ -711,8 +710,6 @@ main {
   height: 18px;  
   flex-shrink: 0;
 }
-
-
 
 /* Clear Workspace button */
 .clear-btn {
