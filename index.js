@@ -1392,7 +1392,7 @@ function plot(moduleIdx) {
 
       let layout = {
         title: { 
-          text: `${sensor} - ${reading}`, 
+          text: `${sensorDisplayName(sensor)} - ${reading}`, 
           y: 0.91 
         },
         xaxis: {
