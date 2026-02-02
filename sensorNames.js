@@ -4,21 +4,21 @@ export function sensorDisplayName(rawKey) {
   // any SHT31 or SHT31_# is matched here
   const sht = rawKey.match(/^SHT31(?:_(\d+))?$/);
   if (sht) {
-    return sht[1] ? `Temperature/Humidity_${sht[1]}` : "Temperature/Humidity"; // if no number, return base name
+    return sht[1] ? `Climate_${sht[1]}` : "Climate"; // if no number, return base name
   }
 
   // dictionary mapping for other sensors
   const map = {
-    TSL2591: "Solar Radiation",
-    MS5803_119: "Device Pressure",
-    MS5803_118: "Outside Pressure",
-    TippingBucket: "Rainfall",
-    Teros10: "Sail Moisture",
+    TSL2591: "Light",
+    MS5803_119: "Hydrostatic Pressure",
+    MS5803_118: "Atmospheric Pressure",
+    TippingBucket: "Rainfall Gauge",
+    Teros10: "Soil Moisture",
     A55311: "Magnetic Encoder",
     DFR_MultiGas_0: "Hydrogen Sulfide",
     DFR_MultiGas_1: "Sulfur Dioxide",
     DFR_MultiGas_2: "Ozone",
-    Sen55: "Air Quality",
+    Sen55: "Air Quality Index",
     T6793: "CO2",
   };
 
