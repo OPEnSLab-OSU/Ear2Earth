@@ -118,11 +118,11 @@
           <div class="toolbar-wrapper">
             <div class="row">
               <div class="group">
-                <button id="infoButton" class="icon-btn" title="Help"><i data-lucide="info"></i></button>
                 <button id="metadataButton" class="pill-btn">
                   <i data-lucide="codeXml"></i>
                   View Metadata
                 </button>
+                <button id="infoButton" class="icon-btn" title="Help"><i data-lucide="info"></i></button>
               </div>
             </div>
           </div>
@@ -178,17 +178,19 @@
                 <button id="redo" class="icon-btn-small" title="Redo"><i data-lucide="redo-2"></i></button>
               </div>
 
-              <!-- Share button -->
-              <button id="refresh" class="action-btn" title="Packet Refresh">
-                <i data-lucide="refresh-cw"></i>
-                <span class="action-label"></i>Packet Refresh</span>
-              </button>
-              <button id="toolButton" class="icon-btn" title="Help"><i data-lucide="info"></i></button>
+              <!-- Refresh button -->
+              <div class="group">
+                <button id="refresh" class="action-btn" title="Packet Refresh">
+                  <i data-lucide="refresh-cw"></i>
+                  <span class="action-label"></i>Packet Refresh</span>
+                </button>
+                <button id="toolButton" class="icon-btn" title="Help"><i data-lucide="info"></i></button>
+              </div>
             </div>
           </div>
         </section>
 
-        <!-- Clear Workspace & Info toolbar -->
+        <!-- Clear Workspace toolbar -->
         <section class="toolbar toolbar-actions" aria-label="Workspace Actions">
           <button class="toolbar-drag-handle" aria-label="Drag to reorder"></button>
           <div class="toolbar-wrapper">
@@ -198,7 +200,6 @@
                 <i data-lucide="Paintbrush"></i>
                   Clear Workspace
                 </button>
-                <button id="helpButton" class="icon-btn" title="Help"><i data-lucide="info"></i></button>
               </div>
             </div>
           </div>
