@@ -15,7 +15,8 @@ body {
   color: #333;
   margin: 0;
   padding: 0px;
-  font-family: "DM Sans", sans-serif;
+  /* random comment */
+  font-family: "Google Sans", sans-serif;
   font-optical-sizing: auto;
   font-style: light;
   font-weight: 700px !important;
@@ -25,7 +26,7 @@ header {
   color: #030303;
   padding: 15px 20px;
   font-size: 15px;
-  font-family: "DM Sans", sans-serif;
+  font-family: "Google Sans", sans-serif;
   font-optical-sizing: auto;
   font-style: light;
   font-weight: 100px !important;
@@ -61,7 +62,8 @@ main {
   grid-template-columns: 1fr auto auto auto auto auto;
   gap: 0px;
   align-items: stretch;
-  width: 100%;
+  max-width: 100% !important;
+  background-color: #fff !important;
 }
 
 .toolbar-wrapper {
@@ -77,13 +79,12 @@ main {
 
 .topmenu .toolbar {
   height: 50px;
-  background: #ffffff;
+  background: #ffffff !important;
   box-shadow: 0px 1px 0px rgba(0, 0, 0, 0.04) inset;
   padding: var(--pad) 14px;
   margin-bottom: 0px;
   display: flex;
   flex-direction: row;
-  align-items: stretch;
 }
 
 .topmenu .toolbar .row {
@@ -309,7 +310,7 @@ main {
 }
 
 .topmenu .pill-btn {
-  width: 80px; 
+  width: 95px; 
   height: 70px; 
   padding: 0px;
   border-radius: 2px;
@@ -335,6 +336,7 @@ main {
   align-self: flex-start;
   order: -1;
   margin-left: -22px;
+  margin-right: 5px !important;
 }
 
 #infoButton svg {
@@ -350,7 +352,7 @@ main {
 
 #metadataButton {
   padding-right: 0px; 
-  width: 93px;
+  min-width: 95px !important;
   height: 80px;
   position: relative;
   border-radius: 2px;
@@ -373,13 +375,25 @@ main {
   min-width: auto;
 }
 
+.toolbar-data {
+  background-color: #fff !important;
+  margin-left: 1px !important;
+  margin-right: -5px !important;
+  gap: 0 !important;
+}
+
+.toolbar.toolbar-data2 {
+  background-color: #fff !important;
+  margin-left: 5px !important;
+}
+
 /* For the collapse button */
 .collapse-btn {
   background: none;
   border: none;
   font-size: 14px;
   font-weight: 600;
-  font-family: "DM Sans", sans-serif;
+  font-family: "Google Sans", sans-serif;
   letter-spacing: -.5px;
   color: #333;
   cursor: pointer;
@@ -419,7 +433,6 @@ main {
   align-items: center;
   font-weight: 500;
   letter-spacing: -0.5px;
-  gap: 8px;
   padding: 0 12px;
   background: #ccc;
   border: 1px;
@@ -456,7 +469,7 @@ main {
 
 #masterVolume {
   accent-color: var(--primary);
-  width: 125px;
+  min-width: 140px;
 }
 
 /* Transport buttons */
@@ -585,8 +598,8 @@ main {
 
 /* Playback toolbar width */
 .toolbar-transport {
-  min-width: auto;
   justify-content: center;
+  margin-right: -15px !important;
 }
 
 /* Transport group spacing */
@@ -608,7 +621,6 @@ main {
   grid-template-rows: 1fr 1fr; /* 2 rows */
   gap: 3px;
   height: 70px;
-  width: 50px;
 }
 
 .icon-btn-small {
@@ -654,7 +666,7 @@ main {
   cursor: pointer;
   font-size: 12px;
   height: 70px;
-  width: 90px;
+  width: 95px;
   transition: all 0.2s ease;
   white-space: nowrap;
   flex-direction: column;
@@ -662,17 +674,41 @@ main {
   text-align: center;
 }
 
-.action-btn:hover {
+.action-btn2 {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0px;
+  background: #ccc;
+  border: 1px;
+  border-radius: 2px;
+  cursor: pointer;
+  font-size: 12px;
+  height: 70px;
+  width: 95px;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  flex-direction: column;
+  justify-content: center;
+  text-align: center;
+  margin-left: -10px !important;
+}
+
+
+.action-btn, 
+.action-btn2 :hover {
   background: #999;
   border-color: #999;
 }
 
-.action-btn:active {
+.action-btn, 
+.action-btn2 :active {
   background: #e0e0e0;
   transform: scale(0.98);
 }
 
-.action-btn svg {
+.action-btn, .action-btn2
+svg {
   width: 18px;
   height: 18px;  
   flex-shrink: 0;
@@ -726,10 +762,28 @@ main {
   margin: 0 auto;
   background-color: #ccc;
   padding: 8px;
-  left: 116px;  /* position to the right of the button */
+  left: 121px;  /* position to the right of the button */
 }
 
-.icon-btn-round:hover {
+.icon-btn2 {
+  width: 12px;
+  height: 12px;
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto;
+  background-color: #ccc;
+  padding: 8px;
+  left: 110px;  /* position to the right of the button */
+}
+
+.icon-btn-round, 
+.icon-btn2 :hover {
   background: #999;
   border-color: #999;
 }
@@ -760,7 +814,7 @@ main {
 
 /* Actions toolbar */
 .toolbar-actions {
-  min-width: auto;
+  max-width: 100px;
 }
 
 /* Toolbar drag handle styling */
@@ -784,14 +838,12 @@ main {
   align-items: center;
   justify-content: center;
   z-index: 10;
-  margin-left: 5px;
-  margin-right: 5px !important;
 }
 
 .toolbar-drag-handle::before {
   content: "⋮⋮";
   letter-spacing: -2px;
-  margin-right: 8px !important;
+  margin-right: px !important;
 }
 
 .toolbar-drag-handle:hover {
@@ -805,6 +857,7 @@ main {
 /* Add left padding to toolbar-wrapper to make room for handle */
 .toolbar .toolbar-wrapper {
   padding-left: 10px;
+  margin-right: 0px !important;
 }
 
 /* Dragging states for toolbars */
@@ -893,7 +946,7 @@ main {
   background-color: #e0e0e0;
   padding: 15px;
   border-radius: 5px;
-  font-family: "DM Sans", sans-serif;
+  font-family: "Google Sans", sans-serif;
 }
 
 /* Screen Reader utility (like blind or low-vision users) */
