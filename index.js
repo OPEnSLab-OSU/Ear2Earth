@@ -1050,6 +1050,29 @@ function initializeModuleSelects(module, data) {
     // Get the keys of the first object in the data array
     let keys = Object.keys(data[0]);
 
+    // Sensor order
+    const sensorOrder = ['SHT31', 'TSL2591', 'MS5803_118', 'MS5803_119', 'TippingBucket', 'Teros10', 'A55311', 'DFR_MultiGas_0', 'DFR_MultiGas_1', 'DFR_MultiGas_2', 'T6793', 'Analog']; 
+
+    // Sort keys
+    keys.sort((a, b) => {
+      const indexA = sensorOrder.indexOf(a);
+      const indexB = sensorOrder.indexOf(b);
+      
+      // If both are in the order array, sort by their position
+      if (indexA !== -1 && indexB !== -1) {
+        return indexA - indexB;
+      }
+      
+      // If only A is in the array, A comes first
+      if (indexA !== -1) return -1;
+      
+      // If only B is in the array, B comes first
+      if (indexB !== -1) return 1;
+      
+      // If neither is in the array, sort alphabetically
+      return a.localeCompare(b);
+    });
+
     // Add each key as an option to the sensors select element
     keys.forEach(key => {
       if (key === '_id' || key === 'Timestamp' || key === 'WiFi') return;

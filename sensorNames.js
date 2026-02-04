@@ -20,6 +20,7 @@ export function sensorDisplayName(rawKey) {
     DFR_MultiGas_2: "Ozone",
     Sen55: "Air Quality Index",
     T6793: "CO2",
+    Analog: "Battery Voltage"
   };
 
   return map[rawKey] ?? rawKey; // backwards compatible fallback

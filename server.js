@@ -88,7 +88,7 @@ app.get("/data", async (req, res) => {
 
       if (x) {
           // Get the last x documents from the collection
-          packets = (await collection.find({}, { projection: { Analog: 0, Packet: 0 }}).sort({"Timestamp.time_local": -1}).limit(x).toArray()).reverse();
+          packets = (await collection.find({}, { projection: { Packet: 0 }}).sort({"Timestamp.time_local": -1}).limit(x).toArray()).reverse();
       } else if (startTime && endTime) {
           const start = new Date(startTime);
           const end = new Date(endTime);
@@ -112,7 +112,6 @@ app.get("/data", async (req, res) => {
               {
                 $project: {
                   _t: 0,
-                  Analog: 0,
                   Packet: 0,
                   WiFi: 0,
                 },
