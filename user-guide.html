@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <link href="style.css" rel="stylesheet" />
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Rubik:wght@300&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Sigmar+One&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Dosis:wght@200..800&family=Sigmar+One&display=swap"
+      rel="stylesheet"
+    />
+
+    <script
+      src="https://cdn.plot.ly/plotly-2.30.1.min.js"
+      charset="utf-8"
+    ></script>
+
+    <!--<script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.11.1/addons/p5.sound.min.js"></script>-->
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.45/Tone.js"></script>
+  </head>
+  <body>
+    <header>
+      <title id="title">Ear2Earth</title>
+      <h2>Ear2Earth, Environmental Sensor Data Sonification Platform</h2>
+    </header>
+
+    <main>
+        <div id="user-guide-page">
+            <div id="top-heading">
+                <h1 id="user-guide-title">Ear2Earth User Guide</h1>
+            </div>
+
+            <div id="intro-contents">
+                <div id="introduction">
+                    <h3>Introduction</h3>
+                    <p>
+                        This is a walkthrough to introduce users to the more complex features of Ear2Earth.
+                        This guide will introduce users to features such as sound module selection, metadata,
+                        sensor selection, and much more. 
+                    </p>
+                </div>
+                <div id="table-of-contents">
+                    <h3>Table of Contents</h3>
+                    <ol>
+                        <li>Getting Started</li>
+                        <li>Selecting Presets</li>
+                        <li>Retrieving Metadata</li>
+                        <li>Interpreting Tracks</li>
+                        <li>Setting Playback Options</li>
+                        <li>Selecting Sensors and Readings</li>
+                        <li>Sound Module Options</li>
+                        <li>Troubleshooting</li>
+                        <li>FAQs</li>
+                    </ol>
+                </div>
+            </div>
+            <div id="getting-started">
+                <h3>1. Getting Started</h3>
+                <h4>1.1 Data Selection Menu</h4>
+                <p>
+                    The data selection menu is represented by all options within the top menu's left area.
+                    Users can select database presets, choose between packet options, retrieve data, and view
+                    metadata.
+                </p>
+                <img src="user_guide_images\image1.1.1.png" alt="highlighted data selection menu" class="user-guide-img"/>
+                <h4>1.2 Playback Menu</h4>
+                <p>
+                    The playback menu is represented by all options within the top menu's right area. Users 
+                    can play tracks, pause/stop tracks, and modify the BPM.
+                </p>
+                <img src="user_guide_images\image1.2.1.png" alt="highlighted playback menu" class="user-guide-img" />
+                <h4>1.3 Sound Module Selection</h4>
+                <h4>1.4 Tracks</h4>
+            </div>
+            <div id="selecting-data">
+                <h3>2. Selecting Data</h3>
+                <h4>2.1 Selecting Presets</h4>
+                <h4>2.2 Selecting Most Recent Packets</h4>
+                <h4>2.3 Selecting a Time Range</h4>
+                <h4>2.4 Choosing the Number of Packets</h4>
+            </div>
+            <div id="retrieving-metadata">
+                <h3>3. Retrieving Metadata</h3>
+                <h4>3.1 Fetching Metadata</h4>
+                <h4>3.2 Interpreting Metadata</h4>
+            </div>
+            <div id="interpreting-tracks">
+                <h3>4. Interpreting Tracks</h3>
+                <h4>4.1 Understanding the Axes</h4>
+                <h4>4.2 Connecting the Data with the Sound</h4>
+            </div>
+            <div id="setting-playback">
+                <h3>5. Setting Playback Options</h3>
+                <h4>5.1 Playing and Pausing Tracks</h4>
+                <h4>5.2 Modifying the BPM</h4>
+            </div>
+            <div id="selecting-sensors">
+                <h3>6. Selecting Sensors and Readings</h3>
+                <h4>6.1 Understanding Sensors and Readings</h4>
+                <h4>6.2 Connecting Different Tracks</h4>
+            </div>
+            <div id="selecting-presets">
+                <h3>7. Sound Module Options</h3>
+                <h4>7.1 Selecting the Tonic</h4>
+                <h4>7.2 Selecting the Scale</h4>
+                <h4>7.3 Selecting the Tessitura</h4>
+                <h4>7.4 Selecting the Sound Type</h4>
+            </div>
+            <div id="selecting-presets">
+                <h3>8. Troubleshooting</h3>
+                <h4>8.1 Data Retrieval Failure</h4>
+                <h4>8.2 Clearing the Workspace</h4>
+            </div>
+            <div id="selecting-presets">
+                <h3>9. FAQs</h3>
+                <h4>TBA</h4>
+            </div>
+        </div>
+
+
+    </main>
+
+    <script type="module" src="index.js"></script>
+  </body>
+</html>

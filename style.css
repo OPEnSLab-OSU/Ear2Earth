@@ -549,3 +549,49 @@ deviceElements {
 #metadataSection > h3 {
   margin-right: 10px;
 }
+
+#user-guide-page {
+  display: flex;
+  justify-self: center;
+  flex-direction: column;
+  max-width: 1250px;
+  
+  background-color: #ccc;
+  padding: 0 10px;
+
+  border-radius: 8px;
+}
+
+#user-guide-page h3 {
+  color: var(--primary-hover);
+
+  font-size: 24px;
+}
+
+#user-guide-page h4 {
+  color: var(--primary-hover);
+  font-size: 20px;
+}
+
+#user-guide-page p, #user-guide-page ol {
+  font-size: 16px;
+  font-weight: bold;
+  margin-bottom: 25px;
+}
+
+#top-heading {
+  display: flex;
+  justify-content: center;
+}
+
+#user-guide-title {
+  font-size: 36px;
+  margin: 50px 0;
+}
+
+.user-guide-img {
+  display: flex;
+  width: 67%;
+
+  justify-self: center;
+}
