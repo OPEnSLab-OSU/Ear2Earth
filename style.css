@@ -31,7 +31,6 @@ header {
   font-optical-sizing: auto;
   font-style: light;
   font-weight: 100px !important;
-  letter-spacing: -.5px;
   text-align: left;
   display: flex;
   justify-content: space-between;
@@ -393,10 +392,9 @@ main {
 .collapse-btn {
   background: none;
   border: none;
-  font-size: 12px;
+  font-size: 12.8px;
   font-weight: 600;
   font-family: "Google Sans", sans-serif;
-  letter-spacing: -.5px;
   color: #333;
   cursor: pointer;
   text-align: left;
@@ -434,7 +432,6 @@ main {
   display: flex;
   align-items: center;
   font-weight: 500;
-  letter-spacing: -0.5px;
   padding: 0 12px;
   background: #ccc;
   border: 1px;
@@ -900,7 +897,7 @@ svg {
 }
 
 .volumeContainer label {
-  font-size: 12.5px;
+  font-size: 12.8px;
   font-weight: 600;
 }
 
@@ -1038,7 +1035,7 @@ svg {
 
 .sensorsContainer label,
 .readingsContainer label {
-  font-size: 12.5px;
+  font-size: 12.8px;
   margin: 0;
 }
 
@@ -1159,7 +1156,7 @@ svg {
   color: #333; 
   cursor: pointer;
   font-family: "Google Sans", sans-serif;
-  font-size: 12px;
+  font-size: 12.8px;
   font-weight: 600;
   flex-shrink: 0;
   border: none;
