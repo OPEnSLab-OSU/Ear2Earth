@@ -7,6 +7,7 @@
   --primary: #00b4d8;
   --primary-hover: #0077b6;
   --muted: #666;
+  --standard-blue: #036dee;
 }
 
 /* Base */
@@ -172,7 +173,7 @@ main {
   font-size: 12px;
   background: #ccc;
   border: 1px solid var(--border);
-  border-radius: 2px;
+  border-radius: 3px;
   transition: all 0.2s ease;
   width: 80px; 
   height: 70px;
@@ -216,7 +217,7 @@ main {
   width: 25px;
   height: 18px;
   padding: 2px 2px;
-  border-radius: 2px;
+  border-radius: 3px;
   margin-left: 2px;
 }
 
@@ -225,7 +226,7 @@ main {
   height: 18px;
   padding: 2px 2px;
   font-size: 13px !important;
-  border-radius: 2px;
+  border-radius: 3px;
   margin-left: 5px;
   align-items: center !important;
 }
@@ -254,7 +255,7 @@ main {
   font-size: 12px;
   width: 122px;
   white-space: nowrap;
-  border-radius: 2px;
+  border-radius: 3px;
 }
 
 #numpacketsInput {
@@ -294,10 +295,10 @@ main {
   height: 70px;
   padding: 5px;
   font-size: 12px;
-  background: var(--primary);
+  background: var(--standard-blue);
   color: #fff;
   border: none;
-  border-radius: 2px;
+  border-radius: 3px;
   cursor: pointer;
   margin-left: -8px;
   text-wrap: wrap;
@@ -313,7 +314,7 @@ main {
   width: 95px; 
   height: 70px; 
   padding: 0px;
-  border-radius: 2px;
+  border-radius: 3px;
   border: 1px;
   background: #ccc;
   cursor: pointer;
@@ -324,7 +325,7 @@ main {
   width: 8px;
   height: 8px;
   border: 0px;
-  border-radius: 2px;
+  border-radius: 3px;
   cursor: pointer;
   position: relative;
   top: 0px;       /* adjust as needed */
@@ -355,7 +356,7 @@ main {
   min-width: 95px !important;
   height: 80px;
   position: relative;
-  border-radius: 2px;
+  border-radius: 3px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -407,7 +408,7 @@ main {
 }
 
 .arrow-icon {
-  color: #036dee; /* Change this to your preferred triangle color */
+  color: var(--standard-blue); /* Change this to your preferred triangle color */
   margin-left: 5px;
   font-size: 14px; /* You can also make the triangle slightly smaller/larger */
   vertical-align: middle;
@@ -436,13 +437,14 @@ main {
   padding: 0 12px;
   background: #ccc;
   border: 1px;
-  border-radius: 2px;
+  border-radius: 3px;
   height: 70px;
 }
 
 .control-group label {
   white-space: nowrap;
   color: #333;
+  font-size: 12px;
 }
 
 .control-group input[type="range"] {
@@ -463,20 +465,26 @@ main {
 }
 
 .control-group:has(#masterVolume) label {
-  line-height: 1.2;
+  font-weight: 470;
   color: #000000;
 }
 
 #masterVolume {
-  accent-color: var(--primary);
-  min-width: 140px;
+  accent-color: var(--standard-blue);
+  min-width: 135px;
+  font-weight: 470 !important;
+}
+
+#masVolLabel {
+  font-size: 13px;
+  font-weight: 470;
 }
 
 /* Transport buttons */
 .square-btn {
   width: 60px; /* Changed from 46px */
   height: 70px; /* Changed from 46px */
-  border-radius: 2px;
+  border-radius: 3px;
   cursor: pointer;
   transition: filter 0.2s ease;
   background-color: #ccc; 
@@ -485,11 +493,12 @@ main {
   align-items: center;
   justify-content: center;
   outline: none;  
-  border-radius: 2px;
+  border-radius: 3px;
   margin-right: 1px;
 }
 
 .square-btn svg {
+  stroke-width: 1.52px;
   width: 30px;
   height: 30px;  
   flex-shrink: 0;
@@ -509,35 +518,35 @@ main {
   height: 70px; 
   background: #ccc;
   border: 1px;
-  border-radius: 2px;
-  width: 150px; 
+  border-radius: 3px;
+  min-width: 160px; 
   position: relative;
   
 }
 
 #bpmLabel {
   font-size: 13px;
-  font-weight: 500;
+  font-weight: 470;
   margin: 0;
   display: inline-block;
   margin-left: -38px;
   color: #000000;
-  margin-top: 14px;
+  margin-top: 13px;
 }
 
 #bpmText {
   font-size: 13px;
-  font-weight: 500;
+  font-weight: 470;
   min-width: 30px;
   text-align: center;
   color: #000000;
   position: absolute;
-  margin-top: 14px;
-  right: 45px;
+  margin-top: 13px;
+  margin-left: 17px;
 }
 
 #bpm {
-  accent-color: var(--primary);
+  accent-color: var(--standard-blue);
   width: 130px;
   height: 6px;
 }
@@ -560,7 +569,7 @@ main {
   width: 100%;
   height: 100%;
   background: #ccc;
-  border-radius: 2px;
+  border-radius: 3px;
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -609,7 +618,7 @@ main {
   align-items: center;
   padding: 0;
   border: none;
-  border-radius: 2px;
+  border-radius: 3px;
   height: 70px; /* Match button height */
   margin-left: -10px; /* Pull closer to left */
 }
@@ -628,7 +637,7 @@ main {
   height: 100%;
   background: #ccc;
   border: 1px;
-  border-radius: 2px;
+  border-radius: 3px;
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -662,7 +671,7 @@ main {
   padding: 0px;
   background: #ccc;
   border: 1px;
-  border-radius: 2px;
+  border-radius: 3px;
   cursor: pointer;
   font-size: 12px;
   height: 70px;
@@ -681,7 +690,7 @@ main {
   padding: 0px;
   background: #ccc;
   border: 1px;
-  border-radius: 2px;
+  border-radius: 3px;
   cursor: pointer;
   font-size: 12px;
   height: 70px;
@@ -719,7 +728,7 @@ svg {
   padding: 4px 4px;
   background: #ccc;
   border: 1px;
-  border-radius: 2px;
+  border-radius: 3px;
   cursor: pointer;
   font-size: 12px;
   color: #000000;
@@ -752,7 +761,7 @@ svg {
   width: 12px;
   height: 12px;
   border: 1px solid var(--border);
-  border-radius: 2px;
+  border-radius: 3px;
   cursor: pointer;
   transition: all 0.2s ease;
   display: flex;
@@ -769,7 +778,7 @@ svg {
   width: 12px;
   height: 12px;
   border: 1px solid var(--border);
-  border-radius: 2px;
+  border-radius: 3px;
   cursor: pointer;
   transition: all 0.2s ease;
   display: flex;
@@ -792,7 +801,7 @@ svg {
   width: 8px;
   height: 8px;
   border: 0px;
-  border-radius: 2px;
+  border-radius: 3px;
   cursor: pointer;
   position: relative;
   z-index: 10;
@@ -824,7 +833,7 @@ svg {
 
 .toolbar-drag-handle {
   position: absolute;
-  left: 2px;
+  left: 1px;
   top: 50%;
   transform: translateY(-50%);
   width: 20px;
@@ -1249,7 +1258,7 @@ svg {
   background-color: #00b4d8;
   color: #fff;
   border: 1px solid #00b4d8;
-  border-radius: 2px;
+  border-radius: 3px;
 }
 
 /* ==== POPUP for date range selection ==== */
@@ -1310,5 +1319,5 @@ svg {
   background-color: #00b4d8;
   color: #fff;
   border: 1px solid #00b4d8;
-  border-radius: 2px;
+  border-radius: 3px;
 }
