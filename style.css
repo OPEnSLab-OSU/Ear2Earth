@@ -105,7 +105,7 @@ main {
 
 .topmenu .muted {
   color: var(--muted);
-  font-size: 13px;
+  font-size: 12px;
   margin-left: 6px;
 }
 
@@ -118,7 +118,7 @@ main {
   display: inline-flex;
   width: auto;
   margin: 0;
-  font-size: 14px;
+  font-size: 12px;
   align-items: center;
   text-align: center;
 }
@@ -134,7 +134,7 @@ main {
   color: black;
   cursor: pointer;
   text-align: center;
-  font-size: 13px;
+  font-size: 12px;
   border: none;
   margin-left: 0px;
   display: flex;
@@ -202,7 +202,7 @@ main {
 #dataOptions label[for="timeRange"], label[for="lastXPackets"] {
   width: auto;
   min-width: 100px;
-  font-size: 13px;
+  font-size: 12px;
 }
 
 /* Size the icons */
@@ -218,7 +218,7 @@ main {
   height: 18px;
   padding: 2px 2px;
   border-radius: 3px;
-  margin-left: 2px;
+  margin-left: 6px;
 }
 
 .topmenu #prescaler {
@@ -227,16 +227,15 @@ main {
   padding: 2px 2px;
   font-size: 13px !important;
   border-radius: 3px;
-  margin-left: 5px;
+  margin-left: 1px;
   align-items: center !important;
 }
 
 #numpacketsInput label {
   margin-bottom: 0px;
-  margin-left: 5px;
+  margin-left: 6px;
   font-size: 12px;
   white-space: nowrap;
-  font-size: 13px !important;
 }
 
 /* Create a vertical sub-group */
@@ -252,15 +251,16 @@ main {
   border-radius: 4px;
   height: 70px; /* Match button height */
   color: black;
-  font-size: 12px;
-  width: 122px;
+  font-size: 11px !important;
+  width: 115px;
   white-space: nowrap;
   border-radius: 3px;
+  margin-left: 6px;
 }
 
 #numpacketsInput {
   margin: 0px; /* Pull them closer together */
-  font-size: 12px;
+  font-size: 11px !important;
   text-align: center !important;
 }
 
@@ -270,6 +270,7 @@ main {
   border-radius: 1px;
   cursor: pointer;
   text-align: center !important;
+  margin-left: 1px !important;
 }
 
 #skipPackets {
@@ -277,17 +278,17 @@ main {
 }
 
 #skipPackets .muted {
-  font-size: 13px !important;
+  font-size: 12px !important;
   white-space: nowrap;
   color: #000000;
-  margin-left: 5px;
+  margin-left: 6px;
 }
 
 .packet-inputs-group {
   display: flex;
   flex-direction: column;
   gap: 3px;
-  margin-left: -8px; /* Pull closer to left */
+  margin-left: -9px; /* Pull closer to left */
 }
 
 .topmenu .primary-btn {
@@ -392,7 +393,7 @@ main {
 .collapse-btn {
   background: none;
   border: none;
-  font-size: 14px;
+  font-size: 12px;
   font-weight: 600;
   font-family: "Google Sans", sans-serif;
   letter-spacing: -.5px;
@@ -410,7 +411,7 @@ main {
 .arrow-icon {
   color: var(--standard-blue); /* Change this to your preferred triangle color */
   margin-left: 5px;
-  font-size: 14px; /* You can also make the triangle slightly smaller/larger */
+  font-size: 13px; /* You can also make the triangle slightly smaller/larger */
   vertical-align: middle;
 }
 
@@ -525,7 +526,7 @@ main {
 }
 
 #bpmLabel {
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 470;
   margin: 0;
   display: inline-block;
@@ -535,7 +536,7 @@ main {
 }
 
 #bpmText {
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 470;
   min-width: 30px;
   text-align: center;
@@ -899,7 +900,7 @@ svg {
 }
 
 .volumeContainer label {
-  font-size: 14px;
+  font-size: 12.5px;
   font-weight: 600;
 }
 
@@ -913,7 +914,6 @@ svg {
   color: black;
   border: none;
   cursor: pointer;
-  font-weight: bold;
   
   /* Resetting flex behavior */
   display: flex;
@@ -956,6 +956,7 @@ svg {
   padding: 15px;
   border-radius: 5px;
   font-family: "Google Sans", sans-serif;
+  font-weight: 600;
 }
 
 /* Screen Reader utility (like blind or low-vision users) */
@@ -1037,8 +1038,7 @@ svg {
 
 .sensorsContainer label,
 .readingsContainer label {
-  font-size: 14px;
-  font-weight: 600;
+  font-size: 12.5px;
   margin: 0;
 }
 
@@ -1093,7 +1093,7 @@ svg {
 }
 
 .moduleBottomOptions label {
-  font-size: 13px;
+  font-size: 12px;
   font-weight: bold;
   margin-top: 10px;
   margin-bottom: 5px;
@@ -1158,8 +1158,9 @@ svg {
   background-color: #e0e0e0;
   color: #333; 
   cursor: pointer;
-  font-size: 14px;
-  font-weight: bold;
+  font-family: "Google Sans", sans-serif;
+  font-size: 12px;
+  font-weight: 600;
   flex-shrink: 0;
   border: none;
   border-radius: 5px;
@@ -1238,7 +1239,7 @@ svg {
   display: block;
   margin-bottom: 8px;
   font-weight: bold;
-  font-size: 14px;
+  font-size: 13px;
 }
 
 .modal-content select {
@@ -1246,7 +1247,7 @@ svg {
   padding: 10px;
   border: 1px solid var(--border);
   border-radius: 4px;
-  font-size: 14px;
+  font-size: 13px;
   background-color: white;
 }
 
@@ -1278,14 +1279,14 @@ svg {
 
 .form-group label {
   font-weight: 500;
-  font-size: 14px;
+  font-size: 13px;
 }
 
 .form-group input {
   padding: 8px;
   border: 1px solid #ddd;
   border-radius: 4px;
-  font-size: 14px;
+  font-size: 13px;
   width: 96%;
 }
 
