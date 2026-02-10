@@ -52,163 +52,175 @@
     </header>
 
     <main>
-      <!-- === Top Menu (Dataset + Playback) ================================= -->
-      <div class="topmenu">
-        <!-- Left: Dataset toolbar -->
-        <section class="toolbar toolbar-data" aria-label="Dataset & retrieval">
-          <button class="toolbar-drag-handle" aria-label="Drag to reorder"></button>
-          <div class="toolbar-wrapper">
-            <div class="row">
-              <!-- Preset -->
-              <div class="group">
-                <button id="openPresetModal" class="primary-btn">
-                  <i data-lucide="folder-search"></i>
-                  Select a Preset
-                </button>
-              </div>
-
-              <!-- Packet option radios -->
-              <div class="group" id="dataOptions">
-                <label for="lastXPackets">
-                  <input
-                    type="radio"
-                    id="lastXPackets"
-                    name="packetOption"
-                    value="lastXPackets"
-                    checked
-                  />
-                  <i data-lucide="package"></i>
-                  Last Packets
-                </label>
-                <label for="timeRange" id="dateRangeLabel">
-                  <input
-                    type="radio"
-                    id="timeRange"
-                    name="packetOption"
-                    value="timeRange"
-                  />
-                  <i data-lucide="calendar"></i>
-                  <span id="dateRangeText">Date Range</span>
-                </label>
-              </div>
-
-              <div class="packet-inputs-group">
-                <!-- # Packets -->
-                <div class="group" id="numpacketsInput">
-                  <label for="numpackets"># of packets:</label>
-                  <input type="text" id="numpackets" name="numpackets" value="16" />
-                </div>
-
-                <!-- Prescaler -->
-                <div class="group" id="skipPackets">
-                  <span class="muted">Use of every: </span>
-                  <input type="text" id="prescaler" name="prescaler" value="1"/>
-                </div>
-              </div>
-
-              <!-- Hidden inputs for backend -->
-              <input type="datetime-local" id="startTime" style="display: none;" />
-              <input type="datetime-local" id="endTime" style="display: none;" />
-
-              <!-- Retrieve -->
-              <button id="retrieve" class="primary-btn">Retrieve Data</button>
+    <!-- ========================================
+        TOP MENU - Main Control Toolbar
+        Contains all primary controls for data retrieval, playback, and workspace management
+    ========================================= -->
+    <div class="topmenu">
+      <section class="toolbar toolbar-main" aria-label="Main Controls">
+        <div class="toolbar-wrapper">
+          <div class="row">
+            
+            <!-- ========== DATA SOURCE SECTION ========== -->
+            
+            <!-- Preset Selection Button -->
+            <!-- Opens modal to select predefined data configurations -->
+            <div class="group">
+              <button id="openPresetModal" class="primary-btn">
+                <i data-lucide="folder-search"></i>
+                Select a Preset
+              </button>
             </div>
-          </div>
-        </section>
 
-        <!-- Metadata toolbar -->
-        <section class="toolbar toolbar-metadata" aria-label="Metadata">
-          <button class="toolbar-drag-handle" aria-label="Drag to reorder"></button>
-          <div class="toolbar-wrapper">
-            <div class="row">
-              <div class="group">
-                <button id="metadataButton" class="pill-btn">
-                  <i data-lucide="codeXml"></i>
-                  View Metadata
-                </button>
-                <button id="toolButton" class="icon-btn" title="Help"><i data-lucide="info"></i></button>
+            <!-- Data Retrieval Options -->
+            <!-- Radio buttons to choose between last N packets or date range -->
+            <div class="group" id="dataOptions">
+              <!-- Option 1: Get last X packets -->
+              <label for="lastXPackets">
+                <input type="radio" id="lastXPackets" name="packetOption" value="lastXPackets" checked />
+                <i data-lucide="package"></i>
+                Last Packets
+              </label>
+              <!-- Option 2: Get packets within date range -->
+              <label for="timeRange" id="dateRangeLabel">
+                <input type="radio" id="timeRange" name="packetOption" value="timeRange" />
+                <i data-lucide="calendar"></i>
+                <span id="dateRangeText">Date Range</span>
+              </label>
+            </div>
+
+            <!-- Packet Configuration Inputs -->
+            <!-- Stacked inputs for number of packets and prescaler -->
+            <div class="packet-inputs-group">
+              <!-- Number of packets to retrieve -->
+              <div class="group" id="numpacketsInput">
+                <label for="numpackets"># of packets:</label>
+                <input type="text" id="numpackets" name="numpackets" value="16" />
+              </div>
+              <!-- Prescaler: use every Nth packet -->
+              <div class="group" id="skipPackets">
+                <span class="muted">Use of every: </span>
+                <input type="text" id="prescaler" name="prescaler" value="1"/>
               </div>
             </div>
-          </div>
-        </section>
 
-        <!-- Right: Playback toolbar -->
-        <section class="toolbar toolbar-transport" aria-label="Playback">
-          <button class="toolbar-drag-handle" aria-label="Drag to reorder"></button>
-          <div class="toolbar-wrapper">
-            <div class="row">
-              <!-- Master Volume -->
-              <div class="control-group">
-                <label id="masVolLabel" for="masterVolume">Master Volume</label>
-                <input type="range" id="masterVolume" name="masterVolume" min="-60" max="0" />
-              </div>
+            <!-- Hidden date/time inputs for date range mode -->
+            <!-- These are populated when user selects "Date Range" option -->
+            <input type="datetime-local" id="startTime" style="display: none;" />
+            <input type="datetime-local" id="endTime" style="display: none;" />
 
-              <div class="transport-group">
-                <button id="play" class="square-btn" title="Play"><i data-lucide="play"></i></button>
-                <button id="stop" class="square-btn" title="Stop"><i data-lucide="circle-stop"></i></button>
-              </div>
+            <!-- Data Retrieval Button -->
+            <!-- Triggers data fetch based on selected options -->
+            <button id="retrieve" class="primary-btn">Retrieve Data</button>
 
-              <div id="bpmContainer" class="transport-group">
-                <label id="bpmLabel" for="bpm">BPM</label>
-                <input type="range" id="bpm" name="bpm" min="50" max="200" />
-                <div id="bpmText">125</div>
-              </div>
-
-              <!-- Speed options (IDs required by index.js) -->
-              <div id="speedOptions" class="multi-function-grid">
-                <input type="radio" id="speed1x" name="speed" value="1" checked />
-                <label for="speed1x">1x</label>
-                <input type="radio" id="speed2x" name="speed" value="2" />
-                <label for="speed2x">2x</label>
-                <input type="radio" id="speed4x" name="speed" value="4" />
-                <label for="speed4x">4x</label>
-                <input type="radio" id="speed8x" name="speed" value="8" />
-                <label for="speed8x">8x</label>
-              </div>
+            <!-- ========== METADATA SECTION ========== -->
+            
+            <!-- Metadata View Button -->
+            <!-- Opens modal to display packet metadata information -->
+            <div class="group">
+              <button id="metadataButton" class="pill-btn">
+                <i data-lucide="codeXml"></i>
+                View Metadata
+              </button>
+              <!-- Help/Info button for metadata -->
+              <button id="toolButton" class="icon-btn" title="Help">
+                <i data-lucide="info"></i>
+              </button>
             </div>
-          </div>
-        </section>
 
-        <!-- Share/download/undo/redo & Packet Refresh toolbar -->
-        <section class="toolbar toolbar-controls" aria-label="Multi Functional Selections">
-          <button class="toolbar-drag-handle" aria-label="Drag to reorder"></button>
-          <div class="toolbar-wrapper">
-            <div class="row">
-              <!-- share/download/undo/redo controls -->
-              <div class="multi-function-grid">
-                <button id="share" class="icon-btn-small" title="Share"><i data-lucide="share-2"></i></button>
-                <button id="download" class="icon-btn-small" title="Download"><i data-lucide="file-down"></i></button>
-                <button id="undo" class="icon-btn-small" title="Undo"><i data-lucide="undo-2"></i></button>
-                <button id="redo" class="icon-btn-small" title="Redo"><i data-lucide="redo-2"></i></button>
-              </div>
-
-              <!-- Refresh button -->
-              <div class="group">
-                <button id="refresh" class="action-btn2" title="Packet Refresh">
-                  <i data-lucide="refresh-cw"></i>
-                  <span class="action-label"></i>Packet Refresh</span>
-                </button>
-                <button id="toolButton" class="icon-btn2" title="Help"><i data-lucide="info"></i></button>
-              </div>
+            <!-- ========== PLAYBACK CONTROLS SECTION ========== -->
+            
+            <!-- Master Volume Control -->
+            <!-- Global volume slider for all audio output -->
+            <div class="control-group">
+              <label id="masVolLabel" for="masterVolume">Master Volume</label>
+              <input type="range" id="masterVolume" name="masterVolume" min="-60" max="0" />
             </div>
-          </div>
-        </section>
 
-        <!-- Clear Workspace toolbar -->
-        <section class="toolbar toolbar-actions" aria-label="Workspace Actions">
-          <button class="toolbar-drag-handle" aria-label="Drag to reorder"></button>
-          <div class="toolbar-wrapper">
-            <div class="row">
-              <div class="group">
-                <button id="clearWorkspace" class="clear-btn" title="Clear Workspace">
+            <!-- Transport Controls (Play/Stop) -->
+            <!-- Basic playback controls for audio -->
+            <div class="transport-group">
+              <!-- Play button - starts audio playback -->
+              <button id="play" class="square-btn" title="Play">
+                <i data-lucide="play"></i>
+              </button>
+              <!-- Stop button - stops audio playback -->
+              <button id="stop" class="square-btn" title="Stop">
+                <i data-lucide="square"></i>
+              </button>
+            </div>
+
+            <!-- BPM (Beats Per Minute) Control -->
+            <!-- Adjusts tempo of audio playback -->
+            <div id="bpmContainer" class="transport-group">
+              <label id="bpmLabel" for="bpm">BPM</label>
+              <input type="range" id="bpm" name="bpm" min="50" max="200" />
+              <!-- Display current BPM value -->
+              <div id="bpmText">125</div>
+            </div>
+
+            <!-- Playback Speed Options -->
+            <!-- Radio buttons for 1x, 2x, 4x, 8x playback speed -->
+            <div id="speedOptions" class="multi-function-grid">
+              <input type="radio" id="speed1x" name="speed" value="1" checked />
+              <label for="speed1x">1x</label>
+              <input type="radio" id="speed2x" name="speed" value="2" />
+              <label for="speed2x">2x</label>
+              <input type="radio" id="speed4x" name="speed" value="4" />
+              <label for="speed4x">4x</label>
+              <input type="radio" id="speed8x" name="speed" value="8" />
+              <label for="speed8x">8x</label>
+            </div>
+
+            <!-- ========== WORKSPACE TOOLS SECTION ========== -->
+            
+            <!-- Multi-Function Tool Grid -->
+            <!-- 2x2 grid for share, download, undo, redo actions -->
+            <div class="multi-function-grid">
+              <!-- Share workspace -->
+              <button id="share" class="icon-btn-small" title="Share">
+                <i data-lucide="share-2"></i>
+              </button>
+              <!-- Download workspace data -->
+              <button id="download" class="icon-btn-small" title="Download">
+                <i data-lucide="file-down"></i>
+              </button>
+              <!-- Undo last action -->
+              <button id="undo" class="icon-btn-small" title="Undo">
+                <i data-lucide="undo-2"></i>
+              </button>
+              <!-- Redo last undone action -->
+              <button id="redo" class="icon-btn-small" title="Redo">
+                <i data-lucide="redo-2"></i>
+              </button>
+            </div>
+
+            <!-- Packet Refresh Button -->
+            <!-- Refreshes/reloads packet data -->
+            <div class="group">
+              <button id="refresh" class="action-btn" title="Packet Refresh">
+                <i data-lucide="refresh-cw"></i>
+                <span class="action-label">Packet Refresh</span>
+              </button>
+              <!-- Help/Info button for refresh -->
+              <button id="toolButton" class="icon-btn" title="Help">
+                <i data-lucide="info"></i>
+              </button>
+            </div>
+
+            <!-- Clear Workspace Button -->
+            <!-- Clears all data and resets workspace -->
+            <div class="group">
+              <button id="clearWorkspace" class="clear-btn" title="Clear Workspace">
                 <i data-lucide="Paintbrush"></i>
-                  Clear Workspace
-                </button>
-              </div>
+                Clear Workspace
+              </button>
             </div>
-          </div>
-        </section>
-      </div>
+
+          </div> <!-- End .row -->
+        </div> <!-- End .toolbar-wrapper -->
+      </section> <!-- End .toolbar -->
+    </div> <!-- End .topmenu -->
 
       <!-- MODALS - OUTSIDE THE TOOLBAR -->
       <!-- Modal for Database & Device Selection -->

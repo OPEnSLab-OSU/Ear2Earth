@@ -542,6 +542,74 @@ document.getElementById('speedOptions').addEventListener('change', handleSpeedCh
 
 document.addEventListener('DOMContentLoaded', () => {
 
+  const row = document.querySelector('.topmenu .row');
+  
+  // Wrap specific sections in draggable containers
+  const sections = [
+    // Section 1: Dataset controls (Preset → Retrieve)
+    {
+      items: ['#openPresetModal', '#dataOptions', '.packet-inputs-group', '#retrieve'],
+      name: 'dataset-section'
+    },
+    // Section 2: Metadata
+    {
+      items: ['.group:has(#metadataButton)'],
+      name: 'metadata-section'
+    },
+    // Section 3: Playback (Volume → Speed)
+    {
+      items: ['.control-group', '.transport-group:has(#play)', '#bpmContainer', '#speedOptions'],
+      name: 'playback-section'
+    },
+    // Section 4: Tools (Multi-function grid + Refresh)
+    {
+      items: ['.multi-function-grid:not(#speedOptions)', '.group:has(#refresh)'],
+      name: 'tools-section'
+    },
+    // Section 5: Clear Workspace
+    {
+      items: ['.group:has(#clearWorkspace)'],
+      name: 'clear-section'
+    }
+  ];
+
+  sections.forEach(section => {
+    // Create wrapper for this section
+    const wrapper = document.createElement('div');
+    wrapper.className = `draggable-section ${section.name}`;
+    
+    // Create drag handle
+    const handle = document.createElement('span');
+    handle.className = 'drag-handle';
+    const icon = document.createElement('i');
+    icon.setAttribute('data-lucide', 'grip-vertical');
+    handle.appendChild(icon);
+    
+    wrapper.appendChild(handle);
+    
+    // Move items into wrapper
+    section.items.forEach(selector => {
+      const item = row.querySelector(selector);
+      if (item) {
+        wrapper.appendChild(item);
+      }
+    });
+    
+    row.appendChild(wrapper);
+  });
+  
+  // Make sections draggable
+  Sortable.create(row, {
+    animation: 150,
+    ghostClass: 'sortable-ghost',
+    dragClass: 'sortable-drag',
+    draggable: '.draggable-section',
+    handle: '.drag-handle',
+    onEnd: function(evt) {
+      console.log('Section moved from', evt.oldIndex, 'to', evt.newIndex);
+    }
+  });
+
   // Initialize Lucide icons
   lucide.createIcons();
 
