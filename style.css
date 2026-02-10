@@ -1000,6 +1000,10 @@ main {
   margin-bottom: 15px; /* Add space below the options for visual clarity */
 }
 
+.volumeContainer {
+  accent-color: var(--standard-blue);
+}
+
 .sensorsContainer,
 .readingsContainer {
   flex: 1; /* Make each container take up equal space */
@@ -1233,9 +1237,9 @@ main {
   height: auto;
   padding: 12px;
   margin-top: 10px;
-  background-color: #00b4d8;
+  background-color: var(--standard-blue);
   color: #fff;
-  border: 1px solid #00b4d8;
+  border: 1px solid var(--standard-blue);
   border-radius: 3px;
 }
 
@@ -1294,8 +1298,8 @@ main {
   height: auto;
   padding: 12px;
   margin-top: 10px;
-  background-color: #00b4d8;
+  background-color: var(--standard-blue);
   color: #fff;
-  border: 1px solid #00b4d8;
+  border: 1px solid var(--standard-blue);
   border-radius: 3px;
 }
