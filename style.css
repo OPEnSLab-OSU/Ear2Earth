@@ -1225,7 +1225,7 @@ main {
 
 .modal-content select {
   width: 100%;
-  padding: 10px;
+  padding: 12px;
   border: 1px solid var(--border);
   border-radius: 4px;
   font-size: 13px;
@@ -1233,10 +1233,11 @@ main {
 }
 
 .modal-content #confirmDataSource {
-  width: 100%;
+  width: 96%;
   height: auto;
   padding: 12px;
-  margin-top: 10px;
+  margin: 10px;
+  margin-top: 20px;
   background-color: var(--standard-blue);
   color: #fff;
   border: 1px solid var(--standard-blue);
@@ -1249,7 +1250,7 @@ main {
   display: flex;
   flex-direction: column;
   gap: 16px;
-  margin: 20px 0;
+  margin: 10px;
 }
 
 .form-group {
@@ -1275,7 +1276,7 @@ main {
 #modalPrescaler {
   background-color: white;
   border: 1px solid var(--main-grey);
-  padding: 8px 8px 8px 10px;
+  padding: 8px 8px 8px 8px;
   border-radius: 4px;
   cursor: pointer;
 }
@@ -1294,10 +1295,11 @@ main {
 }
 
 .modal-content #confirmDateTime {
-  width: 100%;
+  width: 96%;
   height: auto;
   padding: 12px;
-  margin-top: 10px;
+  margin: 10px;
+  margin-top: 20px;
   background-color: var(--standard-blue);
   color: #fff;
   border: 1px solid var(--standard-blue);
