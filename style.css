@@ -8,6 +8,10 @@
   --primary-hover: #0077b6;
   --muted: #666;
   --standard-blue: #036dee;
+  --hover-blue: rgb(16, 80, 158);
+  --main-grey: #DFDFDF;
+  --active-grey: #eaeaeaba;
+  --hover-grey: #bebebe;
 }
 
 /* Base */
@@ -22,7 +26,7 @@ body {
   font-weight: 700px !important;
 }
 header {
-  background: lightgray;
+  background: var(--main-grey);
   color: #030303;
   padding: 15px 20px;
   font-size: 15px;
@@ -85,11 +89,11 @@ main {
   height: 100%;
   width: 100%;
   padding-right: 1px;
-  padding-left: 0px;
+  padding-left: 1px;
 }
 
 .topmenu .toolbar {
-  height: 55px;
+  height: 46px;
   background: #ffffff !important;
   box-shadow: 0px 1px 0px rgba(0, 0, 0, 0.04) inset;
   padding: var(--pad) 12px;
@@ -140,15 +144,15 @@ main {
 ===================================================== */
 #openPresetModal {
   width: 100px;
-  height: 60px;
+  height: 57px;
   padding: 0;
   border: none;
   border-radius: 3px;
-  background: #ccc;
+  background: var(--main-grey);
   color: black;
   cursor: pointer;
   text-align: center;
-  font-size: 12px;
+  font-size: 13px;
   margin-left: 0px;
   margin-right: -2px;
   display: flex;
@@ -156,6 +160,10 @@ main {
   align-items: center;
   justify-content: center;
   gap: 4px;
+}
+
+#openPresetModal:hover {
+  background-color: var(--hover-grey) !important;
 }
 
 #openPresetModal svg {
@@ -175,7 +183,7 @@ main {
   padding: 0;
   background: transparent;
   border: none;
-  height: 60px;
+  height: 57px;
   margin: 1px;
   margin-left: 1px;
 }
@@ -188,12 +196,11 @@ main {
   padding: 2px 2px;
   cursor: pointer;
   font-size: 12px;
-  background: #ccc;
-  border: 1px solid var(--border);
+  background: var(--main-grey);
   border-radius: 3px;
   transition: all 0.2s ease;
   width: 80px; 
-  height: 60px;
+  height: 57px;
   justify-content: center; 
   color: black;
   margin-left: -6px;
@@ -211,16 +218,23 @@ main {
 
 /* Highlight selected option */
 #dataOptions label:has(input[type="radio"]:checked) {
-  background: #eeeded;
+  background: var(--active-grey);
   color: black;
 }
 
 /* Specific label sizing */
-#dataOptions label[for="timeRange"], 
+#dataOptions label[for="timeRange"] {
+  width: auto;
+  min-width: 100px;
+  font-size: 12px;
+  gap: 8px;
+}
+
 #dataOptions label[for="lastXPackets"] {
   width: auto;
   min-width: 100px;
   font-size: 12px;
+  gap: 5px;
 }
 
 /* Icon sizing in data options */
@@ -240,6 +254,7 @@ main {
   flex-direction: column;
   gap: 3px;
   margin-left: -8px;
+  height: 57px;
 }
 
 /* Number of packets input container */
@@ -250,12 +265,12 @@ main {
   align-items: center;
   gap: 4px;
   padding: 2px;
-  background: #ccc;
+  background: var(--main-grey);
   border: 1px;
-  border-radius: 3px;
+  border-radius: 3px !important;
   height: 25px !important;
   color: black;
-  font-size: 11px !important;
+  font-size: 12px !important;
   width: 115px;
   white-space: nowrap;
   margin-left: 6px;
@@ -263,8 +278,9 @@ main {
 
 #numpacketsInput {
   margin: 0px;
-  font-size: 11px !important;
+  font-size: 12px !important;
   text-align: center !important;
+  border-radius: 3px !important;
 }
 
 #numpacketsInput label {
@@ -279,14 +295,14 @@ main {
   width: 25px;
   height: 15px;
   padding: 2px 2px;
-  border-radius: 3px;
   margin-left: 6px;
   background-color: white;
-  border: 1px solid #ccc;
+  border: 1px solid var(--main-grey);
   border-radius: 1px;
   cursor: pointer;
   text-align: center !important;
   margin-left: 1px !important;
+  border-radius: 3px !important;
 }
 
 /* Prescaler container */
@@ -311,7 +327,7 @@ main {
   margin-left: 1px;
   align-items: center !important;
   background-color: white;
-  border: 1px solid #ccc;
+  border: 1px solid var(--main-grey);
   cursor: pointer;
   text-align: center !important;
 }
@@ -321,7 +337,7 @@ main {
 ===================================================== */
 .primary-btn {
   width: 70px; 
-  height: 60px;
+  height: 57px;
   padding: 5px;
   font-size: 12px;
   background: var(--standard-blue);
@@ -336,7 +352,7 @@ main {
 }
 
 .topmenu .primary-btn:hover {
-  background: var(--primary-hover);
+  background: var(--hover-blue) !important;
 }
 
 /* =====================================================
@@ -349,7 +365,7 @@ main {
   position: relative;
   border-radius: 3px;
   border: 1px;
-  background: #ccc;
+  background: var(--main-grey);
   cursor: pointer;
   display: flex;
   flex-direction: column;
@@ -357,8 +373,8 @@ main {
   justify-content: center;
   gap: 4px;
   font-size: 12px;
-  width: 95px; 
-  height: 60px;
+  width: 100px; 
+  height: 57px;
 }
 
 #metadataButton svg {
@@ -381,8 +397,12 @@ main {
   justify-content: center;
   margin: 0 auto;
   margin-right: 1px;
-  background-color: #ccc;
+  background-color: var(--main-grey);
   padding: 8px;
+}
+
+.icon-btn:hover {
+  background-color: var(--hover-grey);
 }
 
 /* For Retreve packets */
@@ -394,12 +414,17 @@ main {
   cursor: pointer;
   position: relative;
   z-index: 10;
-  background-color: #ccc;
+  background-color: var(--main-grey);
   display: flex;
   align-items: center;
   justify-content: center;
   align-self: flex-start;
 }
+
+#toolButton:hover {
+  background-color: var(--hover-grey);
+}
+
 
 #toolButton svg {
   width: 11px;
@@ -417,7 +442,7 @@ main {
   position: relative;
   top: 0px;
   z-index: 100;
-  background-color: #ccc;
+  background-color: var(--main-grey);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -439,10 +464,10 @@ main {
   align-items: center;
   font-weight: 500;
   padding: 4px 12px;
-  background: #ccc;
+  background: var(--main-grey);
   border: 1px;
   border-radius: 3px;
-  height: 60px;
+  height: 57px;
   margin-left: 0px;
 }
 
@@ -450,6 +475,8 @@ main {
   white-space: nowrap;
   color: #333;
   font-size: 12px;
+  margin-top: 10px;
+  margin-bottom: -5px;
 }
 
 .control-group input[type="range"] {
@@ -462,8 +489,8 @@ main {
   align-items: center;
   justify-content: center;
   padding: 0px 12px;
-  gap: 15px;
-  height: 60px;
+  gap: 13px;
+  height: 57px;
   margin-right: 1px;
 }
 
@@ -477,7 +504,9 @@ main {
   min-width: 135px;
   font-weight: 500 !important;
   font-size: 13px;
+  margin-bottom: 13px;
 }
+
 
 /* Transport controls container (play/stop buttons) */
 .transport-group {
@@ -493,11 +522,11 @@ main {
 /* Play and Stop buttons */
 .square-btn {
   width: 60px;
-  height: 60px;
+  height: 57px;
   border-radius: 3px;
   cursor: pointer;
   transition: filter 0.2s ease;
-  background-color: #ccc; 
+  background-color: var(--main-grey); 
   border: 0px;
   display: flex;
   align-items: center;
@@ -524,9 +553,9 @@ main {
   flex-direction: column;
   align-items: center;
   padding: 0px 12px;
-  gap: 14px;
-  height: 60px;
-  background: #ccc;
+  gap: 12px;
+  height: 57px;
+  background: var(--main-grey);
   border: 1px;
   border-radius: 3px;
   min-width: 135px; 
@@ -559,11 +588,12 @@ main {
   accent-color: var(--standard-blue);
   width: 130px;
   height: 6px;
+  margin-top: -3.8px;
 }
 
 /* Speed options (1x, 2x, 4x, 8x) */
 #speedOptions {
-  height: 60px;
+  height: 57px;
   width: 60px;
   gap: 3px;
   padding: 0; 
@@ -578,7 +608,7 @@ main {
 #speedOptions label {
   width: 100%;
   height: 100%;
-  background: #ccc;
+  background: var(--main-grey);
   border-radius: 3px;
   cursor: pointer;
   display: flex;
@@ -593,12 +623,12 @@ main {
 }
 
 #speedOptions label:hover {
-  background: #999;
+  background: var(--hover-grey);
 }
 
 /* Selected speed option */
 #speedOptions input[type="radio"]:checked + label {
-  background: #f0f0f0;
+  background: var(--active-grey);
   font-weight: 700;
 }
 
@@ -623,13 +653,13 @@ main {
   grid-template-columns: 1fr 1fr; /* 2 columns */
   grid-template-rows: 1fr 1fr; /* 2 rows */
   gap: 3px;
-  height: 60px;
+  height: 57px;
 }
 
 .icon-btn-small {
   width: 100%;
   height: 100%;
-  background: #ccc;
+  background: var(--main-grey);
   border: 1px;
   border-radius: 3px;
   cursor: pointer;
@@ -641,8 +671,7 @@ main {
 }
 
 .icon-btn-small:hover {
-  background: #999;
-  border-color: #999;
+  background: var(--hover-grey);
 }
 
 .icon-btn-small:active {
@@ -663,15 +692,15 @@ main {
 .action-btn {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 7px;
   padding: 0px;
-  background: #ccc;
+  background: var(--main-grey);
   border: 1px;
   border-radius: 3px;
   cursor: pointer;
   font-size: 12px;
-  height: 60px;
-  width: 95px;
+  height: 57px;
+  width: 97px;
   transition: all 0.2s ease;
   white-space: nowrap;
   flex-direction: column;
@@ -681,8 +710,7 @@ main {
 }
 
 .action-btn:hover {
-  background: #999;
-  border-color: #999;
+  background: var(--hover-grey);
 }
 
 .action-btn:active {
@@ -699,7 +727,7 @@ main {
 /* Clear Workspace button */
 .clear-btn {
   padding: 4px 4px;
-  background: #ccc;
+  background: var(--main-grey);
   border: 1px;
   border-radius: 3px;
   cursor: pointer;
@@ -707,20 +735,19 @@ main {
   color: #000000;
   transition: all 0.2s ease;
   white-space: nowrap;
-  height: 60px;
+  height: 57px;
   width: 100px;
   position: relative;
   display: flex;
   flex-direction: column;
   justify-content: center;
   text-align: center;
-  gap: 2px;
+  gap: 4px;
   align-items: center;
 }
 
 .clear-btn:hover {
-  background: #999;
-  border-color: #999;
+  background: var(--hover-grey);
 }
 
 .clear-btn svg {
@@ -738,7 +765,7 @@ main {
   align-items: center;
   gap: 10px;
   position: relative;
-  padding-left: 1px;
+  padding-left: 2px;
   padding-right: 6px;
   flex-shrink: 0; /* Don't shrink sections */
   flex-grow: 1; /* Grow sections to fill space */
@@ -759,16 +786,16 @@ main {
 /* Drag handle icon */
 .drag-handle {
   position: absolute;
-  left: -18px;
+  left: -20px;
   top: 50%;
   transform: translateY(-50%);
   width: 20px;
-  height: 40px;
+  height: 30px;
   cursor: grab;
   background: transparent;
   border: none;
-  color: #484848b7;
-  font-size: 19px;
+  color: #48484846;
+  font-size: 15px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -803,11 +830,10 @@ main {
   font-size: 12.8px;
   font-weight: 600;
   font-family: "Google Sans", sans-serif;
+  margin-bottom: 6px;
   color: #333;
   cursor: pointer;
   text-align: left;
-  margin: 0px 0px 0px 0px !important; 
-  margin-left: 3px !important;
   padding: 0px;
   display: block;
   width: fit-content;
@@ -815,7 +841,7 @@ main {
 
 .arrow-icon {
   color: var(--standard-blue);
-  margin-left: 5px;
+  margin-left: 0px;
   font-size: 13px;
   vertical-align: middle;
 }
@@ -861,7 +887,7 @@ main {
 }
 
 .volumeContainer input[type="range"] {
-  width: 100px !important;
+  width: 110px !important;
 }
 
 .removeModule {
@@ -958,7 +984,7 @@ main {
   height: 35px; /* Ensure this matches your buildGlobalTimeline height */
   width: 100%;
   display: block;
-  background: #e0e0e0;
+  background: var(--main-grey) !important;
   border-radius: 5px;
   margin-bottom: 3px;
   overflow: hidden; /* Prevents overflow artifacts during snap-resizing */
@@ -979,7 +1005,7 @@ main {
   flex: 1; /* Make each container take up equal space */
   display: flex; /* Optional: Flexbox within each container if you want finer control */
   flex-direction: column; /* Keep label and select in vertical alignment */
-  gap: 3px; /* Space between label and select */
+  gap: 5px; /* Space between label and select */
   width: 100%;
 }
 
@@ -1031,7 +1057,7 @@ main {
 }
 
 .moduleBottomOptions::-webkit-scrollbar-thumb {
-  background: #ccc;
+  background: var(--main-grey);
   border-radius: 10px;
 }
 
@@ -1062,7 +1088,7 @@ main {
   min-height: 0;
   border-radius: 8px;
   background-color: #fff;
-  border: 1px solid #ccc;
+  border: 1px solid var(--main-grey);
 }
 
 /* Maintain flexbox styling for module layout */
@@ -1094,26 +1120,30 @@ main {
   margin: 0 10px;
 }
 
+/* color: #000000;
+  font-size: 12px;
+  font-weight: 500; */
+
 #addModule {
   display: flex;
   justify-content: center;
   align-items: center;
   gap: 8px;
   margin: 8px auto;
-  width: 100%;
+  width:100%;
   height: 40px;
-  background-color: #e0e0e0;
-  color: #333; 
+  background-color: var(--main-grey);
+  color: #000000; 
   cursor: pointer;
   font-family: "Google Sans", sans-serif;
   font-size: 12.8px;
-  font-weight: 600;
+  font-weight: 500;
   flex-shrink: 0;
   border: none;
   border-radius: 5px;
   position: relative;
   background-image: none;
-  padding: 0 10px; 
+  margin-top: 3px; 
   transition: background-color 0.3s ease, border-color 0.3s ease;
 }
 
@@ -1125,7 +1155,7 @@ main {
 }
 
 #addModule:hover {
-  background-color: #cfcdcd; 
+  background: var(--hover-grey);
   filter: none; 
 }
 
@@ -1240,7 +1270,7 @@ main {
 /* Custom square dropdown for prescaler in modal */
 #modalPrescaler {
   background-color: white;
-  border: 1px solid #ccc;
+  border: 1px solid var(--main-grey);
   padding: 8px 8px 8px 10px;
   border-radius: 4px;
   cursor: pointer;
@@ -1248,7 +1278,7 @@ main {
 
 #prescaler {
   background-color: white;
-  border: 1px solid #ccc;
+  border: 1px solid var(--main-grey);
   border-radius: 4px;
   cursor: pointer;
   text-align: center !important;
