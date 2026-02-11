@@ -1,5 +1,8 @@
 /**** Global variables ****/
 
+// Metadata
+let metadata;
+
 // Playback boolean
 let isPlaying = false;
 
@@ -11,11 +14,17 @@ let speedMult = 1;
 let synths = []; // Array of FM synths
 let gainNodes = []; // Array of gain nodes
 
+// Boolean to track if data is displayed
+let workspaceHasData = false
+
 // Import synths and samplers
 import { samplers, fmSynths } from './instruments.js';
 
 // HTML template for a sound module
 import { createSoundModuleTemplate } from './soundModule.js';
+
+// Import sensor display name function
+import { sensorDisplayName } from "./sensorNames.js";
 
 // Menu items for the instruments
 let instrumentsMenuItems = [];
@@ -537,6 +546,96 @@ function handleSpeedChange(event) {
   }
 }
 
+
+function clearWorkspace() {
+  const confirmed = confirm("Are you sure you want to clear your workspace?");
+  if (!confirmed) return;
+
+  // Stop any playback
+  stopSynths();
+
+  // Clear global “loaded data” state
+  retrievedData = null;
+  midiPitchesArray = [];
+  plotXData = [];
+
+  // Clear the universal x-axis timeline
+  const globalTimeline = document.getElementById('globalTimeline');
+  if (globalTimeline) {
+    try {
+      Plotly.purge(globalTimeline);
+    } catch (e) {
+      console.warn("Plotly purge failed (safe to ignore):", e);
+    }
+    globalTimeline.innerHTML = "";
+  }
+
+  // Remove extra modules so only one remains
+  const modulesContainer = document.getElementById('modulesContainer');
+  if (modulesContainer) {
+  while (modulesContainer.children.length > 1) {
+    modulesContainer.removeChild(modulesContainer.lastElementChild);
+    }
+  }
+
+  // Rebuild soundMOdules to match what is in the DOM
+  soundModules = [];
+  const remainingModules = document.getElementsByClassName('soundModule');
+  for (let m of remainingModules) {
+    soundModules.push(m);
+  }
+
+
+  // Ensure IDs + remove button data attributes are correct
+  soundModules.forEach((module, index) => {
+    module.id = `module${index}`;
+    const removeBtn = module.querySelector('.removeModule');
+    if (removeBtn) removeBtn.dataset.moduleId = index;
+  });
+
+  if (soundModules.length > 0) {
+    const module = soundModules[0];
+  
+    // Clear Plotly graph safely
+    const plotDiv = module.querySelector(".plot");
+    if (plotDiv) {
+      try {
+        if (plotDiv.data) Plotly.purge(plotDiv);
+      } catch (e) {
+        console.warn("Plotly purge failed (safe to ignore):", e);
+      }
+      plotDiv.innerHTML = "";
+    }
+
+    // Reset sensors dropdown
+    const sensorsSelect = module.querySelector(".sensors");
+    if (sensorsSelect) {
+      sensorsSelect.innerHTML = `<option value="default">Select a sensor</option>`;
+      sensorsSelect.value = "default";
+    }
+
+    // Reset readings dropdown
+    const readingsSelect = module.querySelector(".readings");
+    if (readingsSelect) {
+      readingsSelect.innerHTML = `<option value="default">Select a reading</option>`;
+      readingsSelect.value = "default";
+    }
+  }
+  console.log("Workspace cleared.");
+
+  // Grey button out when workspace is cleared
+  workspaceHasData = false;
+  updateClearWorkspaceButton();
+}
+
+function updateClearWorkspaceButton() {
+  const btn = document.getElementById("clearWorkspace");
+  if (!btn) return;
+
+  btn.disabled = !workspaceHasData;
+  btn.classList.toggle("disabled", btn.disabled);
+}
+
 // Attach a single event listener to the speedOptions container
 document.getElementById('speedOptions').addEventListener('change', handleSpeedChange);
 
@@ -848,6 +947,8 @@ document.addEventListener('DOMContentLoaded', () => {
   // Create one soundModule on startup
   addSoundModule();
 
+  document.getElementById('clearWorkspace').addEventListener('click', clearWorkspace);
+  
   /**************
    *
    *
@@ -940,7 +1041,32 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
   // Handle selection from the named dropdown
-  retrieveByNameDropdown.addEventListener('change', handleDatasetChange);
+  retrieveByNameDropdown.addEventListener('change', async e => {
+    handleDatasetChange(e);
+    isMetadataDisplayed = false;
+    metadataContainer.style.display = 'none';
+    
+    metadataBtn.style.display = "block";
+    metadataBtn.style.backgroundColor = '#FFF';
+    metadataBtn.style.color = '#000';
+    metadataBtn.textContent = 'Loading...';
+    metadata = await retrieveMetadata();
+
+    if (metadata == null) {
+      metadataBtn.style.backgroundColor = 'red';
+      metadataBtn.textContent = 'No Metadata'
+    } else {
+      metadataBtn.style.backgroundColor = 'green';
+      metadataBtn.textContent = 'View Metadata';
+    }
+
+    metadataBtn.style.color = 'white';
+
+    return;
+  });
+
+  workspaceHasData = false;
+  updateClearWorkspaceButton();
 });
 
 // Listener for "Dataset Name" dropdown
@@ -1016,7 +1142,6 @@ function fetchDatabases() {
     })
     .catch(error => {
       console.error('Error fetching databases:', error);
-      // added 10/26
       resetDevicesAndDates();
     });
 }
@@ -1059,7 +1184,6 @@ function fetchDevices() {
   });
 }
 
-// added 10/26
 function resetDates() {
   const start = document.getElementById('startTime');
   const end = document.getElementById('endTime');
@@ -1069,7 +1193,6 @@ function resetDates() {
   });
 }
 
-// added 10/26
 function resetDevicesAndDates() {
   const devSel = document.getElementById('devices');
   devSel.innerHTML = '<option value="default">Select a sensor</option>';
@@ -1169,6 +1292,7 @@ document.getElementById('retrieve').onclick = async function () {
   let packetOption = document.querySelector('input[name="packetOption"]:checked').value;
   let prescaler = document.getElementById('prescaler').value;
   let url;
+  let metadataUrl;
 
   // Error handling for inputs
   if (packetOption === 'lastXPackets') {
@@ -1208,6 +1332,8 @@ document.getElementById('retrieve').onclick = async function () {
       // If data is empty, show an alert and return
       if (data.length === 0) {
         alert('No data available for the selected time range.');
+        workspaceHasData = false;
+        updateClearWorkspaceButton();
         return;
       }
       data.sort(
@@ -1223,6 +1349,9 @@ document.getElementById('retrieve').onclick = async function () {
         initializeModuleSelects(m, data);
         restoreSelects(m);
       }
+      
+      workspaceHasData = true;
+      updateClearWorkspaceButton();
     })
     .catch(error => console.error('Error:', error));
 };
@@ -1282,12 +1411,35 @@ function initializeModuleSelects(module, data) {
     // Get the keys of the first object in the data array
     let keys = Object.keys(data[0]);
 
+    // Sensor order
+    const sensorOrder = ['SHT31', 'TSL2591', 'MS5803_118', 'MS5803_119', 'TippingBucket', 'Teros10', 'A55311', 'DFR_MultiGas_0', 'DFR_MultiGas_1', 'DFR_MultiGas_2', 'T6793', 'Analog']; 
+
+    // Sort keys
+    keys.sort((a, b) => {
+      const indexA = sensorOrder.indexOf(a);
+      const indexB = sensorOrder.indexOf(b);
+      
+      // If both are in the order array, sort by their position
+      if (indexA !== -1 && indexB !== -1) {
+        return indexA - indexB;
+      }
+      
+      // If only A is in the array, A comes first
+      if (indexA !== -1) return -1;
+      
+      // If only B is in the array, B comes first
+      if (indexB !== -1) return 1;
+      
+      // If neither is in the array, sort alphabetically
+      return a.localeCompare(b);
+    });
+
     // Add each key as an option to the sensors select element
     keys.forEach(key => {
       if (key === '_id' || key === 'Timestamp' || key === 'WiFi') return;
       let option = document.createElement('option');
       option.value = key;
-      option.text = key;
+      option.textContent = sensorDisplayName(key);
       sensorsSelect.appendChild(option);
     });
 
@@ -1624,7 +1776,7 @@ function plot(moduleIdx) {
 
       let layout = {
         title: { 
-          text: `${sensor} - ${reading}`, 
+          text: `${sensorDisplayName(sensor)} - ${reading}`, 
           y: 0.91 
         },
         xaxis: {
@@ -1664,7 +1816,7 @@ function plot(moduleIdx) {
 
       // Build plot
       Plotly.newPlot(m.querySelector('.plot'), plotData, layout, config);
-
+ 
       let currentPlotDiv = m.querySelector('.plot');
 
       plotXData[moduleIdx] = xData;
@@ -1920,3 +2072,84 @@ function dataToMidiPitches(normalizedData, scale) {
   const scaleLength = scale.length;
   return normalizedData.map(value => scale[Math.floor(value * (scaleLength - 1))]);
 }
+
+const metadataBtn = document.getElementById('metadataButton');
+let isMetadataDisplayed = false;
+
+async function retrieveMetadata() {
+  let db = document.getElementById('databases').value;
+  let url = `/metadata?database=${db}`;
+
+  try {
+    const response = await fetch(url);
+
+    if (!response.ok) {
+      return null;
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error('Error: ', error);
+    return null;
+  }
+}
+
+metadataBtn.onclick = async function () {
+  const metadataContainer = document.getElementById('metadataContainer');
+
+  if (isMetadataDisplayed) {
+    metadataContainer.style.display = 'none';
+    isMetadataDisplayed = false;
+    metadataBtn.style.backgroundColor = 'green';
+    metadataBtn.textContent = 'View Metadata';
+    return;
+  }
+
+  if (metadataBtn.style.backgroundColor == "green") {
+      metadataBtn.style.backgroundColor = "#90EE90";
+  }
+
+  if (metadataBtn.style.backgroundColor == 'red') {
+    return;
+  }
+
+  metadataBtn.textContent = "Loading...";
+  metadataContainer.style.display = 'flex';
+  metadataBtn.textContent = "Close";
+
+  if (metadata == null) {
+    metadataContainer.innerHTML = `
+        <h3>No metadata :(</h3>
+        `;
+  } else {
+    let metadataDeploymentDate = metadata['deployment_date'];
+    let metadataLatitude = metadata['latitude'];
+    let metadataLongitude = metadata['longitude'];
+    let metadataOwner = metadata['owner'];
+
+    metadataContainer.innerHTML = `
+        <div id="metadataSection">
+          <h3>Deployment Date: </h3>
+          <p id="metadataDeploymentDate">${metadataDeploymentDate}</p>
+        </div>
+
+        <div id="metadataSection">
+          <h3>Latitude: </h3>
+          <p id="metadataLatitude">${metadataLatitude}</p>
+        </div>
+
+        <div id="metadataSection">
+          <h3>Longitude: </h3>
+          <p id="metadataLongitude">${metadataLongitude}</p>
+        </div>
+
+        <div id="metadataSection">
+          <h3>Owner: </h3>
+          <p id="metadataOwner">${metadataOwner}</p>
+        </div>
+        `;
+  }
+  
+  isMetadataDisplayed = true;
+  return;
+};

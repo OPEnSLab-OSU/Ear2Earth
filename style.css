@@ -466,22 +466,6 @@ main {
 
 /* =====================================================
    TOP MENU - PLAYBACK CONTROLS
-===================================================== */
-/* Volume control container */
-.control-group {
-  display: flex;
-  align-items: center;
-  font-weight: 500;
-  padding: 4px 12px;
-  background: var(--main-grey);
-  border: 1px;
-  border-radius: 3px;
-  height: 57px;
-  margin-left: 0px;
-}
-
-.control-group label {
-  white-space: nowrap;
   color: #333;
   font-size: 12px;
   margin-top: 10px;
