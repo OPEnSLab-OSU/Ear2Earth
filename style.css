@@ -7,6 +7,9 @@
   --primary: #00b4d8;
   --primary-hover: #0077b6;
   --muted: #666;
+  /* Possible green combo for accent color */
+  /* --standard-blue: #6c8951;
+  --hover-blue: #5c7645; */
   --standard-blue: #036dee;
   --hover-blue: rgb(16, 80, 158);
   --main-grey: #DFDFDF;
@@ -208,7 +211,7 @@ main {
 }
 
 #dataOptions label:hover {
-  background: #f5f5f5;
+  background: var(--hover-grey);
 }
 
 /* Hide the actual radio input circles */
