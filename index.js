@@ -640,6 +640,78 @@ function updateClearWorkspaceButton() {
 document.getElementById('speedOptions').addEventListener('change', handleSpeedChange);
 
 document.addEventListener('DOMContentLoaded', () => {
+
+  const row = document.querySelector('.topmenu .row');
+  
+  // Wrap specific sections in draggable containers
+  const sections = [
+    // Section 1: Dataset controls (Preset → Retrieve)
+    {
+      items: ['#openPresetModal', '#dataOptions', '.packet-inputs-group', '#retrieve'],
+      name: 'dataset-section'
+    },
+    // Section 2: Metadata
+    {
+      items: ['.group:has(#metadataButton)'],
+      name: 'metadata-section'
+    },
+    // Section 3: Playback (Volume → Speed)
+    {
+      items: ['.control-group', '.transport-group:has(#play)', '#bpmContainer', '#speedOptions'],
+      name: 'playback-section'
+    },
+    // Section 4: Tools (Multi-function grid + Refresh)
+    {
+      items: ['.multi-function-grid:not(#speedOptions)', '.group:has(#refresh)'],
+      name: 'tools-section'
+    },
+    // Section 5: Clear Workspace
+    {
+      items: ['.group:has(#clearWorkspace)'],
+      name: 'clear-section'
+    }
+  ];
+
+  sections.forEach(section => {
+    // Create wrapper for this section
+    const wrapper = document.createElement('div');
+    wrapper.className = `draggable-section ${section.name}`;
+    
+    // Create drag handle
+    const handle = document.createElement('span');
+    handle.className = 'drag-handle';
+    const icon = document.createElement('i');
+    icon.setAttribute('data-lucide', 'grip-vertical');
+    handle.appendChild(icon);
+    
+    wrapper.appendChild(handle);
+    
+    // Move items into wrapper
+    section.items.forEach(selector => {
+      const item = row.querySelector(selector);
+      if (item) {
+        wrapper.appendChild(item);
+      }
+    });
+    
+    row.appendChild(wrapper);
+  });
+  
+  // Make sections draggable
+  Sortable.create(row, {
+    animation: 150,
+    ghostClass: 'sortable-ghost',
+    dragClass: 'sortable-drag',
+    draggable: '.draggable-section',
+    handle: '.drag-handle',
+    onEnd: function(evt) {
+      console.log('Section moved from', evt.oldIndex, 'to', evt.newIndex);
+    }
+  });
+
+  // Initialize Lucide icons
+  lucide.createIcons();
+
   // Prioritize smooth playback
   const context = new Tone.Context({ latencyHint: 'playback' });
   Tone.setContext(context);
@@ -666,14 +738,208 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // Toggle collapsible container for databases and devices
-  const dataSource = document.getElementById('dataSource');
+  /* const dataSource = document.getElementById('dataSource');
   const toggleButton = document.getElementById('toggleDataSource');
   toggleButton.addEventListener('click', () => {
     dataSource.style.display = dataSource.style.display === 'none' ? 'flex' : 'none';
     toggleButton.textContent = dataSource.style.display === 'none' ? '▼' : '▲';
+  }); */
+  
+  // === POP-UP Functionally for Preset, Database, and Device ===
+  const modal = document.getElementById('dataSourceModal');
+  const closeBtn = document.querySelector('.close-modal');
+  const confirmBtn = document.getElementById('confirmDataSource');
+  const openPresetBtn = document.getElementById('openPresetModal');  // Changed this line
+  const modalPresetDropdown = document.getElementById('modalPreset');
+
+  // Show modal when clicking the preset button
+  openPresetBtn.addEventListener('click', () => {
+    modal.style.display = 'flex';
   });
 
-  const retrieveByNameDropdown = document.getElementById('retrieveByNameDropdown');
+  // Close modal when X is clicked
+  closeBtn.addEventListener('click', () => {
+    modal.style.display = 'none';
+  });
+
+  // Close modal when clicking outside
+  window.addEventListener('click', (event) => {
+    if (event.target === modal) {
+      modal.style.display = 'none';
+    }
+  });
+
+  // Confirm selection and close modal
+  confirmBtn.addEventListener('click', () => {
+    const selectedDatabase = document.getElementById('databases').value;
+    const selectedDevice = document.getElementById('devices').value;
+    const selectedPreset = document.getElementById('modalPreset').value;
+    
+    if (selectedDatabase !== 'default' && selectedDevice !== 'default') {
+      // Update the button text to show what was selected
+      if (selectedPreset !== 'default') {
+        const presetData = JSON.parse(selectedPreset);
+        openPresetBtn.textContent = presetData.name;  // Shows preset name
+      } else {
+        openPresetBtn.textContent = `${selectedDatabase} - ${selectedDevice}`;
+      }
+      modal.style.display = 'none';
+    } else {
+      alert('Please select both a database and a device');
+    }
+  });
+
+  // const retrieveByNameDropdown = document.getElementById('retrieveByNameDropdown');
+
+  // === Date/Time Range Modal Functionality ===
+  const dateTimeModal = document.getElementById('dateTimeModal');
+  const closeDateModal = document.getElementById('closeDateModal');
+  const confirmDateTime = document.getElementById('confirmDateTime');
+  const dateRangeText = document.getElementById('dateRangeText');
+
+  const startTimeInput = document.getElementById('startTime');
+  const endTimeInput = document.getElementById('endTime');
+  const modalStartTime = document.getElementById('modalStartTime');
+  const modalEndTime = document.getElementById('modalEndTime');
+  const modalPrescaler = document.getElementById('modalPrescaler');
+  const prescalerInput = document.getElementById('prescaler');
+
+  // Track if user has confirmed their selection
+  let dateRangeConfirmed = false;
+
+  // Open modal when Date Range radio is clicked (using the span to detect re-clicks)
+  const dateRangeLabel = document.getElementById('dateRangeLabel');
+  const timeRangeRadio = document.getElementById('timeRange');
+
+  dateRangeLabel.addEventListener('click', (e) => {
+    // Check if clicking on the label/span (not the radio itself) or if radio is already checked
+    if (e.target !== timeRangeRadio || timeRangeRadio.checked) {
+      setTimeout(() => {
+        dateTimeModal.style.display = 'flex';
+        dateRangeConfirmed = false;
+        
+        // Pre-populate modal with current values if they exist
+        if (startTimeInput.value) modalStartTime.value = startTimeInput.value;
+        if (endTimeInput.value) modalEndTime.value = endTimeInput.value;
+        if (prescalerInput.value) modalPrescaler.value = prescalerInput.value;
+      }, 10);
+    }
+  });
+
+  // Add listener to Last Packets radio to clear date range display
+  const lastXPacketsRadio = document.getElementById('lastXPackets');
+  lastXPacketsRadio.addEventListener('change', () => {
+    if (lastXPacketsRadio.checked) {
+      // Clear the date range display
+      dateRangeText.textContent = 'Date Range';
+      // Clear the hidden inputs
+      startTimeInput.value = '';
+      endTimeInput.value = '';
+      prescalerInput.value = '1';
+      // Clear the modal inputs
+      modalStartTime.value = '';
+      modalEndTime.value = '';
+      modalPrescaler.value = '1';
+      // Reset confirmation 
+      dateRangeConfirmed = false;
+    }
+  });
+
+  // Close modal when X is clicked
+  closeDateModal.addEventListener('click', () => {
+    dateTimeModal.style.display = 'none';
+    
+    // Only reset if user hasn't confirmed a date range
+    if (!dateRangeConfirmed) {
+      lastXPacketsRadio.checked = true;
+      document.getElementById('numpacketsInput').style.display = 'block';
+      document.getElementById('skipPackets').style.display = 'block';
+      dateRangeText.textContent = 'Date Range';
+    }
+  });
+
+  // Apply selections and close modal
+  confirmDateTime.addEventListener('click', () => {
+    // Validate that both dates are selected
+    if (!modalStartTime.value || !modalEndTime.value) {
+      alert('Please select both start and end times');
+      return;
+    }
+
+    if (modalStartTime.value >= modalEndTime.value) {
+      alert('End time must be after start time');
+      return;
+    }
+
+    // Apply values to hidden inputs
+    startTimeInput.value = modalStartTime.value;
+    endTimeInput.value = modalEndTime.value;
+    prescalerInput.value = modalPrescaler.value;
+
+    // Update the radio button label text to show selected dates
+    const startDate = new Date(modalStartTime.value).toLocaleDateString('en-US', {
+      month: 'numeric',
+      day: 'numeric',
+      year: 'numeric'
+    });
+    const endDate = new Date(modalEndTime.value).toLocaleDateString('en-US', {
+      month: 'numeric',
+      day: 'numeric',
+      year: 'numeric'
+    });
+    
+    dateRangeText.textContent = `${startDate} - ${endDate}`;
+    dateRangeConfirmed = true; // Mark as confirmed
+    dateTimeModal.style.display = 'none';
+  });
+
+  // Close modal when clicking outside
+  window.addEventListener('click', (e) => {
+    if (e.target === dateTimeModal) {
+      dateTimeModal.style.display = 'none';
+      
+      // Only reset if user hasn't confirmed a date range
+      if (!dateRangeConfirmed) {
+        lastXPacketsRadio.checked = true;
+        document.getElementById('numpacketsInput').style.display = 'block';
+        document.getElementById('skipPackets').style.display = 'block';
+        dateRangeText.textContent = 'Date Range';
+      }
+    }
+  });
+
+  // Initialize draggable toolbar sections
+  const topmenu = document.querySelector('.topmenu');
+  
+  Sortable.create(topmenu, {
+    animation: 150,
+    handle: '.toolbar-drag-handle',
+    ghostClass: 'sortable-ghost',
+    dragClass: 'sortable-drag',
+    direction: 'horizontal',
+    
+    // OPTIONAL ====
+    /* onEnd: function(evt) {
+      console.log('Toolbar section moved from position', evt.oldIndex, 'to', evt.newIndex);
+      
+      // Optional: Save the toolbar layout to localStorage
+      const toolbarOrder = Array.from(topmenu.children).map(section => 
+        section.className.split(' ').find(c => c.startsWith('toolbar-'))
+      );
+      localStorage.setItem('toolbarLayout', JSON.stringify(toolbarOrder));
+    } */
+  });
+
+  // OPTIONAL ====
+  // Restore saved toolbar layout from localStorage
+  /* const savedLayout = localStorage.getItem('toolbarLayout');
+  if (savedLayout) {
+    const order = JSON.parse(savedLayout);
+    order.forEach(className => {
+      const section = topmenu.querySelector(`.${className}`);
+      if (section) topmenu.appendChild(section);
+    });
+  } */
 
   // Fetch databases and populate the dropdown
   fetchDatabases();
@@ -714,12 +980,66 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Populate the "Retrieve by Name" dropdown with predefined database/device pairs
   predefinedPairs.forEach(pair => {
+    // BEFORE: main preset dropdown
+    /* 
     let option = document.createElement('option');
     option.value = JSON.stringify(pair); // Store as a JSON string
     option.textContent = pair.name;
     retrieveByNameDropdown.appendChild(option);
+    */
+
+    // NEW: Add to modal preset dropdown
+    let modalOption = document.createElement('option');
+    modalOption.value = JSON.stringify(pair); // Store as a JSON string
+    modalOption.textContent = pair.name;
+    modalPresetDropdown.appendChild(modalOption);
   });
 
+  // Handle preset selection inside the popup 
+  modalPresetDropdown.addEventListener('change', async (event) => {
+    if (event.target.value !== 'default') {
+      const presetData = JSON.parse(event.target.value);
+
+      const databaseDropdown = document.getElementById('databases');
+      const deviceDropdown = document.getElementById('devices');
+      
+      // Check if the database exists
+      let databaseExists = [...databaseDropdown.options].some(
+        option => option.value.trim() === presetData.database.trim()
+      );
+      
+      if (databaseExists) {
+        databaseDropdown.value = presetData.database;
+        
+        // Wait for devices to load before checking for the device
+        await fetchDevices();
+        
+        // Check if the selected device exists in the updated dropdown
+        let deviceExists = [...deviceDropdown.options].some(
+          option => option.value.trim() === presetData.device.trim()
+        );
+        
+        if (deviceExists) {
+          deviceDropdown.value = presetData.device;
+          await setDateBoundsForSelection();
+        } else {
+          alert(
+            `Warning: Device "${presetData.device}" not found in "${presetData.database}". Please select manually.`
+          );
+        }
+      } else {
+        alert(
+          `Warning: Database "${presetData.database}" does not exist. Please select manually.`
+        );
+      }
+      
+    } else {
+      // Reset and enable if "Select a preset" is chosen
+      databaseDropdown.value = 'default';
+      deviceDropdown.value = 'default';
+      
+    }
+  });
   // Handle selection from the named dropdown
   retrieveByNameDropdown.addEventListener('change', async e => {
     handleDatasetChange(e);
@@ -751,6 +1071,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // Listener for "Dataset Name" dropdown
 async function handleDatasetChange(event) {
+
+  if (event.target.value === 'default') {
+    return; 
+  }
+
+  // show the popup/modal
+  document.getElementById('dataSourceModal').style.display = 'flex';
+
   const selectedPair = JSON.parse(event.target.value);
   if (selectedPair) {
     // Check if the database exists
@@ -880,23 +1208,56 @@ document.getElementById('databases').addEventListener('change', fetchDevices);
 document.getElementsByName('packetOption').forEach(radio => {
   // Get the input fields
   let numpacketsInput = document.getElementById('numpacketsInput');
-  let timeInputs = document.getElementById('timeInputs');
+  // let timeInputs = document.getElementById('timeInputs');
+  let skipPackets = document.getElementById('skipPackets');
 
   radio.addEventListener('change', async function () {
     // If "lastXPackets" is selected, show the "numpackets" and "prescaler" input fields and hide the "startTime" and "endTime" input fields
     if (this.value === 'lastXPackets') {
       numpacketsInput.style.display = 'block';
-      timeInputs.style.display = 'none';
+      skipPackets.style.display = 'block';
+      //timeInputs.style.display = 'none';
     }
     // If "timeRange" is selected, hide the "numpackets" input field and show the "startTime", "endTime" and "prescaler" input fields
     else if (this.value === 'timeRange') {
       numpacketsInput.style.display = 'none';
-      timeInputs.style.display = 'block';
-      await setDateBoundsForSelection(); // added 10/26
+      skipPackets.style.display = 'none';
+      //timeInputs.style.display = 'block';
+      
+      // await setDateBoundsForSelection(); // added 10/26
+
+      const modalStartTime = document.getElementById('modalStartTime');
+      const modalEndTime = document.getElementById('modalEndTime');
+      const modalPrescaler = document.getElementById('modalPrescaler');
+      const startTimeInput = document.getElementById('startTime');
+      const endTimeInput = document.getElementById('endTime');
+      const prescalerInput = document.getElementById('prescaler');
+      
+      modalStartTime.value = startTimeInput.value;
+      modalEndTime.value = endTimeInput.value;
+      modalPrescaler.value = prescalerInput.value;
+      
+      modalStartTime.min = startTimeInput.min;
+      modalStartTime.max = startTimeInput.max;
+      modalEndTime.min = endTimeInput.min;
+      modalEndTime.max = endTimeInput.max;
+      
+      // Show the modal
+      document.getElementById('dateTimeModal').style.display = 'flex';
+
+      setDateBoundsForSelection().then(() => {
+        // Update modal with new bounds after they load
+        modalStartTime.value = startTimeInput.value;
+        modalEndTime.value = endTimeInput.value;
+        modalStartTime.min = startTimeInput.min;
+        modalStartTime.max = startTimeInput.max;
+        modalEndTime.min = endTimeInput.min;
+        modalEndTime.max = endTimeInput.max;
+      });
     } else {
       // added 10/26
       numpackets.style.display = 'block';
-      timeInputs.style.display = 'none';
+    
       resetDates();
     }
   });
