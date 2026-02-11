@@ -31,7 +31,8 @@ body {
 header {
   background: var(--main-grey);
   color: #030303;
-  padding: 15px 20px;
+  /* padding: top right bottom left; */
+  padding: 20px;
   font-size: 15px;
   font-family: "Google Sans", sans-serif;
   font-optical-sizing: auto;
@@ -41,8 +42,10 @@ header {
   display: flex;
   justify-content: space-between;
   border-radius: 0px;
+  align-items: flex-end; 
 }
 header h2 {
+  line-height: 1; 
   margin: 0;
 }
 nav#nav ul {
@@ -51,8 +54,9 @@ nav#nav ul {
   gap: 15px;
   text-align: right;
   margin: 0;
-  padding: 5px 0px;
+  font-size: 14px;
   font-weight: bold;
+  font-weight: 80px !important;
 }
 nav#nav ul li a {
   text-decoration: none;
