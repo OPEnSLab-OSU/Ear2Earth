@@ -73,7 +73,7 @@ app.get("/data", async (req, res) => {
   const startTime = req.query.startTime;
   const endTime = req.query.endTime;
   const prescaler = req.query.prescaler ? parseInt(req.query.prescaler) : 1;
-    const metadata = parseInt(req.query.metadata);
+  const metadata = parseInt(req.query.metadata);
 
   const mongoclient = new MongoClient(uri);
 
