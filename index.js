@@ -1981,7 +1981,12 @@ function buildGlobalTimeline(xData, xMin, xMax, masterTicks) {
       tickangle: 0,
       automargin: false,
       gridcolor: "rgba(0, 0, 0, 0.56)",
-      fixedrange: true 
+      fixedrange: true,
+      tickfont: {
+        family: "Google Sans, sans-serif",
+        size: 12,
+        color: "rgb(0, 0, 0)"
+      }
     },
     yaxis: { visible: false, fixedrange: true, range: [0, 1] },
     paper_bgcolor: "rgba(0,0,0,0)",
@@ -2113,15 +2118,27 @@ function plot(moduleIdx) {
         autosize: true
       };
 
-      let config = { responsive: true, 
+      // Add CSV button to Plotly's default buttons
+      let csvButton = {
+        name: 'csvDownload',
+        title: 'Download Data as CSV',
+        icon: {
+          width: 24,
+          height: 24,
+          path: 'M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7ZM14 2v4a2 2 0 0 0 2 2h4M8 13h2M8 17h2M14 13h2M14 17h2',
+          color: '#fff'
+        },
+        click: csvDownload
+      };
+
+      // Add config parameter
+      let config = {
+        responsive: true,
+        // Modify button order and inclusion
         modeBarButtons: [
-          ['zoom2d', 
-            'pan2d', 
-            'zoomIn2d', 
-            'zoomOut2d', 
-            'autoScale2d'
-          ]
-        ] };
+          ['zoom2d', 'pan2d', 'zoomIn2d', 'zoomOut2d', 'autoScale2d', csvButton]
+        ]
+      };
 
       // Build plot
       Plotly.newPlot(m.querySelector('.plot'), plotData, layout, config);
@@ -2157,8 +2174,39 @@ function plot(moduleIdx) {
 }
 
 
+// Extract CSV generation into a reusable helper function
+function generateCSV(plotElement, reading, sensor) {
+  const traces = plotElement.data;
+  if (!traces) return null;
+
+  let csvContent = `Timestamp,${reading} Reading\n`;
+
+  traces.forEach(trace => {
+    for (let i = 0; i < trace.x.length; i++) {
+      let timestamp = trace.x[i] ?? "";
+
+      if (typeof timestamp === "number") {
+        timestamp = new Date(timestamp).toLocaleString("en-US", { 
+          year: "2-digit",
+          month: "2-digit", 
+          day: "2-digit", 
+          hour: "2-digit", 
+          minute: "2-digit", 
+          second: "2-digit",
+          hour12: true
+        }).replace(",", "");
+      }
+
+      csvContent += `${timestamp},${trace.y[i]}\n`;
+    }
+  });
+
+  return csvContent;
+}
+
+// Modified single plot CSV download function
 function csvDownload(m) {
-  const moduleEl = m.closest('.soundModule'); // or whatever class wraps one module
+  const moduleEl = m.closest('.soundModule');
   if (!moduleEl) {
     console.error("Could not find parent module");
     return;
@@ -2167,42 +2215,99 @@ function csvDownload(m) {
   let reading = moduleEl.parentNode.querySelector('.readings').value;
   let sensor = moduleEl.parentNode.querySelector('.sensors').value;
 
-  const traces = m.data;
-  if (!traces) return;
+  const csvContent = generateCSV(m, reading, sensor);
+  if (!csvContent) return;
 
-  // Set column names to Timestamp, Reading
-  let csvContent = `Timestamp,${reading} Reading\n`;
-
-  traces.forEach(trace => {
-      for (let i = 0; i < trace.x.length; i++) {
-          let timestamp = trace.x[i] ?? "";
-
-          // Keep same format as x-axis timestamps
-          if (typeof timestamp === "number") {
-              timestamp = new Date(timestamp).toLocaleString("en-US", { 
-                  year: "2-digit",
-                  month: "2-digit", 
-                  day: "2-digit", 
-                  hour: "2-digit", 
-                  minute: "2-digit", 
-                  second: "2-digit",
-                  hour12: true
-          }).replace(",", "");
-      }
-
-      csvContent += `${timestamp},${trace.y[i]}\n`;
-    }
-  });
+  // Get display name for the sensor
+  const displayName = sensorDisplayName(sensor);
 
   const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
   const link = document.createElement("a");
   link.href = URL.createObjectURL(blob);
-  link.download = `${sensor}_${reading}.csv`;
+  link.download = `${displayName}_${reading}.csv`;  // Using display name here
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);
 }
 
+// Download all plots as ZIP
+// Download all plots as ZIP
+async function downloadAllPlots() {
+  const zip = new JSZip();
+  const processed = new Set();
+  
+  // Use the soundModules array that already tracks all modules
+  if (soundModules.length === 0) {
+    alert('No plots available to download');
+    return;
+  }
+
+  soundModules.forEach((moduleEl, index) => {
+    // Get the Plotly plot element within this module
+    const plotElement = moduleEl.querySelector('.plot');
+    if (!plotElement || !plotElement.data) {
+      console.log(`Module ${index} has no plot data`);
+      return;
+    }
+
+    // Get sensor and reading values from THIS module's selects
+    const readingSelect = moduleEl.querySelector('.readings');
+    const sensorSelect = moduleEl.querySelector('.sensors');
+    
+    const reading = readingSelect?.value;
+    const sensor = sensorSelect?.value;
+    
+    if (!reading || !sensor) {
+      console.log(`Module ${index} missing sensor or reading`);
+      return;
+    }
+
+    // Create unique key for this sensor/reading pair (using raw sensor name)
+    const key = `${sensor}_${reading}`;
+    
+    // Skip if already processed
+    if (processed.has(key)) {
+      console.log(`Skipping duplicate: ${key}`);
+      return;
+    }
+    processed.add(key);
+
+    // Generate CSV content
+    const csvContent = generateCSV(plotElement, reading, sensor);
+    if (csvContent) {
+      // Get display name for the sensor
+      const displayName = sensorDisplayName(sensor);
+      
+      // Add to ZIP with descriptive filename using display name
+      zip.file(`${displayName}_${reading}.csv`, csvContent);
+      console.log(`Added to ZIP: ${displayName}_${reading}.csv`);
+    }
+  });
+
+  // Check if any files were added
+  if (Object.keys(zip.files).length === 0) {
+    alert('No data available to download');
+    return;
+  }
+
+  console.log(`Creating ZIP with ${Object.keys(zip.files).length} files`);
+
+  // Generate ZIP and trigger download
+  const zipBlob = await zip.generateAsync({ type: 'blob' });
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(zipBlob);
+  
+  // Use timestamp in filename
+  const timestamp = new Date().toISOString().slice(0, 10);
+  link.download = `workspace_${timestamp}.zip`;
+  
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+}
+
+// Add event listener to the download button
+document.getElementById('download').addEventListener('click', downloadAllPlots);
 // Add a helper function to fix timestamp format
 function fixTimestamp(ts) {
   // Remove trailing 'Z' then split on 'T'
