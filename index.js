@@ -1672,7 +1672,12 @@ function buildGlobalTimeline(xData, xMin, xMax, masterTicks) {
       tickangle: 0,
       automargin: false,
       gridcolor: "rgba(0, 0, 0, 0.56)",
-      fixedrange: true 
+      fixedrange: true,
+      tickfont: {
+        family: "Google Sans, sans-serif",
+        size: 12,
+        color: "rgb(0, 0, 0)"
+      }
     },
     yaxis: { visible: false, fixedrange: true, range: [0, 1] },
     paper_bgcolor: "rgba(0,0,0,0)",

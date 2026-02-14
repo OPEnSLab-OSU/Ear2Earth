@@ -999,6 +999,12 @@ main {
   overflow: hidden; /* Prevents overflow artifacts during snap-resizing */
 }
 
+#globalTimeline .xtick text {
+  letter-spacing: .4px !important;
+  font-weight: 400 !important;
+  color: #000000;
+}
+
 
 /* ================== MODULES / PLOT (unchanged) ================== */
 /* Adjusted layout for module options */
