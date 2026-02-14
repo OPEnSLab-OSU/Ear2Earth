@@ -1990,7 +1990,7 @@ async function downloadAllPlots() {
   
   // Use timestamp in filename
   const timestamp = new Date().toISOString().slice(0, 10);
-  link.download = `all_plots_${timestamp}.zip`;
+  link.download = `workspace_${timestamp}.zip`;
   
   document.body.appendChild(link);
   link.click();
