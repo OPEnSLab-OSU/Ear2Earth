@@ -898,6 +898,8 @@ function startFirstTimeOnboarding() {
     card.remove();
     document.getElementById('dataSourceModal').style.display = 'none';
     document.getElementById('dateTimeModal').style.display = 'none';
+    document.getElementById('dataSourceModal').classList.remove('onboarding-modal-active');
+    document.getElementById('dateTimeModal').classList.remove('onboarding-modal-active');
     if (markComplete) {
       setOnboardingComplete();
     }
@@ -919,9 +921,11 @@ function startFirstTimeOnboarding() {
 
     if (dataSourceModal) {
       dataSourceModal.style.display = step.showDataSourceModal ? 'flex' : 'none';
+      dataSourceModal.classList.toggle('onboarding-modal-active', !!step.showDataSourceModal);
     }
     if (dateTimeModal) {
       dateTimeModal.style.display = step.showDateTimeModal ? 'flex' : 'none';
+      dateTimeModal.classList.toggle('onboarding-modal-active', !!step.showDateTimeModal);
     }
 
     const targets = (step.selectors || [])

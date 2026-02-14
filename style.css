@@ -151,6 +151,24 @@ nav#nav ul li a {
   border-radius: 6px;
 }
 
+.modal.onboarding-modal-active {
+  z-index: 12001;
+}
+
+.modal.onboarding-modal-active .modal-content,
+.modal.onboarding-modal-active .modal-form,
+.modal.onboarding-modal-active .form-group,
+.modal.onboarding-modal-active #presetElements,
+.modal.onboarding-modal-active #databaseElements,
+.modal.onboarding-modal-active #deviceElements,
+.modal.onboarding-modal-active #confirmDataSource,
+.modal.onboarding-modal-active #confirmDateTime {
+  position: relative;
+  z-index: 12002;
+  opacity: 1;
+  filter: none;
+}
+
 #speedOptions.onboarding-highlight {
   box-shadow: none;
 }
