@@ -1804,15 +1804,27 @@ function plot(moduleIdx) {
         autosize: true
       };
 
-      let config = { responsive: true, 
+      // Add CSV button to Plotly's default buttons
+      let csvButton = {
+        name: 'csvDownload',
+        title: 'Download data as CSV',
+        icon: {
+          width: 24,
+          height: 24,
+          path: 'M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7ZM14 2v4a2 2 0 0 0 2 2h4M8 13h2M8 17h2M14 13h2M14 17h2',
+          color: '#fff'
+        },
+        click: csvDownload
+      };
+
+      // Add config parameter
+      let config = {
+        responsive: true,
+        // Modify button order and inclusion
         modeBarButtons: [
-          ['zoom2d', 
-            'pan2d', 
-            'zoomIn2d', 
-            'zoomOut2d', 
-            'autoScale2d'
-          ]
-        ] };
+          ['zoom2d', 'pan2d', 'zoomIn2d', 'zoomOut2d', 'autoScale2d', csvButton]
+        ]
+      };
 
       // Build plot
       Plotly.newPlot(m.querySelector('.plot'), plotData, layout, config);
