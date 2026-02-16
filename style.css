@@ -416,8 +416,8 @@ main {
   background-color: var(--hover-grey);
 }
 
-/* For Retreve packets */
-#toolButton {
+#metadataHelp,
+#refreshHelp {
   width: 12px;
   height: 12px;
   border: 0px;
@@ -432,35 +432,13 @@ main {
   align-self: flex-start;
 }
 
-#toolButton:hover {
+#metadataHelp:hover,
+#refreshHelp:hover {
   background-color: var(--hover-grey);
 }
 
 
-#toolButton svg {
-  width: 11px;
-  height: 11px;
-  flex-shrink: 0;
-}
-
-/* info button - next to metadata */
-#infoButton {
-  width: 12px;
-  height: 12px;
-  border: 0px;
-  border-radius: 3px;
-  cursor: pointer;
-  position: relative;
-  top: 0px;
-  z-index: 100;
-  background-color: var(--main-grey);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  align-self: flex-start;
-}
-
-#infoButton svg {
+#refreshHelp svg, #metadataHelp svg {
   width: 11px;
   height: 11px;
   flex-shrink: 0;
@@ -1314,4 +1292,62 @@ main {
   color: #fff;
   border: 1px solid var(--standard-blue);
   border-radius: 3px;
+}
+
+/* ======== POPOVER FOR METADATA & PACKET REFRESH ========== */
+.popover {
+  position: absolute;
+  background: white;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  padding: 14px;
+  max-width: 200px;
+  z-index: 10000;
+  font-size: 10px;
+  line-height: 1.5;
+}
+
+.popover::before {
+  content: '';
+  position: absolute;
+  width: 0;
+  height: 0;
+  border: 8px solid transparent;
+  border-bottom-color: white;
+  top: -16px;
+  left: 5px;
+  z-index: 10001; /* Make sure it's on top */
+}
+
+/* Arrow border (optional - makes it look cleaner) */
+.popover::after {
+  content: '';
+  position: absolute;
+  width: 0;
+  height: 0;
+  border: 9px solid transparent;
+  border-bottom-color: #ccc;
+  top: -18px;
+  left: 4px;
+  z-index: 10000;
+}
+
+.popover-close {
+  position: absolute;
+  top: 6px;
+  right: 4px;
+  background: none;
+  border: none;
+  font-size: 15px;
+  cursor: pointer;
+  color: #666;
+}
+
+.popover-close:hover {
+  color: #000;
+}
+
+.popover-body {
+  margin-top: 8px;
 }

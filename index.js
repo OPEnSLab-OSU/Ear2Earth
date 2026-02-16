@@ -931,6 +931,54 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
+  // ==== Popover functionality for Metadat and Packet Refresh info buttons ====
+  const popover = document.getElementById('popover');
+  const popoverBody = popover.querySelector('.popover-body');
+  const popoverClose = popover.querySelector('.popover-close');
+
+  function showPopover(button, content) {
+    // Set content
+    popoverBody.textContent = content;
+    
+    // Position popover below the button
+    const rect = button.getBoundingClientRect();
+    popover.style.display = 'block';
+    popover.style.left = rect.left + 'px';
+    popover.style.top = (rect.bottom + 8) + 'px';
+  }
+
+  function hidePopover() {
+    popover.style.display = 'none';
+  }
+
+  // Close button
+  popoverClose.addEventListener('click', hidePopover);
+
+  // Close when clicking outside
+  document.addEventListener('click', (e) => {
+    if (!popover.contains(e.target) && !e.target.closest('.icon-btn')) {
+      hidePopover();
+    }
+  });
+
+  // Add to your info buttons
+  const metadataHelp = document.getElementById('metadataHelp');
+  const refreshHelp = document.getElementById('refreshHelp');
+  
+  if (metadataHelp) {
+    metadataHelp.addEventListener('click', (e) => {
+      e.stopPropagation();
+      showPopover(e.currentTarget, 'Metadata shows device deployment information including date, location (latitude/longitude), and database owner.');
+    });
+  }
+  
+  if (refreshHelp) {
+    refreshHelp.addEventListener('click', (e) => {
+      e.stopPropagation();
+      showPopover(e.currentTarget, 'Reloads the latest packet data from your selected source while preserving your workspace configuration and tracks.');
+    });
+  }
+
   // Initialize draggable toolbar sections
   const topmenu = document.querySelector('.topmenu');
   
