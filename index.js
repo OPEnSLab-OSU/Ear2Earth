@@ -779,7 +779,30 @@ document.addEventListener('DOMContentLoaded', () => {
       // Update the button text to show what was selected
       if (selectedPreset !== 'default') {
         const presetData = JSON.parse(selectedPreset);
-        openPresetBtn.textContent = presetData.name;  // Shows preset name
+        // Clear button
+        openPresetBtn.textContent = '';
+        
+        // Add preset name
+        const nameDiv = document.createElement('div');
+        nameDiv.textContent = presetData.name;
+        nameDiv.style.fontWeight = '500';
+        openPresetBtn.appendChild(nameDiv);
+        
+        // Add database
+        const dbDiv = document.createElement('div');
+        dbDiv.textContent = presetData.database;
+        dbDiv.style.fontSize = '10px';
+        dbDiv.style.opacity = '0.7';
+        openPresetBtn.appendChild(dbDiv);
+        
+        // Add device
+        const deviceDiv = document.createElement('div');
+        deviceDiv.textContent = presetData.device;
+        deviceDiv.style.fontSize = '10px';
+        deviceDiv.style.opacity = '0.7';
+        openPresetBtn.appendChild(deviceDiv);
+
+        // old button text update: openPresetBtn.textContent = presetData.name;
       } else {
         openPresetBtn.textContent = `${selectedDatabase} - ${selectedDevice}`;
       }

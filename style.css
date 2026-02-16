@@ -13,7 +13,7 @@
   --standard-blue: #036dee;
   --hover-blue: rgb(16, 80, 158);
   --main-grey: #DFDFDF;
-  --active-grey: #eaeaeaba;
+  --active-grey: #9e9e9eba;
   --hover-grey: #bebebe;
 }
 
@@ -169,6 +169,7 @@ main {
   align-items: center;
   justify-content: center;
   gap: 4px;
+  text-wrap: wrap;
 }
 
 #openPresetModal:hover {
@@ -195,6 +196,7 @@ main {
   height: 57px;
   margin: 1px;
   margin-left: 1px;
+  align-items: stretch;
 }
 
 /* Radio button labels styled as buttons */
