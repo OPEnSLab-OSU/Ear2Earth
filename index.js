@@ -221,7 +221,7 @@ function attachCollapseListener(soundModule) {
         if (otherOptions && otherOptions !== options) {
           otherOptions.style.display = 'none';
           if (otherBtn) {
-            otherBtn.innerHTML = ' More Options <span class="arrow-icon">▼</span>';
+            otherBtn.innerHTML = ' Sound Options <span class="arrow-icon">▼</span>';
           }
         }
       });
@@ -230,7 +230,7 @@ function attachCollapseListener(soundModule) {
       collapseBtn.innerHTML = ' Hide Options <span class="arrow-icon">▲</span>';
     } else {
       options.style.display = 'none';
-      collapseBtn.innerHTML = ' More Options <span class="arrow-icon">▼</span>';
+      collapseBtn.innerHTML = ' Sound Options <span class="arrow-icon">▼</span>';
     }
     
     // NO setTimeout needed! The Observer handles it instantly.
@@ -636,6 +636,347 @@ function updateClearWorkspaceButton() {
   btn.classList.toggle("disabled", btn.disabled);
 }
 
+
+const ONBOARDING_STORAGE_KEY = 'ear2earth-onboarding-v1-complete';
+
+function shouldRunOnboarding() {
+  return localStorage.getItem(ONBOARDING_STORAGE_KEY) !== 'true';
+}
+
+function setOnboardingComplete() {
+  localStorage.setItem(ONBOARDING_STORAGE_KEY, 'true');
+}
+
+function startFirstTimeOnboarding() {
+  const dataSourceModal = document.getElementById('dataSourceModal');
+  const dateTimeModal = document.getElementById('dateTimeModal');
+
+  const steps = [
+    {
+      selectors: ['#openPresetModal'],
+      title: 'Choose Data Source',
+      text: 'Start here to open the dataset and device selector.',
+      showDataSourceModal: false,
+      showDateTimeModal: false
+    },
+    {
+      selectors: ['#modalPreset'],
+      title: 'Select a Preset',
+      text: 'Choose a named preset to auto-fill database and device selections.',
+      showDataSourceModal: true,
+      showDateTimeModal: false
+    },
+    {
+      selectors: ['#databases'],
+      title: 'Select a Dataset',
+      text: 'Pick the database containing the packets you want to sonify.',
+      showDataSourceModal: true,
+      showDateTimeModal: false
+    },
+    {
+      selectors: ['#devices'],
+      title: 'Select a Device',
+      text: 'Choose the device/collection within the selected dataset.',
+      showDataSourceModal: true,
+      showDateTimeModal: false
+    },
+    {
+      selectors: ['#confirmDataSource'],
+      title: 'Confirm Source',
+      text: 'Save your dataset and device selection for retrieval.',
+      showDataSourceModal: true,
+      showDateTimeModal: false
+    },
+    {
+      selectors: ['#dataOptions label[for="lastXPackets"]', '#dataOptions label[for="timeRange"]'],
+      title: 'Packet Mode',
+      text: 'Pick between Last Packets and Date Range modes.',
+      anchorSelector: '#dataOptions',
+      cardPlacement: 'below',
+      showDataSourceModal: false,
+      showDateTimeModal: false
+    },
+    {
+      selectors: ['.packet-inputs-group'],
+      title: 'Packet Setup',
+      text: 'Configure packet count and prescaler (use every Nth packet).',
+      showDataSourceModal: false,
+      showDateTimeModal: false
+    },
+    {
+      selectors: ['#dateRangeLabel'],
+      title: 'Date Range',
+      text: 'Click Date Range to open the date/time picker modal.',
+      showDataSourceModal: false,
+      showDateTimeModal: false
+    },
+    {
+      selectors: ['#modalStartTime', '#modalEndTime', '#modalPrescaler'],
+      title: 'Select Date & Time Range',
+      text: 'Set start time, end time, and "Use of every" together in this modal.',
+      beforeShow: () => {
+        document.getElementById('timeRange').checked = true;
+      },
+      anchorSelector: '#confirmDateTime',
+      cardPlacement: 'below',
+      showDataSourceModal: false,
+      showDateTimeModal: true
+    },
+    {
+      selectors: ['#confirmDateTime'],
+      title: 'Apply Date Range',
+      text: 'Apply the selected window for time-based retrieval.',
+      showDataSourceModal: false,
+      showDateTimeModal: true
+    },
+    {
+      selectors: ['#retrieve'],
+      title: 'Retrieve Data',
+      text: 'Fetch packets after source and packet settings are configured.',
+      showDataSourceModal: false,
+      showDateTimeModal: false
+    },
+    {
+      selectors: ['#addModule'],
+      title: 'Add Tracks',
+      text: 'Add more sound modules to map multiple sensor readings.',
+      showDataSourceModal: false,
+      showDateTimeModal: false
+    },
+    {
+      selectors: ['.soundModule .sensors'],
+      title: 'Sensor Mapping',
+      text: 'Each track can target a sensor from the retrieved data.',
+      showDataSourceModal: false,
+      showDateTimeModal: false
+    },
+    {
+      selectors: ['.soundModule .readings'],
+      title: 'Reading Mapping',
+      text: 'Choose which reading for the selected sensor drives the notes.',
+      showDataSourceModal: false,
+      showDateTimeModal: false
+    },
+    {
+      selectors: ['.soundModule .collapse-btn'],
+      title: 'Sound Options',
+      text: 'Use Sound Options to open the scrollable sound settings menu for this track.',
+      showDataSourceModal: false,
+      showDateTimeModal: false
+    },
+    {
+      selectors: ['.soundModule .moduleBottomOptions'],
+      title: 'Advanced Sound Controls',
+      text: 'Here you can adjust tonic, scale, tessitura, sustain notes, and sound type.',
+      beforeShow: () => {
+        const collapseBtn = document.querySelector('.soundModule .collapse-btn');
+        const options = document.querySelector('.soundModule .moduleBottomOptions');
+        if (collapseBtn && options && (options.style.display === 'none' || options.style.display === '')) {
+          collapseBtn.click();
+        }
+      },
+      showDataSourceModal: false,
+      showDateTimeModal: false
+    },
+    {
+      selectors: ['#play', '#stop', '#bpmContainer', '#speedOptions'],
+      title: 'Playback Controls',
+      text: 'Use Play/Stop, BPM, and speed controls to audition results.',
+      showDataSourceModal: false,
+      showDateTimeModal: false
+    },
+    {
+      selectors: ['#metadataButton'],
+      title: 'Metadata',
+      text: 'Open metadata for context about the current dataset.',
+      showDataSourceModal: false,
+      showDateTimeModal: false
+    },
+    {
+      selectors: ['#clearWorkspace'],
+      title: 'Clear Workspace',
+      text: 'Reset tracks and state when starting a new exploration.',
+      showDataSourceModal: false,
+      showDateTimeModal: false
+    }
+  ];
+
+  const overlay = document.createElement('div');
+  overlay.className = 'onboarding-overlay';
+
+  const card = document.createElement('div');
+  card.className = 'onboarding-card';
+  card.innerHTML = `
+    <div class="onboarding-title"></div>
+    <div class="onboarding-text"></div>
+    <div class="onboarding-footer">
+      <span class="onboarding-progress"></span>
+      <div class="onboarding-controls">
+        <button type="button" class="onboarding-btn onboarding-skip">Skip</button>
+        <button type="button" class="onboarding-btn onboarding-back">Back</button>
+        <button type="button" class="onboarding-btn onboarding-next">Next</button>
+      </div>
+    </div>
+  `;
+
+  document.body.appendChild(overlay);
+  document.body.appendChild(card);
+
+  const titleEl = card.querySelector('.onboarding-title');
+  const textEl = card.querySelector('.onboarding-text');
+  const progressEl = card.querySelector('.onboarding-progress');
+  const skipBtn = card.querySelector('.onboarding-skip');
+  const backBtn = card.querySelector('.onboarding-back');
+  const nextBtn = card.querySelector('.onboarding-next');
+
+  let stepIndex = 0;
+  let highlightedEls = [];
+
+  function clearHighlight() {
+    if (highlightedEls.length === 0) return;
+    highlightedEls.forEach(el => el.classList.remove('onboarding-highlight'));
+    highlightedEls = [];
+  }
+
+  function placeCard(target, placement = 'auto') {
+    const rect = target.getBoundingClientRect();
+    const margin = 12;
+    const cardRect = card.getBoundingClientRect();
+    const maxTop = window.innerHeight - cardRect.height - margin;
+    const maxLeft = window.innerWidth - cardRect.width - margin;
+
+    function clamp(value, min, max) {
+      return Math.min(Math.max(value, min), max);
+    }
+
+    const positions = {
+      below: {
+        top: rect.bottom + margin,
+        left: rect.left + (rect.width - cardRect.width) / 2
+      },
+      above: {
+        top: rect.top - cardRect.height - margin,
+        left: rect.left + (rect.width - cardRect.width) / 2
+      },
+      right: {
+        top: rect.top + (rect.height - cardRect.height) / 2,
+        left: rect.right + margin
+      },
+      left: {
+        top: rect.top + (rect.height - cardRect.height) / 2,
+        left: rect.left - cardRect.width - margin
+      }
+    };
+
+    const orderedPlacements = placement === 'auto'
+      ? ['below', 'above', 'right', 'left']
+      : [placement, 'below', 'above', 'right', 'left'];
+
+    let chosen = positions.below;
+    for (const candidate of orderedPlacements) {
+      const p = positions[candidate];
+      if (
+        p.top >= margin &&
+        p.left >= margin &&
+        p.top <= maxTop &&
+        p.left <= maxLeft
+      ) {
+        chosen = p;
+        break;
+      }
+    }
+
+    const top = clamp(chosen.top, margin, maxTop);
+    const left = clamp(chosen.left, margin, maxLeft);
+    card.style.top = `${top}px`;
+    card.style.left = `${left}px`;
+  }
+
+  function closeTour(markComplete = true) {
+    clearHighlight();
+    overlay.remove();
+    card.remove();
+    document.getElementById('dataSourceModal').style.display = 'none';
+    document.getElementById('dateTimeModal').style.display = 'none';
+    document.getElementById('dataSourceModal').classList.remove('onboarding-modal-active');
+    document.getElementById('dateTimeModal').classList.remove('onboarding-modal-active');
+    if (markComplete) {
+      setOnboardingComplete();
+    }
+    window.removeEventListener('resize', handleViewportUpdate);
+    window.removeEventListener('scroll', handleViewportUpdate, true);
+  }
+
+  function renderStep() {
+    if (stepIndex < 0) stepIndex = 0;
+    if (stepIndex >= steps.length) {
+      closeTour(true);
+      return;
+    }
+
+    const step = steps[stepIndex];
+    if (typeof step.beforeShow === 'function') {
+      step.beforeShow();
+    }
+
+    if (dataSourceModal) {
+      dataSourceModal.style.display = step.showDataSourceModal ? 'flex' : 'none';
+      dataSourceModal.classList.toggle('onboarding-modal-active', !!step.showDataSourceModal);
+    }
+    if (dateTimeModal) {
+      dateTimeModal.style.display = step.showDateTimeModal ? 'flex' : 'none';
+      dateTimeModal.classList.toggle('onboarding-modal-active', !!step.showDateTimeModal);
+    }
+
+    const targets = (step.selectors || [])
+      .map(selector => document.querySelector(selector))
+      .filter(Boolean);
+
+    if (targets.length === 0) {
+      stepIndex += 1;
+      renderStep();
+      return;
+    }
+
+    clearHighlight();
+    highlightedEls = targets;
+    highlightedEls.forEach(el => el.classList.add('onboarding-highlight'));
+    const anchorTarget = step.anchorSelector
+      ? (document.querySelector(step.anchorSelector) || targets[0])
+      : targets[0];
+
+    anchorTarget.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'nearest' });
+
+    titleEl.textContent = step.title;
+    textEl.textContent = step.text;
+    progressEl.textContent = `${stepIndex + 1}/${steps.length}`;
+    backBtn.disabled = stepIndex === 0;
+    nextBtn.textContent = stepIndex === steps.length - 1 ? 'Finish' : 'Next';
+
+    requestAnimationFrame(() => placeCard(anchorTarget, step.cardPlacement || 'auto'));
+  }
+
+  function handleViewportUpdate() {
+    if (highlightedEls.length === 0) return;
+    placeCard(highlightedEls[0]);
+  }
+
+  skipBtn.addEventListener('click', () => closeTour(true));
+  backBtn.addEventListener('click', () => {
+    stepIndex -= 1;
+    renderStep();
+  });
+  nextBtn.addEventListener('click', () => {
+    stepIndex += 1;
+    renderStep();
+  });
+
+  window.addEventListener('resize', handleViewportUpdate);
+  window.addEventListener('scroll', handleViewportUpdate, true);
+
+  renderStep();
+}
+
 // Attach a single event listener to the speedOptions container
 document.getElementById('speedOptions').addEventListener('change', handleSpeedChange);
 
@@ -789,7 +1130,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // const retrieveByNameDropdown = document.getElementById('retrieveByNameDropdown');
 
   // === Date/Time Range Modal Functionality ===
   const dateTimeModal = document.getElementById('dateTimeModal');
@@ -978,17 +1318,9 @@ document.addEventListener('DOMContentLoaded', () => {
     },
   ];
 
-  // Populate the "Retrieve by Name" dropdown with predefined database/device pairs
+  // Populate the preset dropdown with predefined database/device pairs
   predefinedPairs.forEach(pair => {
-    // BEFORE: main preset dropdown
-    /* 
-    let option = document.createElement('option');
-    option.value = JSON.stringify(pair); // Store as a JSON string
-    option.textContent = pair.name;
-    retrieveByNameDropdown.appendChild(option);
-    */
-
-    // NEW: Add to modal preset dropdown
+    // Add to modal preset dropdown
     let modalOption = document.createElement('option');
     modalOption.value = JSON.stringify(pair); // Store as a JSON string
     modalOption.textContent = pair.name;
@@ -1040,33 +1372,14 @@ document.addEventListener('DOMContentLoaded', () => {
       
     }
   });
-  // Handle selection from the named dropdown
-  retrieveByNameDropdown.addEventListener('change', async e => {
-    handleDatasetChange(e);
-    isMetadataDisplayed = false;
-    metadataContainer.style.display = 'none';
-    
-    metadataBtn.style.display = "block";
-    metadataBtn.style.backgroundColor = '#FFF';
-    metadataBtn.style.color = '#000';
-    metadataBtn.textContent = 'Loading...';
-    metadata = await retrieveMetadata();
-
-    if (metadata == null) {
-      metadataBtn.style.backgroundColor = 'red';
-      metadataBtn.textContent = 'No Metadata'
-    } else {
-      metadataBtn.style.backgroundColor = 'green';
-      metadataBtn.textContent = 'View Metadata';
-    }
-
-    metadataBtn.style.color = 'white';
-
-    return;
-  });
-
   workspaceHasData = false;
   updateClearWorkspaceButton();
+
+  if (shouldRunOnboarding()) {
+    setTimeout(() => {
+      startFirstTimeOnboarding();
+    }, 350);
+  }
 });
 
 // Listener for "Dataset Name" dropdown

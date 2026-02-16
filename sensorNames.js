@@ -10,8 +10,8 @@ export function sensorDisplayName(rawKey) {
   // dictionary mapping for other sensors
   const map = {
     TSL2591: "Light",
-    MS5803_119: "Hydrostatic Pressure",
-    MS5803_118: "Atmospheric Pressure",
+    MS5803_119: "Hydrostatic",
+    MS5803_118: "Atmospheric",
     TippingBucket: "Rainfall Gauge",
     Teros10: "Soil Moisture",
     A55311: "Magnetic Encoder",
