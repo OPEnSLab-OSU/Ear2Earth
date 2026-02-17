@@ -1351,3 +1351,44 @@ main {
 .popover-body {
   margin-top: 8px;
 }
+
+
+/* ====== STATUS MESSAGE NOTIFICATION ======== */
+.status-message {
+  position: fixed;
+  bottom: 30px;
+  right: 30px;
+  background: #333;
+  color: white;
+  padding: 16px 24px;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  font-size: 14px;
+  z-index: 10001;
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.3s ease, transform 0.3s ease;
+  pointer-events: none;
+}
+
+.status-message.show {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+.status-message.success {
+  background: #4caf50;
+}
+
+.status-message.error {
+  background: #f44336;
+}
+
+.status-message.warning {
+  background: #ff9800;
+}
+
+.status-message.info {
+  background: var(--standard-blue);
+}
