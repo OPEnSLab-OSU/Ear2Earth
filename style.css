@@ -64,6 +64,127 @@ nav#nav ul li a {
   text-decoration: none;
   color: #030303;
 }
+
+.onboarding-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(10, 15, 26, 0.55);
+  z-index: 12000;
+}
+
+.onboarding-card {
+  position: fixed;
+  width: min(360px, calc(100vw - 24px));
+  background: #ffffff;
+  border: 1px solid #d6dbe3;
+  border-radius: 10px;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.2);
+  padding: 12px;
+  z-index: 12002;
+}
+
+.onboarding-title {
+  font-size: 14px;
+  font-weight: 700;
+  margin-bottom: 6px;
+  color: #111827;
+}
+
+.onboarding-text {
+  font-size: 12px;
+  line-height: 1.4;
+  color: #374151;
+}
+
+.onboarding-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 12px;
+  gap: 8px;
+}
+
+.onboarding-progress {
+  font-size: 11px;
+  color: #6b7280;
+}
+
+.onboarding-controls {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.onboarding-btn {
+  border: 1px solid #c8cfda;
+  background: #f8fafc;
+  color: #111827;
+  border-radius: 6px;
+  padding: 6px 10px;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.onboarding-btn:hover {
+  background: #eef2f7;
+}
+
+.onboarding-btn:disabled {
+  cursor: default;
+  opacity: 0.55;
+}
+
+.onboarding-next {
+  border-color: var(--standard-blue);
+  background: var(--standard-blue);
+  color: #fff;
+}
+
+.onboarding-next:hover {
+  background: var(--hover-blue);
+}
+
+.onboarding-highlight {
+  position: relative;
+  z-index: 12001 !important;
+  box-shadow: 0 0 0 3px rgba(3, 109, 238, 0.9);
+  border-radius: 6px;
+}
+
+.modal.onboarding-modal-active {
+  z-index: 12001;
+}
+
+.modal.onboarding-modal-active .modal-content,
+.modal.onboarding-modal-active .modal-form,
+.modal.onboarding-modal-active .form-group,
+.modal.onboarding-modal-active #presetElements,
+.modal.onboarding-modal-active #databaseElements,
+.modal.onboarding-modal-active #deviceElements,
+.modal.onboarding-modal-active #confirmDataSource,
+.modal.onboarding-modal-active #confirmDateTime {
+  position: relative;
+  z-index: 12002;
+  opacity: 1;
+  filter: none;
+}
+
+#speedOptions.onboarding-highlight {
+  box-shadow: none;
+}
+
+#speedOptions.onboarding-highlight::after {
+  content: "";
+  position: absolute;
+  top: -3px;
+  bottom: -3px;
+  left: -10px;
+  right: 3px;
+  border: 3px solid rgba(3, 109, 238, 0.9);
+  border-radius: 6px;
+  pointer-events: none;
+}
+
 main {
   margin-top: 0px;
 }
@@ -999,6 +1120,12 @@ main {
   border-radius: 5px;
   margin-bottom: 3px;
   overflow: hidden; /* Prevents overflow artifacts during snap-resizing */
+}
+
+#globalTimeline .xtick text {
+  letter-spacing: .4px !important;
+  font-weight: 400 !important;
+  color: #000000;
 }
 
 
