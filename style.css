@@ -1252,6 +1252,7 @@ main {
   color: #fff;
   border: 1px solid var(--standard-blue);
   border-radius: 3px;
+  font-size: 14px;
 }
 
 /* ==== POPUP for date range selection ==== */
@@ -1314,4 +1315,5 @@ main {
   color: #fff;
   border: 1px solid var(--standard-blue);
   border-radius: 3px;
+  font-size: 14px;
 }
