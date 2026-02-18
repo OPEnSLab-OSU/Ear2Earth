@@ -13,7 +13,7 @@
   --standard-blue: #036dee;
   --hover-blue: rgb(16, 80, 158);
   --main-grey: #DFDFDF;
-  --active-grey: #eaeaeaba;
+  --active-grey: #9e9e9eba;
   --hover-grey: #bebebe;
 }
 
@@ -223,13 +223,14 @@ main {
 }
 
 .topmenu .toolbar {
-  height: 46px;
+  height: auto;
   background: #ffffff !important;
   box-shadow: 0px 1px 0px rgba(0, 0, 0, 0.04) inset;
-  padding: var(--pad) 12px;
+  padding: 8px 12px;
   margin-bottom: 0px;
   display: flex;
   flex-direction: row;
+  align-items: center;
 }
 
 .topmenu .toolbar .row {
@@ -238,7 +239,8 @@ main {
   gap: 11px;
   flex-wrap: nowrap;
   width: 100%;
-  justify-content: space-between; /* Distribute space evenly */
+  justify-content: flex-start; /* Distribute space evenly */
+  align-content: flex-start;
 }
 
 .topmenu .group {
@@ -290,6 +292,7 @@ main {
   align-items: center;
   justify-content: center;
   gap: 4px;
+  text-wrap: wrap;
 }
 
 #openPresetModal:hover {
@@ -316,6 +319,7 @@ main {
   height: 57px;
   margin: 1px;
   margin-left: 1px;
+  align-items: stretch;
 }
 
 /* Radio button labels styled as buttons */
@@ -1377,6 +1381,7 @@ main {
   color: #fff;
   border: 1px solid var(--standard-blue);
   border-radius: 3px;
+  font-size: 14px;
 }
 
 /* ==== POPUP for date range selection ==== */
@@ -1439,4 +1444,5 @@ main {
   color: #fff;
   border: 1px solid var(--standard-blue);
   border-radius: 3px;
+  font-size: 14px;
 }
