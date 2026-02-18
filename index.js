@@ -2,6 +2,8 @@
 
 // Metadata
 let metadata;
+const metadataBtn = document.getElementById('metadataButton');
+let isMetadataDisplayed = false;
 
 // Playback boolean
 let isPlaying = false;
@@ -2757,9 +2759,6 @@ function dataToMidiPitches(normalizedData, scale) {
   return normalizedData.map(value => scale[Math.floor(value * (scaleLength - 1))]);
 }
 
-const metadataBtn = document.getElementById('metadataButton');
-let isMetadataDisplayed = false;
-
 async function retrieveMetadata() {
   let db = document.getElementById('databases').value;
   let url = `/metadata?database=${db}`;
@@ -2784,16 +2783,11 @@ metadataBtn.onclick = async function () {
   if (isMetadataDisplayed) {
     metadataContainer.style.display = 'none';
     isMetadataDisplayed = false;
-    metadataBtn.style.backgroundColor = 'green';
     metadataBtn.textContent = 'View Metadata';
     return;
   }
 
-  if (metadataBtn.style.backgroundColor == "green") {
-      metadataBtn.style.backgroundColor = "#90EE90";
-  }
-
-  if (metadataBtn.style.backgroundColor == 'red') {
+  if (metadata == null) {
     return;
   }
 
