@@ -15,164 +15,277 @@
       href="https://fonts.googleapis.com/css2?family=Sigmar+One&display=swap"
       rel="stylesheet"
     />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&family=Google+Sans:ital,opsz,wght@0,17..18,400..700;1,17..18,400..700&family=Inter:ital,opsz,wght@0,14..32,700;1,14..32,700&display=swap" rel="stylesheet">
+
     <link
       href="https://fonts.googleapis.com/css2?family=Dosis:wght@200..800&family=Sigmar+One&display=swap"
       rel="stylesheet"
     />
-
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&family=Inter:ital,opsz,wght@0,14..32,700;1,14..32,700&display=swap" rel="stylesheet">
     <script
       src="https://cdn.plot.ly/plotly-2.30.1.min.js"
       charset="utf-8"
+
     ></script>
 
     <!--<script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.min.js"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.11.1/addons/p5.sound.min.js"></script>-->
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.45/Tone.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
   </head>
   <body>
     <header>
       <title id="title">Ear2Earth</title>
-      <h2>Ear2Earth, Environmental Sensor Data Sonification Platform</h2>
+      <a href="index.html" id="page-title"><h2>ear2earth</h2></a>
+      <nav id="nav">
+        <ul>
+          <li><a href="user-guide.html">User Guide</a></li>
+          <li><a href="#">Contributors</a></li>
+          <li><a href="#">About</a></li>
+        </ul>
+      </nav>
     </header>
 
     <main>
-      <!-- === Top Menu (Dataset + Playback) ================================= -->
-      <div class="topmenu">
-        <!-- Left: Dataset toolbar -->
-        <section class="toolbar toolbar-data" aria-label="Dataset & retrieval">
+    <!-- ========================================
+        TOP MENU - Main Control Toolbar
+        Contains all primary controls for data retrieval, playback, and workspace management
+    ========================================= -->
+    <div class="topmenu">
+      <section class="toolbar toolbar-main" aria-label="Main Controls">
+        <div class="toolbar-wrapper">
           <div class="row">
-            <!-- Preset -->
+            
+            <!-- ========== DATA SOURCE SECTION ========== -->
+            
+            <!-- Preset Selection Button -->
+            <!-- Opens modal to select predefined data configurations -->
             <div class="group">
-              <label class="u-sr-only" for="retrieveByNameDropdown"
-                >Preset</label
-              >
-              <select id="retrieveByNameDropdown">
-                <option value="default" id="default_preset">
-                  Select a Preset
-                </option>
-              </select>
-            </div>
-
-            <!-- Collapsible Database/Device (kept for index.js; starts hidden) -->
-            <button
-              class="icon-btn collapse-btn"
-              id="toggleDataSource"
-              title="Show databases & devices"
-            >
-              ▼
-            </button>
-            <div id="dataSource" style="display: none">
-              <div id="databaseElements">
-                <label for="databases">Database:</label>
-                <select id="databases">
-                  <option value="default">Select a database</option>
-                </select>
-              </div>
-              <div id="deviceElements">
-                <label for="devices">Device:</label>
-                <select id="devices">
-                  <option value="default">Select a device</option>
-                </select>
-              </div>
-            </div>
-
-            <!-- Packet option radios (required by index.js, so kept for now as well) -->
-            <div class="group" id="dataOptions">
-              <label>
-                <input
-                  type="radio"
-                  id="lastXPackets"
-                  name="packetOption"
-                  value="lastXPackets"
-                  checked
-                />
-                Last X Packets
-              </label>
-              <label>
-                <input
-                  type="radio"
-                  id="timeRange"
-                  name="packetOption"
-                  value="timeRange"
-                />
-                Time Range
-              </label>
-            </div>
-
-            <!--Test-->
-
-            <!-- # Packets -->
-            <div class="group" id="numpacketsInput">
-              <label for="numpackets"># Packets</label>
-              <input type="text" id="numpackets" name="numpackets" value="16" />
-            </div>
-
-            <!-- Prescaler -->
-            <div class="group" id="skipPackets">
-              <span class="muted">Use 1 of every</span>
-              <input type="number" id="prescaler" name="prescaler" value="1" />
-              <span class="muted">packets</span>
-            </div>
-
-            <!-- Time range (kept with exact ID for index.js; calendar picker) -->
-            <div class="group time" id="timeInputs" style="display: none">
-              <span class="muted">Time Range</span>
-              <input type="datetime-local" id="startTime" />
-              <span class="muted">–</span>
-              <input type="datetime-local" id="endTime" />
-            </div>
-
-            <!-- Retrieve -->
-            <button id="retrieve" class="primary-btn">Retrieve Data</button>
-            <!-- Clear -->
-            <button id="clearWorkspace" class="pill-btn" type="button" disabled>Clear Workspace</button>
-
-            <!-- Info / Metadata -->
-            <div class="group">
-              <a href="user-guide.html"><button id="infoButton" class="icon-btn" title="Help"></button></a>
-              <button id="metadataButton" class="pill-btn">
-                No Metadata
+              <button id="openPresetModal" class="primary-btn">
+                <i data-lucide="folder-search"></i>
+                Select a Preset
               </button>
             </div>
-          </div>
-        </section>
 
-        <!-- Right: Playback toolbar -->
-        <section class="toolbar toolbar-transport" aria-label="Playback">
-          <div class="row">
-            <div class="transport-group">
-              <button id="play" class="square-btn" title="Play"></button>
-              <button id="stop" class="square-btn" title="Stop"></button>
+            <!-- Data Retrieval Options -->
+            <!-- Radio buttons to choose between last N packets or date range -->
+            <div class="group" id="dataOptions">
+              <!-- Option 1: Get last X packets -->
+              <label for="lastXPackets">
+                <input type="radio" id="lastXPackets" name="packetOption" value="lastXPackets" checked />
+                <i data-lucide="package"></i>
+                Last Packets
+              </label>
+              <!-- Option 2: Get packets within date range -->
+              <label for="timeRange" id="dateRangeLabel">
+                <input type="radio" id="timeRange" name="packetOption" value="timeRange" />
+                <i data-lucide="calendar"></i>
+                <span id="dateRangeText">Date Range</span>
+              </label>
             </div>
 
+            <!-- Packet Configuration Inputs -->
+            <!-- Stacked inputs for number of packets and prescaler -->
+            <div class="packet-inputs-group">
+              <!-- Number of packets to retrieve -->
+              <div class="group" id="numpacketsInput">
+                <label for="numpackets"># of packets:</label>
+                <input type="text" id="numpackets" name="numpackets" value="16" />
+              </div>
+              <!-- Prescaler: use every Nth packet -->
+              <div class="group" id="skipPackets">
+                <span class="muted">Use of every: </span>
+                <input type="text" id="prescaler" name="prescaler" value="1"/>
+              </div>
+            </div>
+
+            <!-- Hidden date/time inputs for date range mode -->
+            <!-- These are populated when user selects "Date Range" option -->
+            <input type="datetime-local" id="startTime" style="display: none;" />
+            <input type="datetime-local" id="endTime" style="display: none;" />
+
+            <!-- Data Retrieval Button -->
+            <!-- Triggers data fetch based on selected options -->
+            <button id="retrieve" class="primary-btn">Retrieve Data</button>
+
+            <!-- ========== METADATA SECTION ========== -->
+            
+            <!-- Metadata View Button -->
+            <!-- Opens modal to display packet metadata information -->
+            <div class="group">
+              <button id="metadataButton" class="pill-btn">
+                <i data-lucide="codeXml"></i>
+                View Metadata
+              </button>
+              <!-- Help/Info button for metadata -->
+              <button id="toolButton" class="icon-btn" title="Help">
+                <i data-lucide="info"></i>
+              </button>
+            </div>
+
+            <!-- ========== PLAYBACK CONTROLS SECTION ========== -->
+            
+            <!-- Master Volume Control -->
+            <!-- Global volume slider for all audio output -->
+            <div class="control-group">
+              <label id="masVolLabel" for="masterVolume">Master Volume</label>
+              <input type="range" id="masterVolume" name="masterVolume" min="-60" max="0" />
+            </div>
+
+            <!-- Transport Controls (Play/Stop) -->
+            <!-- Basic playback controls for audio -->
+            <div class="transport-group">
+              <!-- Play button - starts audio playback -->
+              <button id="play" class="square-btn" title="Play">
+                <i data-lucide="play"></i>
+              </button>
+              <!-- Stop button - stops audio playback -->
+              <button id="stop" class="square-btn" title="Stop">
+                <i data-lucide="square"></i>
+              </button>
+            </div>
+
+            <!-- BPM (Beats Per Minute) Control -->
+            <!-- Adjusts tempo of audio playback -->
             <div id="bpmContainer" class="transport-group">
               <label id="bpmLabel" for="bpm">BPM</label>
               <input type="range" id="bpm" name="bpm" min="50" max="200" />
+              <!-- Display current BPM value -->
               <div id="bpmText">125</div>
+            </div>
 
-              <!-- Speed options (IDs required by index.js) -->
-              <div id="speedOptions" class="speed">
-                <label for="speed1x">1x</label>
-                <input
-                  type="radio"
-                  id="speed1x"
-                  name="speed"
-                  value="1"
-                  checked
-                />
-                <label for="speed2x">2x</label>
-                <input type="radio" id="speed2x" name="speed" value="2" />
-                <label for="speed4x">4x</label>
-                <input type="radio" id="speed4x" name="speed" value="4" />
-                <label for="speed8x">8x</label>
-                <input type="radio" id="speed8x" name="speed" value="8" />
-              </div>
+            <!-- Playback Speed Options -->
+            <!-- Radio buttons for 1x, 2x, 4x, 8x playback speed -->
+            <div id="speedOptions" class="multi-function-grid">
+              <input type="radio" id="speed1x" name="speed" value="1" checked />
+              <label for="speed1x">1x</label>
+              <input type="radio" id="speed2x" name="speed" value="2" />
+              <label for="speed2x">2x</label>
+              <input type="radio" id="speed4x" name="speed" value="4" />
+              <label for="speed4x">4x</label>
+              <input type="radio" id="speed8x" name="speed" value="8" />
+              <label for="speed8x">8x</label>
+            </div>
+
+            <!-- ========== WORKSPACE TOOLS SECTION ========== -->
+            
+            <!-- Multi-Function Tool Grid -->
+            <!-- 2x2 grid for share, download, undo, redo actions -->
+            <div class="multi-function-grid">
+              <!-- Share workspace -->
+              <button id="share" class="icon-btn-small" title="Share">
+                <i data-lucide="share-2"></i>
+              </button>
+              <!-- Download workspace data -->
+              <button id="download" class="icon-btn-small" title="Download">
+                <i data-lucide="file-down"></i>
+              </button>
+              <!-- Undo last action -->
+              <button id="undo" class="icon-btn-small" title="Undo">
+                <i data-lucide="undo-2"></i>
+              </button>
+              <!-- Redo last undone action -->
+              <button id="redo" class="icon-btn-small" title="Redo">
+                <i data-lucide="redo-2"></i>
+              </button>
+            </div>
+
+            <!-- Packet Refresh Button -->
+            <!-- Refreshes/reloads packet data -->
+            <div class="group">
+              <button id="refresh" class="action-btn" title="Packet Refresh">
+                <i data-lucide="refresh-cw"></i>
+                <span class="action-label">Packet Refresh</span>
+              </button>
+              <!-- Help/Info button for refresh -->
+              <button id="toolButton" class="icon-btn" title="Help">
+                <i data-lucide="info"></i>
+              </button>
+            </div>
+
+            <!-- Clear Workspace Button -->
+            <!-- Clears all data and resets workspace -->
+            <div class="group">
+              <button id="clearWorkspace" class="clear-btn" title="Clear Workspace">
+                <i data-lucide="Paintbrush"></i>
+                Clear Workspace
+              </button>
+            </div>
+
+          </div> <!-- End .row -->
+        </div> <!-- End .toolbar-wrapper -->
+      </section> <!-- End .toolbar -->
+    </div> <!-- End .topmenu -->
+
+      <!-- MODALS - OUTSIDE THE TOOLBAR -->
+      <!-- Modal for Database & Device Selection -->
+      <div id="dataSourceModal" class="modal" style="display: none;">
+        <div class="modal-content">
+          <span class="close-modal">&times;</span>
+          <h3>Configure Data Source</h3>
+
+          <!-- Preset selection in modal -->
+          <div id="presetElements">
+            <label for="modalPreset">Preset:</label>
+            <select id="modalPreset">
+              <option value="default">Select a Preset</option>
+            </select>
+          </div>
+          
+          <div id="databaseElements">
+            <label for="databases">Database:</label>
+            <select id="databases">
+              <option value="default">Select a database</option>
+            </select>
+          </div>
+          
+          <div id="deviceElements">
+            <label for="devices">Device:</label>
+            <select id="devices">
+              <option value="default">Select a device</option>
+            </select>
+          </div>
+          
+          <button id="confirmDataSource" class="primary-btn">Confirm</button>
+        </div>
+      </div>
+
+      <!-- Modal for Date/Time Range Selection -->
+      <div id="dateTimeModal" class="modal" style="display: none;">
+        <div class="modal-content">
+          <span class="close-modal" id="closeDateModal">&times;</span>
+          <h3>Select Date & Time Range</h3>
+          
+          <div class="modal-form">
+            <div class="form-group">
+              <label for="modalStartTime">Start Date & Time:</label>
+              <input type="datetime-local" id="modalStartTime" />
+            </div>
+            
+            <div class="form-group">
+              <label for="modalEndTime">End Date & Time:</label>
+              <input type="datetime-local" id="modalEndTime" />
+            </div>
+            
+            <div class="form-group">
+              <label for="modalPrescaler">Use of every:</label>
+              <input type="number" id="modalPrescaler" value="1" min="1" />
             </div>
           </div>
-        </section>
+          
+          <button id="confirmDateTime" class="primary-btn">Apply</button>
+        </div>
       </div>
       <!-- ============================================ -->
+
+      <div id="metadataContainer">
+      </div>
 
       <!-- ========== Universal X-Axis =========== -->
       <div class="timeline-row">
@@ -181,13 +294,11 @@
       </div>
       <!-- =============================================== -->
 
-      <div id="metadataContainer">
-      </div>
 
       <div id="modulesContainer"></div>
       <button id="addModule">
         <span>Add Track</span>
-        <img src="images/add.png" alt="Add icon" class="add-icon" />
+        <i data-lucide="circle-plus" class="add-icon" ></i>
       </button>
     </main>
 
