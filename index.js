@@ -1,5 +1,10 @@
 /**** Global variables ****/
 
+// Metadata
+let metadata;
+const metadataBtn = document.getElementById('metadataButton');
+let isMetadataDisplayed = false;
+
 // Playback boolean
 let isPlaying = false;
 
@@ -11,11 +16,17 @@ let speedMult = 1;
 let synths = []; // Array of FM synths
 let gainNodes = []; // Array of gain nodes
 
+// Boolean to track if data is displayed
+let workspaceHasData = false
+
 // Import synths and samplers
 import { samplers, fmSynths } from './instruments.js';
 
 // HTML template for a sound module
 import { createSoundModuleTemplate } from './soundModule.js';
+
+// Import sensor display name function
+import { sensorDisplayName } from "./sensorNames.js";
 
 // Menu items for the instruments
 let instrumentsMenuItems = [];
@@ -33,6 +44,9 @@ let midiPitchesArray = [];
 // Array to hold sound modules
 var soundModules = [];
 
+// Store min/max for each moduleIdx
+let plotRanges = {}; 
+
 // Sustain notes for each sound module
 let sustainNotes = [];
 
@@ -43,7 +57,139 @@ let timeBetweenNotes = 500;
 var retrievedData;
 
 // Array to hold x-axis data for each plot
-let plotXData = [];
+let plotXData = {};
+
+// Undo/Redo state management
+let historyStack = [];
+let historyIndex = -1;
+let isRestoring = false; // Flag to prevent capturing state while restoring
+const MAX_HISTORY = 50; // Limit history to prevent memory issues
+
+// ====== UNDO/REDO FUNCTIONALITY ======
+function captureState() {
+  return {
+    modules: soundModules.map(module => ({
+      id: module.id,
+      sensor: module.querySelector('.sensors')?.value,
+      reading: module.querySelector('.readings')?.value,
+      volume: module.querySelector('.volume')?.value,
+      soundType: module.querySelector('.soundTypes')?.value,
+      tessitura: module.querySelector('.tessitura')?.value,
+      tonic: module.querySelector('.tonic')?.value,
+      scale: module.querySelector('.scale')?.value,
+      sustainNotes: module.querySelector('.sustainNotes')?.checked
+    })),
+    database: document.getElementById('databases')?.value,
+    device: document.getElementById('devices')?.value,
+    bpm: document.getElementById('bpm')?.value,
+    masterVolume: document.getElementById('masterVolume')?.value,
+    numPackets: document.getElementById('numpackets')?.value,
+    prescaler: document.getElementById('prescaler')?.value
+  };
+}
+
+// Save state to history
+function saveState() {
+
+  if (isRestoring) {
+    return; // Don't save state if we're currently restoring (prevents infinite loop)
+  }
+
+  // Remove any future states if we're not at the end
+  if (historyIndex < historyStack.length - 1) {
+    historyStack = historyStack.slice(0, historyIndex + 1);
+  }
+  
+  historyStack.push(captureState());
+  
+  // Limit history size
+  if (historyStack.length > MAX_HISTORY) {
+    historyStack.shift();
+  } else {
+    historyIndex++;
+  }
+  
+  updateUndoRedoButtons();
+}
+
+// Restore state from history
+function restoreState(state) {
+  isRestoring = true;
+  
+  try {
+    // Stop any playback
+    stopSynths();
+    
+    // Restore global settings
+    if (state.database) document.getElementById('databases').value = state.database;
+    if (state.device) document.getElementById('devices').value = state.device;
+    if (state.bpm) {
+      document.getElementById('bpm').value = state.bpm;
+      document.getElementById('bpmText').innerText = state.bpm;
+      bpm = state.bpm;
+    }
+    if (state.masterVolume) document.getElementById('masterVolume').value = state.masterVolume;
+    if (state.numPackets) document.getElementById('numpackets').value = state.numPackets;
+    if (state.prescaler) document.getElementById('prescaler').value = state.prescaler;
+    
+    // Remove all modules
+    const modulesContainer = document.getElementById('modulesContainer');
+    while (modulesContainer.firstChild) {
+      modulesContainer.removeChild(modulesContainer.firstChild);
+    }
+    soundModules = [];
+    
+    // Recreate modules with saved state
+    state.modules.forEach((moduleState, index) => {
+      addSoundModule();
+      const module = soundModules[index];
+      
+      // Restore module settings
+      if (moduleState.sensor) module.querySelector('.sensors').value = moduleState.sensor;
+      if (moduleState.reading) {
+        setReadings(index);
+        module.querySelector('.readings').value = moduleState.reading;
+      }
+      if (moduleState.volume) module.querySelector('.volume').value = moduleState.volume;
+      if (moduleState.soundType) module.querySelector('.soundTypes').value = moduleState.soundType;
+      if (moduleState.tessitura) module.querySelector('.tessitura').value = moduleState.tessitura;
+      if (moduleState.tonic) module.querySelector('.tonic').value = moduleState.tonic;
+      if (moduleState.scale) module.querySelector('.scale').value = moduleState.scale;
+      if (moduleState.sustainNotes !== undefined) {
+        module.querySelector('.sustainNotes').checked = moduleState.sustainNotes;
+        sustainNotes[index] = moduleState.sustainNotes;
+      }
+      
+      // Replot if data exists
+      if (retrievedData) {
+        plot(index);
+      }
+    });
+    
+    updateUndoRedoButtons();
+  } finally {
+    // ALWAYS reset the flag, even if there's an error
+    isRestoring = false;
+  }
+}
+
+// Update undo/redo button states
+function updateUndoRedoButtons() {
+  const undoBtn = document.getElementById('undo');
+  const redoBtn = document.getElementById('redo');
+  
+  if (undoBtn) {
+    undoBtn.disabled = historyIndex <= 0;
+    undoBtn.style.opacity = historyIndex <= 0 ? '0.5' : '1';
+    undoBtn.style.cursor = historyIndex <= 0 ? 'not-allowed' : 'pointer';
+  }
+  
+  if (redoBtn) {
+    redoBtn.disabled = historyIndex >= historyStack.length - 1;
+    redoBtn.style.opacity = historyIndex >= historyStack.length - 1 ? '0.5' : '1';
+    redoBtn.style.cursor = historyIndex >= historyStack.length - 1 ? 'not-allowed' : 'pointer';
+  }
+}
 
 // Function to initialize a sound module
 async function addSoundModule() {
@@ -91,6 +237,8 @@ async function addSoundModule() {
   if (isPlaying) {
     setupSynth(moduleId); // Create a new FM synth
   }
+
+  saveState(); // Capture state after adding a new module
 }
 
 document.getElementById('addModule').onclick = addSoundModule;
@@ -151,7 +299,7 @@ function attachRemoveListener(soundModule) {
       removeBtn.dataset.moduleId = index;
     });
 
-    console.log(`Removed module ${moduleId}`);
+    saveState(); // Capture state after removing a module
   });
 }
 
@@ -170,6 +318,7 @@ function attachSensorListener(soundModule) {
     const selectedSensor = event.target.value;
     setReadings(soundModules.indexOf(soundModule));
     console.log(`Sensor for ${soundModule.id} set to ${selectedSensor}`);
+    saveState(); // Capture state after changing sensor
   });
 }
 
@@ -179,23 +328,50 @@ function attachReadingListener(soundModule) {
     const selectedReading = event.target.value;
     plot(soundModules.indexOf(soundModule));
     console.log(`Reading for ${soundModule.id} set to ${selectedReading}`);
+    saveState(); // Capture state after changing reading
   });
 }
 
+// Left menu collapse (accordion) logic
 function attachCollapseListener(soundModule) {
   const collapseBtn = soundModule.querySelector('.collapse-btn');
-  collapseBtn.addEventListener('click', () => {
-    const options = soundModule.querySelector('.moduleBottomOptions');
-    const isVisible = options.style.display === 'block';
-    options.style.display = isVisible ? 'none' : 'block';
-    collapseBtn.textContent = isVisible ? '▼' : '▲';
+  const options = soundModule.querySelector('.moduleBottomOptions');
+  const plotDiv = soundModule.querySelector('.plot');
 
-    setTimeout(() => {
-      const plotDiv = soundModule.querySelector('.plot');
-      if (plotDiv && plotDiv.data) {
-        Plotly.Plots.resize(plotDiv);
-      }
-    }, 0);
+  // 1. Setup an Observer to watch for height changes in this specific module
+  const resizeObserver = new ResizeObserver(() => {
+    if (plotDiv && (plotDiv.data || plotDiv.layout)) {
+      Plotly.Plots.resize(plotDiv);
+    }
+  });
+  
+  // Start observing the module
+  resizeObserver.observe(soundModule);
+
+  collapseBtn.addEventListener('click', () => {
+    const isExpanding = options.style.display === 'none' || options.style.display === '';
+
+    if (isExpanding) {
+      // Close all other open modules
+      document.querySelectorAll('.soundModule').forEach(module => {
+        const otherOptions = module.querySelector('.moduleBottomOptions');
+        const otherBtn = module.querySelector('.collapse-btn');
+        if (otherOptions && otherOptions !== options) {
+          otherOptions.style.display = 'none';
+          if (otherBtn) {
+            otherBtn.innerHTML = ' Sound Options <span class="arrow-icon">▼</span>';
+          }
+        }
+      });
+
+      options.style.display = 'block';
+      collapseBtn.innerHTML = ' Hide Options <span class="arrow-icon">▲</span>';
+    } else {
+      options.style.display = 'none';
+      collapseBtn.innerHTML = ' Sound Options <span class="arrow-icon">▼</span>';
+    }
+    
+    // NO setTimeout needed! The Observer handles it instantly.
   });
 }
 
@@ -508,10 +684,532 @@ function handleSpeedChange(event) {
   }
 }
 
+
+function clearWorkspace() {
+  const confirmed = confirm("Are you sure you want to clear your workspace?");
+  if (!confirmed) return;
+
+  // Stop any playback
+  stopSynths();
+
+  // Clear global “loaded data” state
+  retrievedData = null;
+  midiPitchesArray = [];
+  plotXData = [];
+
+  // Clear the universal x-axis timeline
+  const globalTimeline = document.getElementById('globalTimeline');
+  if (globalTimeline) {
+    try {
+      Plotly.purge(globalTimeline);
+    } catch (e) {
+      console.warn("Plotly purge failed (safe to ignore):", e);
+    }
+    globalTimeline.innerHTML = "";
+  }
+
+  // Remove extra modules so only one remains
+  const modulesContainer = document.getElementById('modulesContainer');
+  if (modulesContainer) {
+  while (modulesContainer.children.length > 1) {
+    modulesContainer.removeChild(modulesContainer.lastElementChild);
+    }
+  }
+
+  // Rebuild soundMOdules to match what is in the DOM
+  soundModules = [];
+  const remainingModules = document.getElementsByClassName('soundModule');
+  for (let m of remainingModules) {
+    soundModules.push(m);
+  }
+
+
+  // Ensure IDs + remove button data attributes are correct
+  soundModules.forEach((module, index) => {
+    module.id = `module${index}`;
+    const removeBtn = module.querySelector('.removeModule');
+    if (removeBtn) removeBtn.dataset.moduleId = index;
+  });
+
+  if (soundModules.length > 0) {
+    const module = soundModules[0];
+  
+    // Clear Plotly graph safely
+    const plotDiv = module.querySelector(".plot");
+    if (plotDiv) {
+      try {
+        if (plotDiv.data) Plotly.purge(plotDiv);
+      } catch (e) {
+        console.warn("Plotly purge failed (safe to ignore):", e);
+      }
+      plotDiv.innerHTML = "";
+    }
+
+    // Reset sensors dropdown
+    const sensorsSelect = module.querySelector(".sensors");
+    if (sensorsSelect) {
+      sensorsSelect.innerHTML = `<option value="default">Select a sensor</option>`;
+      sensorsSelect.value = "default";
+    }
+
+    // Reset readings dropdown
+    const readingsSelect = module.querySelector(".readings");
+    if (readingsSelect) {
+      readingsSelect.innerHTML = `<option value="default">Select a reading</option>`;
+      readingsSelect.value = "default";
+    }
+  }
+  console.log("Workspace cleared.");
+
+  // Grey button out when workspace is cleared
+  workspaceHasData = false;
+  updateClearWorkspaceButton();
+}
+
+function updateClearWorkspaceButton() {
+  const btn = document.getElementById("clearWorkspace");
+  if (!btn) return;
+
+  btn.disabled = !workspaceHasData;
+  btn.classList.toggle("disabled", btn.disabled);
+}
+
+
+const ONBOARDING_STORAGE_KEY = 'ear2earth-onboarding-v1-complete';
+
+function shouldRunOnboarding() {
+  return localStorage.getItem(ONBOARDING_STORAGE_KEY) !== 'true';
+}
+
+function setOnboardingComplete() {
+  localStorage.setItem(ONBOARDING_STORAGE_KEY, 'true');
+}
+
+function resetToLastPacketsMode() {
+  const lastXPacketsRadio = document.getElementById('lastXPackets');
+  const timeRangeRadio = document.getElementById('timeRange');
+  const numpacketsInput = document.getElementById('numpacketsInput');
+  const skipPackets = document.getElementById('skipPackets');
+  const dateRangeText = document.getElementById('dateRangeText');
+  const startTimeInput = document.getElementById('startTime');
+  const endTimeInput = document.getElementById('endTime');
+
+  if (lastXPacketsRadio) lastXPacketsRadio.checked = true;
+  if (timeRangeRadio) timeRangeRadio.checked = false;
+  if (numpacketsInput) numpacketsInput.style.display = 'block';
+  if (skipPackets) skipPackets.style.display = 'block';
+  if (dateRangeText) dateRangeText.textContent = 'Date Range';
+  if (startTimeInput) startTimeInput.value = '';
+  if (endTimeInput) endTimeInput.value = '';
+}
+
+function startFirstTimeOnboarding() {
+  const dataSourceModal = document.getElementById('dataSourceModal');
+  const dateTimeModal = document.getElementById('dateTimeModal');
+
+  const steps = [
+    {
+      selectors: ['#openPresetModal'],
+      title: 'Choose Data Source',
+      text: 'Start here to open the dataset and device selector.',
+      showDataSourceModal: false,
+      showDateTimeModal: false
+    },
+    {
+      selectors: ['#modalPreset'],
+      title: 'Select a Preset',
+      text: 'Choose a named preset to auto-fill database and device selections.',
+      showDataSourceModal: true,
+      showDateTimeModal: false
+    },
+    {
+      selectors: ['#databases'],
+      title: 'Select a Dataset',
+      text: 'Pick the database containing the packets you want to sonify.',
+      showDataSourceModal: true,
+      showDateTimeModal: false
+    },
+    {
+      selectors: ['#devices'],
+      title: 'Select a Device',
+      text: 'Choose the device/collection within the selected dataset.',
+      showDataSourceModal: true,
+      showDateTimeModal: false
+    },
+    {
+      selectors: ['#confirmDataSource'],
+      title: 'Confirm Source',
+      text: 'Save your dataset and device selection for retrieval.',
+      showDataSourceModal: true,
+      showDateTimeModal: false
+    },
+    {
+      selectors: ['#dataOptions label[for="lastXPackets"]', '#dataOptions label[for="timeRange"]'],
+      title: 'Packet Mode',
+      text: 'Pick between Last Packets and Date Range modes.',
+      anchorSelector: '#dataOptions',
+      cardPlacement: 'below',
+      showDataSourceModal: false,
+      showDateTimeModal: false
+    },
+    {
+      selectors: ['.packet-inputs-group'],
+      title: 'Packet Setup',
+      text: 'Configure packet count and prescaler (use every Nth packet).',
+      showDataSourceModal: false,
+      showDateTimeModal: false
+    },
+    {
+      selectors: ['#dateRangeLabel'],
+      title: 'Date Range',
+      text: 'Click Date Range to open the date/time picker modal.',
+      showDataSourceModal: false,
+      showDateTimeModal: false
+    },
+    {
+      selectors: ['#modalStartTime', '#modalEndTime', '#modalPrescaler'],
+      title: 'Select Date & Time Range',
+      text: 'Set start time, end time, and "Use of every" together in this modal.',
+      beforeShow: () => {
+        document.getElementById('timeRange').checked = true;
+      },
+      anchorSelector: '#confirmDateTime',
+      cardPlacement: 'below',
+      showDataSourceModal: false,
+      showDateTimeModal: true
+    },
+    {
+      selectors: ['#confirmDateTime'],
+      title: 'Apply Date Range',
+      text: 'Apply the selected window for time-based retrieval.',
+      showDataSourceModal: false,
+      showDateTimeModal: true
+    },
+    {
+      selectors: ['#retrieve'],
+      title: 'Retrieve Data',
+      text: 'Fetch packets after source and packet settings are configured.',
+      showDataSourceModal: false,
+      showDateTimeModal: false
+    },
+    {
+      selectors: ['.soundModule .sensors'],
+      title: 'Sensor Mapping',
+      text: 'Each track can target a sensor from the retrieved data.',
+      showDataSourceModal: false,
+      showDateTimeModal: false
+    },
+    {
+      selectors: ['.soundModule .readings'],
+      title: 'Reading Mapping',
+      text: 'Choose which reading for the selected sensor drives the notes.',
+      showDataSourceModal: false,
+      showDateTimeModal: false
+    },
+    {
+      selectors: ['.soundModule .collapse-btn'],
+      title: 'Sound Options',
+      text: 'Use Sound Options to open the scrollable sound settings menu for this track.',
+      showDataSourceModal: false,
+      showDateTimeModal: false
+    },
+    {
+      selectors: ['.soundModule .moduleBottomOptions'],
+      title: 'Advanced Sound Controls',
+      text: 'Here you can adjust tonic, scale, tessitura, sustain notes, and sound type.',
+      beforeShow: () => {
+        const collapseBtn = document.querySelector('.soundModule .collapse-btn');
+        const options = document.querySelector('.soundModule .moduleBottomOptions');
+        if (collapseBtn && options && (options.style.display === 'none' || options.style.display === '')) {
+          collapseBtn.click();
+        }
+      },
+      showDataSourceModal: false,
+      showDateTimeModal: false
+    },
+    {
+      selectors: ['#addModule'],
+      title: 'Add Tracks',
+      text: 'Add more sound modules to map multiple sensor readings.',
+      showDataSourceModal: false,
+      showDateTimeModal: false
+    },
+    {
+      selectors: ['#play', '#stop', '#bpmContainer', '#speedOptions'],
+      title: 'Playback Controls',
+      text: 'Use Play/Stop, BPM, and speed controls to audition results.',
+      showDataSourceModal: false,
+      showDateTimeModal: false
+    },
+    {
+      selectors: ['#metadataButton'],
+      title: 'Metadata',
+      text: 'Open metadata for context about the current dataset.',
+      showDataSourceModal: false,
+      showDateTimeModal: false
+    },
+    {
+      selectors: ['#clearWorkspace'],
+      title: 'Clear Workspace',
+      text: 'Reset tracks and state when starting a new exploration.',
+      showDataSourceModal: false,
+      showDateTimeModal: false
+    }
+  ];
+
+  const overlay = document.createElement('div');
+  overlay.className = 'onboarding-overlay';
+
+  const card = document.createElement('div');
+  card.className = 'onboarding-card';
+  card.innerHTML = `
+    <div class="onboarding-title"></div>
+    <div class="onboarding-text"></div>
+    <div class="onboarding-footer">
+      <span class="onboarding-progress"></span>
+      <div class="onboarding-controls">
+        <button type="button" class="onboarding-btn onboarding-skip">Skip</button>
+        <button type="button" class="onboarding-btn onboarding-back">Back</button>
+        <button type="button" class="onboarding-btn onboarding-next">Next</button>
+      </div>
+    </div>
+  `;
+
+  document.body.appendChild(overlay);
+  document.body.appendChild(card);
+
+  const titleEl = card.querySelector('.onboarding-title');
+  const textEl = card.querySelector('.onboarding-text');
+  const progressEl = card.querySelector('.onboarding-progress');
+  const skipBtn = card.querySelector('.onboarding-skip');
+  const backBtn = card.querySelector('.onboarding-back');
+  const nextBtn = card.querySelector('.onboarding-next');
+
+  let stepIndex = 0;
+  let highlightedEls = [];
+
+  function clearHighlight() {
+    if (highlightedEls.length === 0) return;
+    highlightedEls.forEach(el => el.classList.remove('onboarding-highlight'));
+    highlightedEls = [];
+  }
+
+  function placeCard(target, placement = 'auto') {
+    const rect = target.getBoundingClientRect();
+    const margin = 12;
+    const cardRect = card.getBoundingClientRect();
+    const maxTop = window.innerHeight - cardRect.height - margin;
+    const maxLeft = window.innerWidth - cardRect.width - margin;
+
+    function clamp(value, min, max) {
+      return Math.min(Math.max(value, min), max);
+    }
+
+    const positions = {
+      below: {
+        top: rect.bottom + margin,
+        left: rect.left + (rect.width - cardRect.width) / 2
+      },
+      above: {
+        top: rect.top - cardRect.height - margin,
+        left: rect.left + (rect.width - cardRect.width) / 2
+      },
+      right: {
+        top: rect.top + (rect.height - cardRect.height) / 2,
+        left: rect.right + margin
+      },
+      left: {
+        top: rect.top + (rect.height - cardRect.height) / 2,
+        left: rect.left - cardRect.width - margin
+      }
+    };
+
+    const orderedPlacements = placement === 'auto'
+      ? ['below', 'above', 'right', 'left']
+      : [placement, 'below', 'above', 'right', 'left'];
+
+    let chosen = positions.below;
+    for (const candidate of orderedPlacements) {
+      const p = positions[candidate];
+      if (
+        p.top >= margin &&
+        p.left >= margin &&
+        p.top <= maxTop &&
+        p.left <= maxLeft
+      ) {
+        chosen = p;
+        break;
+      }
+    }
+
+    const top = clamp(chosen.top, margin, maxTop);
+    const left = clamp(chosen.left, margin, maxLeft);
+    card.style.top = `${top}px`;
+    card.style.left = `${left}px`;
+  }
+
+  function closeTour(markComplete = true) {
+    clearHighlight();
+    overlay.remove();
+    card.remove();
+    document.getElementById('dataSourceModal').style.display = 'none';
+    document.getElementById('dateTimeModal').style.display = 'none';
+    document.getElementById('dataSourceModal').classList.remove('onboarding-modal-active');
+    document.getElementById('dateTimeModal').classList.remove('onboarding-modal-active');
+    resetToLastPacketsMode();
+    if (markComplete) {
+      setOnboardingComplete();
+    }
+    window.removeEventListener('resize', handleViewportUpdate);
+    window.removeEventListener('scroll', handleViewportUpdate, true);
+  }
+
+  function renderStep() {
+    if (stepIndex < 0) stepIndex = 0;
+    if (stepIndex >= steps.length) {
+      closeTour(true);
+      return;
+    }
+
+    const step = steps[stepIndex];
+    if (typeof step.beforeShow === 'function') {
+      step.beforeShow();
+    }
+
+    if (dataSourceModal) {
+      dataSourceModal.style.display = step.showDataSourceModal ? 'flex' : 'none';
+      dataSourceModal.classList.toggle('onboarding-modal-active', !!step.showDataSourceModal);
+    }
+    if (dateTimeModal) {
+      dateTimeModal.style.display = step.showDateTimeModal ? 'flex' : 'none';
+      dateTimeModal.classList.toggle('onboarding-modal-active', !!step.showDateTimeModal);
+    }
+
+    const targets = (step.selectors || [])
+      .map(selector => document.querySelector(selector))
+      .filter(Boolean);
+
+    if (targets.length === 0) {
+      stepIndex += 1;
+      renderStep();
+      return;
+    }
+
+    clearHighlight();
+    highlightedEls = targets;
+    highlightedEls.forEach(el => el.classList.add('onboarding-highlight'));
+    const anchorTarget = step.anchorSelector
+      ? (document.querySelector(step.anchorSelector) || targets[0])
+      : targets[0];
+
+    anchorTarget.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'nearest' });
+
+    titleEl.textContent = step.title;
+    textEl.textContent = step.text;
+    progressEl.textContent = `${stepIndex + 1}/${steps.length}`;
+    backBtn.disabled = stepIndex === 0;
+    nextBtn.textContent = stepIndex === steps.length - 1 ? 'Finish' : 'Next';
+
+    requestAnimationFrame(() => placeCard(anchorTarget, step.cardPlacement || 'auto'));
+  }
+
+  function handleViewportUpdate() {
+    if (highlightedEls.length === 0) return;
+    placeCard(highlightedEls[0]);
+  }
+
+  skipBtn.addEventListener('click', () => closeTour(true));
+  backBtn.addEventListener('click', () => {
+    stepIndex -= 1;
+    renderStep();
+  });
+  nextBtn.addEventListener('click', () => {
+    stepIndex += 1;
+    renderStep();
+  });
+
+  window.addEventListener('resize', handleViewportUpdate);
+  window.addEventListener('scroll', handleViewportUpdate, true);
+
+  renderStep();
+}
+
 // Attach a single event listener to the speedOptions container
 document.getElementById('speedOptions').addEventListener('change', handleSpeedChange);
 
 document.addEventListener('DOMContentLoaded', () => {
+
+  const row = document.querySelector('.topmenu .row');
+  
+  // Wrap specific sections in draggable containers
+  const sections = [
+    // Section 1: Dataset controls (Preset → Retrieve)
+    {
+      items: ['#openPresetModal', '#dataOptions', '.packet-inputs-group', '#retrieve'],
+      name: 'dataset-section'
+    },
+    // Section 2: Metadata
+    {
+      items: ['.group:has(#metadataButton)'],
+      name: 'metadata-section'
+    },
+    // Section 3: Playback (Volume → Speed)
+    {
+      items: ['.control-group', '.transport-group:has(#play)', '#bpmContainer', '#speedOptions'],
+      name: 'playback-section'
+    },
+    // Section 4: Tools (Multi-function grid + Refresh)
+    {
+      items: ['.multi-function-grid:not(#speedOptions)', '.group:has(#refresh)'],
+      name: 'tools-section'
+    },
+    // Section 5: Clear Workspace
+    {
+      items: ['.group:has(#clearWorkspace)'],
+      name: 'clear-section'
+    }
+  ];
+
+  sections.forEach(section => {
+    // Create wrapper for this section
+    const wrapper = document.createElement('div');
+    wrapper.className = `draggable-section ${section.name}`;
+    
+    // Create drag handle
+    const handle = document.createElement('span');
+    handle.className = 'drag-handle';
+    const icon = document.createElement('i');
+    icon.setAttribute('data-lucide', 'grip-vertical');
+    handle.appendChild(icon);
+    
+    wrapper.appendChild(handle);
+    
+    // Move items into wrapper
+    section.items.forEach(selector => {
+      const item = row.querySelector(selector);
+      if (item) {
+        wrapper.appendChild(item);
+      }
+    });
+    
+    row.appendChild(wrapper);
+  });
+  
+  // Make sections draggable
+  Sortable.create(row, {
+    animation: 150,
+    ghostClass: 'sortable-ghost',
+    dragClass: 'sortable-drag',
+    draggable: '.draggable-section',
+    handle: '.drag-handle',
+    onEnd: function(evt) {
+      console.log('Section moved from', evt.oldIndex, 'to', evt.newIndex);
+    }
+  });
+
+  // Initialize Lucide icons
+  lucide.createIcons();
+
   // Prioritize smooth playback
   const context = new Tone.Context({ latencyHint: 'playback' });
   Tone.setContext(context);
@@ -538,14 +1236,313 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // Toggle collapsible container for databases and devices
-  const dataSource = document.getElementById('dataSource');
+  /* const dataSource = document.getElementById('dataSource');
   const toggleButton = document.getElementById('toggleDataSource');
   toggleButton.addEventListener('click', () => {
     dataSource.style.display = dataSource.style.display === 'none' ? 'flex' : 'none';
     toggleButton.textContent = dataSource.style.display === 'none' ? '▼' : '▲';
+  }); */
+  
+  // === POP-UP Functionally for Preset, Database, and Device ===
+  const modal = document.getElementById('dataSourceModal');
+  const closeBtn = document.querySelector('.close-modal');
+  const confirmBtn = document.getElementById('confirmDataSource');
+  const openPresetBtn = document.getElementById('openPresetModal');  // Changed this line
+  const modalPresetDropdown = document.getElementById('modalPreset');
+
+  // Show modal when clicking the preset button
+  openPresetBtn.addEventListener('click', () => {
+    modal.style.display = 'flex';
   });
 
-  const retrieveByNameDropdown = document.getElementById('retrieveByNameDropdown');
+  // Close modal when X is clicked
+  closeBtn.addEventListener('click', () => {
+    modal.style.display = 'none';
+  });
+
+  // Close modal when clicking outside
+  window.addEventListener('click', (event) => {
+    if (event.target === modal) {
+      modal.style.display = 'none';
+    }
+  });
+
+  // Confirm selection and close modal
+  confirmBtn.addEventListener('click', () => {
+    const selectedDatabase = document.getElementById('databases').value;
+    const selectedDevice = document.getElementById('devices').value;
+    const selectedPreset = document.getElementById('modalPreset').value;
+    
+    if (selectedDatabase !== 'default' && selectedDevice !== 'default') {
+      // Update the button text to show what was selected
+      if (selectedPreset !== 'default') {
+        const presetData = JSON.parse(selectedPreset);
+        // Clear button
+        openPresetBtn.textContent = '';
+        
+        // Add preset name
+        const nameDiv = document.createElement('div');
+        nameDiv.textContent = presetData.name;
+        nameDiv.style.fontWeight = '500';
+        openPresetBtn.appendChild(nameDiv);
+        
+        // Add database
+        const dbDiv = document.createElement('div');
+        dbDiv.textContent = presetData.database;
+        dbDiv.style.fontSize = '10px';
+        dbDiv.style.opacity = '0.7';
+        openPresetBtn.appendChild(dbDiv);
+        
+        // Add device
+        const deviceDiv = document.createElement('div');
+        deviceDiv.textContent = presetData.device;
+        deviceDiv.style.fontSize = '10px';
+        deviceDiv.style.opacity = '0.7';
+        openPresetBtn.appendChild(deviceDiv);
+
+        // old button text update: openPresetBtn.textContent = presetData.name;
+      } else {
+        openPresetBtn.textContent = `${selectedDatabase} - ${selectedDevice}`;
+      }
+      modal.style.display = 'none';
+    } else {
+      alert('Please select both a database and a device');
+    }
+  });
+
+
+  // === Date/Time Range Modal Functionality ===
+  const dateTimeModal = document.getElementById('dateTimeModal');
+  const closeDateModal = document.getElementById('closeDateModal');
+  const confirmDateTime = document.getElementById('confirmDateTime');
+  const dateRangeText = document.getElementById('dateRangeText');
+
+  const startTimeInput = document.getElementById('startTime');
+  const endTimeInput = document.getElementById('endTime');
+  const modalStartTime = document.getElementById('modalStartTime');
+  const modalEndTime = document.getElementById('modalEndTime');
+  const modalPrescaler = document.getElementById('modalPrescaler');
+  const prescalerInput = document.getElementById('prescaler');
+
+  // Track if user has confirmed their selection
+  let dateRangeConfirmed = false;
+
+  // Open modal when Date Range radio is clicked (using the span to detect re-clicks)
+  const dateRangeLabel = document.getElementById('dateRangeLabel');
+  const timeRangeRadio = document.getElementById('timeRange');
+
+  dateRangeLabel.addEventListener('click', (e) => {
+    // Check if clicking on the label/span (not the radio itself) or if radio is already checked
+    if (e.target !== timeRangeRadio || timeRangeRadio.checked) {
+      setTimeout(() => {
+        dateTimeModal.style.display = 'flex';
+        dateRangeConfirmed = false;
+        
+        // Pre-populate modal with current values if they exist
+        if (startTimeInput.value) modalStartTime.value = startTimeInput.value;
+        if (endTimeInput.value) modalEndTime.value = endTimeInput.value;
+        if (prescalerInput.value) modalPrescaler.value = prescalerInput.value;
+      }, 10);
+    }
+  });
+
+  // Add listener to Last Packets radio to clear date range display
+  const lastXPacketsRadio = document.getElementById('lastXPackets');
+  lastXPacketsRadio.addEventListener('change', () => {
+    if (lastXPacketsRadio.checked) {
+      // Clear the date range display
+      dateRangeText.textContent = 'Date Range';
+      // Clear the hidden inputs
+      startTimeInput.value = '';
+      endTimeInput.value = '';
+      prescalerInput.value = '1';
+      // Clear the modal inputs
+      modalStartTime.value = '';
+      modalEndTime.value = '';
+      modalPrescaler.value = '1';
+      // Reset confirmation 
+      dateRangeConfirmed = false;
+    }
+  });
+
+  // Close modal when X is clicked
+  closeDateModal.addEventListener('click', () => {
+    dateTimeModal.style.display = 'none';
+    
+    // Only reset if user hasn't confirmed a date range
+    if (!dateRangeConfirmed) {
+      lastXPacketsRadio.checked = true;
+      document.getElementById('numpacketsInput').style.display = 'block';
+      document.getElementById('skipPackets').style.display = 'block';
+      dateRangeText.textContent = 'Date Range';
+    }
+  });
+
+  // Apply selections and close modal
+  confirmDateTime.addEventListener('click', () => {
+    // Validate that both dates are selected
+    if (!modalStartTime.value || !modalEndTime.value) {
+      alert('Please select both start and end times');
+      return;
+    }
+
+    if (modalStartTime.value >= modalEndTime.value) {
+      alert('End time must be after start time');
+      return;
+    }
+
+    // Apply values to hidden inputs
+    startTimeInput.value = modalStartTime.value;
+    endTimeInput.value = modalEndTime.value;
+    prescalerInput.value = modalPrescaler.value;
+
+    // Update the radio button label text to show selected dates
+    const startDate = new Date(modalStartTime.value).toLocaleDateString('en-US', {
+      month: 'numeric',
+      day: 'numeric',
+      year: 'numeric'
+    });
+    const endDate = new Date(modalEndTime.value).toLocaleDateString('en-US', {
+      month: 'numeric',
+      day: 'numeric',
+      year: 'numeric'
+    });
+    
+    dateRangeText.textContent = `${startDate} - ${endDate}`;
+    dateRangeConfirmed = true; // Mark as confirmed
+    dateTimeModal.style.display = 'none';
+  });
+
+  // Close modal when clicking outside
+  window.addEventListener('click', (e) => {
+    if (e.target === dateTimeModal) {
+      dateTimeModal.style.display = 'none';
+      
+      // Only reset if user hasn't confirmed a date range
+      if (!dateRangeConfirmed) {
+        lastXPacketsRadio.checked = true;
+        document.getElementById('numpacketsInput').style.display = 'block';
+        document.getElementById('skipPackets').style.display = 'block';
+        dateRangeText.textContent = 'Date Range';
+      }
+    }
+  });
+
+  // ==== Popover functionality for Metadata and Packet Refresh info buttons ====
+  const popover = document.getElementById('popover');
+  const popoverBody = popover.querySelector('.popover-body');
+  const popoverClose = popover.querySelector('.popover-close');
+
+  function showPopover(button, content) {
+    // Set content
+    popoverBody.textContent = content;
+    
+    // Position popover below the button
+    const rect = button.getBoundingClientRect();
+    popover.style.display = 'block';
+    popover.style.left = rect.left + 'px';
+    popover.style.top = (rect.bottom + 8) + 'px';
+  }
+
+  function hidePopover() {
+    popover.style.display = 'none';
+  }
+
+  // Close button
+  popoverClose.addEventListener('click', hidePopover);
+
+  // Close when clicking outside
+  document.addEventListener('click', (e) => {
+    if (!popover.contains(e.target) && !e.target.closest('.icon-btn')) {
+      hidePopover();
+    }
+  });
+
+  // Add to your info buttons
+  const metadataHelp = document.getElementById('metadataHelp');
+  const refreshHelp = document.getElementById('refreshHelp');
+  
+  if (metadataHelp) {
+    metadataHelp.addEventListener('click', (e) => {
+      e.stopPropagation();
+      showPopover(e.currentTarget, 'Metadata shows device deployment information including date, location (latitude/longitude), and database owner.');
+    });
+  }
+  
+  if (refreshHelp) {
+    refreshHelp.addEventListener('click', (e) => {
+      e.stopPropagation();
+      showPopover(e.currentTarget, 'Reloads the latest packet data from your selected source while preserving your workspace configuration and tracks.');
+    });
+  }
+
+  // ====== UNDO/REDO button functionality ======
+  const undoBtn = document.getElementById('undo');
+  const redoBtn = document.getElementById('redo');
+
+  if (undoBtn) {
+    undoBtn.addEventListener('click', () => {
+      if (historyIndex > 0) {
+        historyIndex--;
+        restoreState(historyStack[historyIndex]);
+        showStatusMessage('Undone', 'info');
+      }
+    });
+  }
+
+  if (redoBtn) {
+    redoBtn.addEventListener('click', () => {
+      if (historyIndex < historyStack.length - 1) {
+        historyIndex++;
+        restoreState(historyStack[historyIndex]);
+        showStatusMessage('Redone', 'info');
+      }
+    });
+  }
+
+  // Status message notification function
+  function showStatusMessage(message, type = 'success') {
+    const statusMessage = document.getElementById('status-message');
+    statusMessage.textContent = message;
+    statusMessage.className = `status-message show ${type}`;
+    
+    setTimeout(() => {
+      statusMessage.className = 'status-message';
+    }, 3000); // Hide after 3 seconds
+  }
+
+  // Initialize draggable toolbar sections
+  const topmenu = document.querySelector('.topmenu');
+  
+  Sortable.create(topmenu, {
+    animation: 150,
+    handle: '.toolbar-drag-handle',
+    ghostClass: 'sortable-ghost',
+    dragClass: 'sortable-drag',
+    direction: 'horizontal',
+    
+    // OPTIONAL ====
+    /* onEnd: function(evt) {
+      console.log('Toolbar section moved from position', evt.oldIndex, 'to', evt.newIndex);
+      
+      // Optional: Save the toolbar layout to localStorage
+      const toolbarOrder = Array.from(topmenu.children).map(section => 
+        section.className.split(' ').find(c => c.startsWith('toolbar-'))
+      );
+      localStorage.setItem('toolbarLayout', JSON.stringify(toolbarOrder));
+    } */
+  });
+
+  // OPTIONAL ====
+  // Restore saved toolbar layout from localStorage
+  /* const savedLayout = localStorage.getItem('toolbarLayout');
+  if (savedLayout) {
+    const order = JSON.parse(savedLayout);
+    order.forEach(className => {
+      const section = topmenu.querySelector(`.${className}`);
+      if (section) topmenu.appendChild(section);
+    });
+  } */
 
   // Fetch databases and populate the dropdown
   fetchDatabases();
@@ -553,6 +1550,8 @@ document.addEventListener('DOMContentLoaded', () => {
   // Create one soundModule on startup
   addSoundModule();
 
+  document.getElementById('clearWorkspace').addEventListener('click', clearWorkspace);
+  
   /**************
    *
    *
@@ -582,20 +1581,83 @@ document.addEventListener('DOMContentLoaded', () => {
     },
   ];
 
-  // Populate the "Retrieve by Name" dropdown with predefined database/device pairs
+  // Populate the preset dropdown with predefined database/device pairs
   predefinedPairs.forEach(pair => {
-    let option = document.createElement('option');
-    option.value = JSON.stringify(pair); // Store as a JSON string
-    option.textContent = pair.name;
-    retrieveByNameDropdown.appendChild(option);
+    // Add to modal preset dropdown
+    let modalOption = document.createElement('option');
+    modalOption.value = JSON.stringify(pair); // Store as a JSON string
+    modalOption.textContent = pair.name;
+    modalPresetDropdown.appendChild(modalOption);
   });
 
-  // Handle selection from the named dropdown
-  retrieveByNameDropdown.addEventListener('change', handleDatasetChange);
+  // Handle preset selection inside the popup 
+  modalPresetDropdown.addEventListener('change', async (event) => {
+    if (event.target.value !== 'default') {
+      const presetData = JSON.parse(event.target.value);
+
+      const databaseDropdown = document.getElementById('databases');
+      const deviceDropdown = document.getElementById('devices');
+      
+      // Check if the database exists
+      let databaseExists = [...databaseDropdown.options].some(
+        option => option.value.trim() === presetData.database.trim()
+      );
+      
+      if (databaseExists) {
+        databaseDropdown.value = presetData.database;
+        
+        // Wait for devices to load before checking for the device
+        await fetchDevices();
+        
+        // Check if the selected device exists in the updated dropdown
+        let deviceExists = [...deviceDropdown.options].some(
+          option => option.value.trim() === presetData.device.trim()
+        );
+        
+        if (deviceExists) {
+          deviceDropdown.value = presetData.device;
+          await setDateBoundsForSelection();
+        } else {
+          alert(
+            `Warning: Device "${presetData.device}" not found in "${presetData.database}". Please select manually.`
+          );
+        }
+      } else {
+        alert(
+          `Warning: Database "${presetData.database}" does not exist. Please select manually.`
+        );
+      }
+      
+    } else {
+      // Reset and enable if "Select a preset" is chosen
+      databaseDropdown.value = 'default';
+      deviceDropdown.value = 'default';
+      
+    }
+  });
+  workspaceHasData = false;
+  updateClearWorkspaceButton();
+
+  saveState(); // Save initial state for undo/redo
+  updateUndoRedoButtons();
+  
+  if (shouldRunOnboarding()) {
+    setTimeout(() => {
+      startFirstTimeOnboarding();
+    }, 350);
+  }
 });
 
 // Listener for "Dataset Name" dropdown
 async function handleDatasetChange(event) {
+
+  if (event.target.value === 'default') {
+    return; 
+  }
+
+  // show the popup/modal
+  document.getElementById('dataSourceModal').style.display = 'flex';
+
   const selectedPair = JSON.parse(event.target.value);
   if (selectedPair) {
     // Check if the database exists
@@ -659,7 +1721,6 @@ function fetchDatabases() {
     })
     .catch(error => {
       console.error('Error fetching databases:', error);
-      // added 10/26
       resetDevicesAndDates();
     });
 }
@@ -702,7 +1763,6 @@ function fetchDevices() {
   });
 }
 
-// added 10/26
 function resetDates() {
   const start = document.getElementById('startTime');
   const end = document.getElementById('endTime');
@@ -712,7 +1772,6 @@ function resetDates() {
   });
 }
 
-// added 10/26
 function resetDevicesAndDates() {
   const devSel = document.getElementById('devices');
   devSel.innerHTML = '<option value="default">Select a sensor</option>';
@@ -728,23 +1787,56 @@ document.getElementById('databases').addEventListener('change', fetchDevices);
 document.getElementsByName('packetOption').forEach(radio => {
   // Get the input fields
   let numpacketsInput = document.getElementById('numpacketsInput');
-  let timeInputs = document.getElementById('timeInputs');
+  // let timeInputs = document.getElementById('timeInputs');
+  let skipPackets = document.getElementById('skipPackets');
 
   radio.addEventListener('change', async function () {
     // If "lastXPackets" is selected, show the "numpackets" and "prescaler" input fields and hide the "startTime" and "endTime" input fields
     if (this.value === 'lastXPackets') {
       numpacketsInput.style.display = 'block';
-      timeInputs.style.display = 'none';
+      skipPackets.style.display = 'block';
+      //timeInputs.style.display = 'none';
     }
     // If "timeRange" is selected, hide the "numpackets" input field and show the "startTime", "endTime" and "prescaler" input fields
     else if (this.value === 'timeRange') {
       numpacketsInput.style.display = 'none';
-      timeInputs.style.display = 'block';
-      await setDateBoundsForSelection(); // added 10/26
+      skipPackets.style.display = 'none';
+      //timeInputs.style.display = 'block';
+      
+      // await setDateBoundsForSelection(); // added 10/26
+
+      const modalStartTime = document.getElementById('modalStartTime');
+      const modalEndTime = document.getElementById('modalEndTime');
+      const modalPrescaler = document.getElementById('modalPrescaler');
+      const startTimeInput = document.getElementById('startTime');
+      const endTimeInput = document.getElementById('endTime');
+      const prescalerInput = document.getElementById('prescaler');
+      
+      modalStartTime.value = startTimeInput.value;
+      modalEndTime.value = endTimeInput.value;
+      modalPrescaler.value = prescalerInput.value;
+      
+      modalStartTime.min = startTimeInput.min;
+      modalStartTime.max = startTimeInput.max;
+      modalEndTime.min = endTimeInput.min;
+      modalEndTime.max = endTimeInput.max;
+      
+      // Show the modal
+      document.getElementById('dateTimeModal').style.display = 'flex';
+
+      setDateBoundsForSelection().then(() => {
+        // Update modal with new bounds after they load
+        modalStartTime.value = startTimeInput.value;
+        modalEndTime.value = endTimeInput.value;
+        modalStartTime.min = startTimeInput.min;
+        modalStartTime.max = startTimeInput.max;
+        modalEndTime.min = endTimeInput.min;
+        modalEndTime.max = endTimeInput.max;
+      });
     } else {
       // added 10/26
       numpackets.style.display = 'block';
-      timeInputs.style.display = 'none';
+    
       resetDates();
     }
   });
@@ -779,6 +1871,7 @@ document.getElementById('retrieve').onclick = async function () {
   let packetOption = document.querySelector('input[name="packetOption"]:checked').value;
   let prescaler = document.getElementById('prescaler').value;
   let url;
+  let metadataUrl;
 
   // Error handling for inputs
   if (packetOption === 'lastXPackets') {
@@ -818,6 +1911,8 @@ document.getElementById('retrieve').onclick = async function () {
       // If data is empty, show an alert and return
       if (data.length === 0) {
         alert('No data available for the selected time range.');
+        workspaceHasData = false;
+        updateClearWorkspaceButton();
         return;
       }
       data.sort(
@@ -833,6 +1928,11 @@ document.getElementById('retrieve').onclick = async function () {
         initializeModuleSelects(m, data);
         restoreSelects(m);
       }
+      
+      workspaceHasData = true;
+      updateClearWorkspaceButton();
+
+      saveState(); // Save state after data retrieval and module initialization
     })
     .catch(error => console.error('Error:', error));
 };
@@ -892,12 +1992,35 @@ function initializeModuleSelects(module, data) {
     // Get the keys of the first object in the data array
     let keys = Object.keys(data[0]);
 
+    // Sensor order
+    const sensorOrder = ['SHT31', 'TSL2591', 'MS5803_118', 'MS5803_119', 'TippingBucket', 'Teros10', 'A55311', 'DFR_MultiGas_0', 'DFR_MultiGas_1', 'DFR_MultiGas_2', 'T6793', 'Analog']; 
+
+    // Sort keys
+    keys.sort((a, b) => {
+      const indexA = sensorOrder.indexOf(a);
+      const indexB = sensorOrder.indexOf(b);
+      
+      // If both are in the order array, sort by their position
+      if (indexA !== -1 && indexB !== -1) {
+        return indexA - indexB;
+      }
+      
+      // If only A is in the array, A comes first
+      if (indexA !== -1) return -1;
+      
+      // If only B is in the array, B comes first
+      if (indexB !== -1) return 1;
+      
+      // If neither is in the array, sort alphabetically
+      return a.localeCompare(b);
+    });
+
     // Add each key as an option to the sensors select element
     keys.forEach(key => {
       if (key === '_id' || key === 'Timestamp' || key === 'WiFi') return;
       let option = document.createElement('option');
       option.value = key;
-      option.text = key;
+      option.textContent = sensorDisplayName(key);
       sensorsSelect.appendChild(option);
     });
 
@@ -973,6 +2096,224 @@ function updateSoundModule(moduleIdx) {
   midiPitchesArray[moduleIdx] = dataToMidiPitches(normalizedData, scale);
 }
 
+// <--------- GLOBAL X-AXIS ---------->
+
+/* ================== GLOBAL STATE & RESIZE ================== */
+let isSyncing = false;
+let resizeTimer;
+
+window.addEventListener('resize', function() {
+  clearTimeout(resizeTimer);
+  resizeTimer = setTimeout(function() {
+    // 1. Find the current range from any active plot
+    const firstPlot = document.querySelector(".plot.js-plotly-plot");
+    if (!firstPlot) return;
+
+    const xMin = firstPlot.layout.xaxis.range[0];
+    const xMax = firstPlot.layout.xaxis.range[1];
+
+    // 2. Recalculate ticks
+    const tMin = new Date(xMin).getTime();
+    const tMax = new Date(xMax).getTime();
+    const allData = Object.values(plotXData).flat();
+    const masterTicks = getGlobalTicks(tMin, tMax, allData);
+
+    // 3. Force Resize and Relayout for Universal Axis
+    const timelineDiv = document.getElementById('globalTimeline');
+    if (timelineDiv && timelineDiv.classList.contains('js-plotly-plot')) {
+        Plotly.relayout(timelineDiv, {
+            'xaxis.range': [xMin, xMax],
+            'xaxis.tickvals': masterTicks.tickVals,
+            'xaxis.ticktext': masterTicks.tickText
+        });
+        Plotly.Plots.resize(timelineDiv);
+    }
+
+    // 4. Force Resize for all module plots
+    document.querySelectorAll(".plot").forEach(p => {
+      if (p.classList.contains('js-plotly-plot')) {
+        Plotly.Plots.resize(p);
+      }
+    });
+  }, 150); 
+});
+
+/* ================== HELPER FUNCTIONS ================== */
+
+function getGlobalTicks(globalMin, globalMax, xData) {
+  let visibleData = [];
+  for (let i = 0; i < xData.length; i++) {
+    if (xData[i] >= globalMin && xData[i] <= globalMax) {
+      visibleData.push(xData[i]);
+    }
+  }
+
+  // If no data is visible, return empty
+  if (visibleData.length === 0) return { tickVals: [], tickText: [] };
+
+  // If only one point is visible show it regardless 
+  if (visibleData.length === 1) {
+    let d = new Date(visibleData[0]);
+    let label = d.toLocaleString('en-US', {
+      year: '2-digit', 
+      month: '2-digit', 
+      day: '2-digit', 
+      hour: '2-digit', 
+      minute: '2-digit', 
+      second: '2-digit'
+    });
+    return { tickVals: [visibleData[0]], tickText: [label] };
+  }
+
+  // Max gridlines based on screensize 
+  const MAX_GRID_LINES = 9; 
+  const containerWidth = document.getElementById('globalTimeline').offsetWidth || 1000;
+  
+  // Line density for data points that are close in time
+  let calculatedLineCount = Math.max(6, Math.floor(containerWidth / 110));
+  let targetLineCount = Math.min(calculatedLineCount, MAX_GRID_LINES);
+  
+  let tickStep = visibleData.length > targetLineCount 
+                 ? Math.floor(visibleData.length / targetLineCount) 
+                 : 1;
+
+  let baseTickVals = [];
+  for (let i = 0; i < visibleData.length; i += tickStep) {
+    baseTickVals.push(visibleData[i]);
+  }
+
+  // Overlap protection for date tickvals
+  const minPixelGap = containerWidth < 500 ? 140 : 110;
+  const overlapThreshold = (globalMax - globalMin) * (minPixelGap / containerWidth); 
+  
+  let finalTickVals = [];
+  let finalTickText = [];
+  let lastKeptTime = -Infinity;
+
+  baseTickVals.forEach((val) => {
+    let d = new Date(val);
+    let currentLabel = d.toLocaleString('en-US', {
+      year: '2-digit', 
+      month: '2-digit', 
+      day: '2-digit', 
+      hour: '2-digit', 
+      minute: '2-digit', 
+      second: '2-digit'
+    });
+
+    if (val - lastKeptTime >= overlapThreshold) {
+      // Show show date on 2nd, 4th, 6th, 8th kept line
+      let isDateSlot = (finalTickVals.length % 2 !== 0);
+
+      finalTickVals.push(val); 
+      finalTickText.push(isDateSlot ? currentLabel : ""); 
+      
+      lastKeptTime = val;
+    }
+  });
+
+  // Show date if there's only one data point (not skipping the first if it's
+  // the only data point)
+  if (finalTickText.length > 0 && finalTickText.every(t => t === "")) {
+      finalTickText[0] = new Date(finalTickVals[0]).toLocaleString('en-US', {
+        year: '2-digit', 
+        month: '2-digit', 
+        day: '2-digit', 
+        hour: '2-digit', 
+        minute: '2-digit', 
+        second: '2-digit'
+      });
+  }
+
+  return { tickVals: finalTickVals, tickText: finalTickText };
+}
+
+// Universal axis
+function buildGlobalTimeline(xData, xMin, xMax, masterTicks) {
+  let timelineTrace = {
+    x: xData,
+    y: new Array(xData.length).fill(0),
+    type: "scatter",
+    mode: "markers",
+    marker: { opacity: 0 },
+    hoverinfo: "skip"
+  };
+
+  let layout = {
+    height: 35, 
+    // Do not change
+    margin: { l: 95, r: 37, b: 0, t: 27 },
+    xaxis: {
+      type: "date",
+      range: [xMin, xMax],
+      side: "top",
+      tickmode: "array",
+      tickvals: masterTicks.tickVals,
+      ticktext: masterTicks.tickText,
+      tickangle: 0,
+      automargin: false,
+      gridcolor: "rgba(0, 0, 0, 0.56)",
+      fixedrange: true,
+      tickfont: {
+        family: "Google Sans, sans-serif",
+        size: 12,
+        color: "rgb(0, 0, 0)"
+      }
+    },
+    yaxis: { visible: false, fixedrange: true, range: [0, 1] },
+    paper_bgcolor: "rgba(0,0,0,0)",
+    plot_bgcolor: "rgba(0,0,0,0)"
+  };
+
+  Plotly.react("globalTimeline", [timelineTrace], layout, { responsive: true, displayModeBar: false });
+}
+
+// Sync universal x-axis and bottom plots
+function syncThisPlot(plotElement, moduleIdx) {
+  plotElement.removeAllListeners('plotly_relayout');
+  plotElement.on('plotly_relayout', function(eventdata) {
+    if (isSyncing) return;
+    if (!(eventdata['xaxis.range[0]'] || eventdata['xaxis.autorange'] || eventdata['xaxis.range'])) return;
+
+    isSyncing = true;
+    try {
+      let xData = plotXData[moduleIdx] || [];
+      let xMin, xMax;
+
+      if (eventdata['xaxis.range[0]']) {
+        xMin = new Date(eventdata['xaxis.range[0]']).getTime();
+        xMax = new Date(eventdata['xaxis.range[1]']).getTime();
+      } else {
+        xMin = Math.min(...xData);
+        xMax = Math.max(...xData);
+      }
+
+      if (isNaN(xMin) || isNaN(xMax)) { isSyncing = false; return; }
+
+      let masterTicks = getGlobalTicks(xMin, xMax, xData);
+
+      // Update Header
+      Plotly.relayout('globalTimeline', {
+        'xaxis.range': [xMin, xMax],
+        'xaxis.tickvals': masterTicks.tickVals,
+        'xaxis.ticktext': masterTicks.tickText
+      });
+
+      // Update All Plots
+      document.querySelectorAll(".plot").forEach(otherPlot => {
+        if (otherPlot.classList.contains('js-plotly-plot')) {
+          Plotly.relayout(otherPlot, {
+            'xaxis.range': [xMin, xMax],
+            'xaxis.tickvals': masterTicks.tickVals
+          });
+        }
+      });
+    } finally {
+      setTimeout(() => { isSyncing = false; }, 20);
+    }
+  });
+}
+
 function plot(moduleIdx) {
   let m = soundModules[moduleIdx];
   // Clear the plot area
@@ -1003,83 +2344,62 @@ function plot(moduleIdx) {
       let xData = filteredData.map(d => new Date(fixTimestamp(d.Timestamp.time_local)).getTime());
       let yData = filteredData.map(d => d[sensor][reading]);
 
-      // Save xData for updatePlaybackBar to use
-      plotXData[moduleIdx] = xData;
-
-      // Convert timestamps to short readable format (MM/DD HH:mm:ss)
-      let xLabels = filteredData.map(d =>
-        new Date(fixTimestamp(d.Timestamp.time_local)).toLocaleString('en-US', {
-          year: '2-digit',
-          month: '2-digit',
-          day: '2-digit',
-          hour: '2-digit',
-          minute: '2-digit',
-          second: '2-digit',
-        })
-      );
-
-      // Create hover text for all points (show exact timestamp on hover)
+      // Prepare Plot Data and Layout
+      let xLabels = filteredData.map(d => new Date(fixTimestamp(d.Timestamp.time_local)).toLocaleString('en-US', { /*...*/ }));
       let hoverTexts = filteredData.map((d, i) => `Date: ${xLabels[i]}<br>Value: ${yData[i]}`);
 
-      // Reduce the number of x-axis labels for readability
-      let tickStep = Math.max(1, Math.floor(xData.length / 6));
-      let tickVals = xData.filter((_, i) => i % tickStep === 0);
-      let tickText = xLabels.filter((_, i) => i % tickStep === 0);
+      let plotData = [{
+        x: xData,
+        y: yData,
+        type: 'scatter',
+        mode: 'lines',
+        line: { 
+          width: 2, 
+          color: 'blue' },
+        text: hoverTexts,
+        hoverinfo: 'text',
+      }];
 
-      // Create the data array for the plot
-      let plotData = [
-        {
-          x: xData,
-          y: yData,
-          type: 'scatter',
-          mode: 'lines',
-          line: { width: 2, color: 'blue' },
-          text: hoverTexts,
-          hoverinfo: 'text',
-        },
-      ];
-
-      // Create the layout object for the plot
       let layout = {
-        title: {
-          text: `${sensor} - ${reading}`,
-          y: 0.9,
+        title: { 
+          text: `${sensorDisplayName(sensor)} - ${reading}`, 
+          y: 0.91 
         },
-        // Commenting out x-axis to work on global/universal top x-axis
         xaxis: {
-          // Use when universal x-axis is imlpemented
-          // showticklabels: false, // This hides the values at the bottom
-          title: '',
-          tickmode: 'array',
-          tickvals: tickVals,
-          ticktext: tickText, // Show actual timestamps at selected spots
-          tickangle: -20, // Rotate for readability
+          type: "date",
+          showticklabels: false, 
+          tickmode: "array",     
           showgrid: true,
+          gridcolor: "#E1E1E1",  
+          gridwidth: 1,
+          layer: 'below traces'  
         },
-        margin: {
-          l: 100, // left margin (adjust as needed for y-axis labels)
-          r: 30, // right margin
-          b: 90, // bottom margin (ideal 30 with hidden x-axis)
-          t: 70, // top margin
-          // pad: 20 // padding between the plot area and the margin border
+        margin: { 
+          l: 95, 
+          r: 37,
+          b: 20, 
+          t: 55 
         },
-        yaxis: {
-          title: {
-            text: `${reading} Value`,
-            standoff: 20,
-          },
-          showgrid: true,
-          linecolor: 'white',
+        yaxis: { 
+          automargin: true, 
+          title: { 
+            text: `${reading} Value`, 
+            standoff: 20 
+          } 
         },
         autosize: true
-        // margin: { l: 100, r: 50, t: 100, b: 100 } // Extra bottom margin for rotated labels
       };
 
       // Add CSV button to Plotly's default buttons
       let csvButton = {
         name: 'csvDownload',
-        title: 'Download data as CSV',
-        icon: Plotly.Icons.camera, // or supply custom SVG
+        title: 'Download Data as CSV',
+        icon: {
+          width: 24,
+          height: 24,
+          path: 'M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7ZM14 2v4a2 2 0 0 0 2 2h4M8 13h2M8 17h2M14 13h2M14 17h2',
+          color: '#fff'
+        },
         click: csvDownload
       };
 
@@ -1090,30 +2410,75 @@ function plot(moduleIdx) {
         modeBarButtons: [
           ['zoom2d', 'pan2d', 'zoomIn2d', 'zoomOut2d', 'autoScale2d', csvButton]
         ]
-        /*
-                If we want small spaces or groupings between buttons
-                modeBarButtons: [
-                    ['zoom2d', 'pan2d', 'zoomIn2d', 'zoomOut2d', 'autoScale2d'],
-                    ['hoverCompareCartesian', 'hoverClosestCartesian'],
-                    ['toImage', csvButton]
-                ]
-                */
       };
 
-      // Plot the data using Plotly
+      // Build plot
       Plotly.newPlot(m.querySelector('.plot'), plotData, layout, config);
+ 
+      let currentPlotDiv = m.querySelector('.plot');
 
-      // Force resize after plot creation
-      setTimeout(() => {
-        Plotly.Plots.resize(m.querySelector('.plot'));
-      }, 100);
+      plotXData[moduleIdx] = xData;
+      let allTimestamps = Object.values(plotXData).flat();
+      
+      if (allTimestamps.length > 0) {
+        let globalMin = Math.min(...allTimestamps);
+        let globalMax = Math.max(...allTimestamps);
+    
+        let masterTicks = getGlobalTicks(globalMin, globalMax, xData);
+    
+        buildGlobalTimeline(xData, globalMin, globalMax, masterTicks);
+    
+        setTimeout(() => {
+          document.querySelectorAll(".plot").forEach(p => {
+            if (p.classList.contains('js-plotly-plot')) {
+              Plotly.relayout(p, { 
+                'xaxis.range': [globalMin, globalMax],
+                'xaxis.tickmode': 'array',
+                'xaxis.tickvals': masterTicks.tickVals 
+              });
+            }
+          });
+        }, 100);
+    }
+    syncThisPlot(currentPlotDiv, moduleIdx);
     }
   }
 }
 
-// Download as CSV built-in Plotly button
+
+// Extract CSV generation into a reusable helper function
+function generateCSV(plotElement, reading, sensor) {
+  const traces = plotElement.data;
+  if (!traces) return null;
+
+  let csvContent = `Timestamp,${reading} Reading\n`;
+
+  traces.forEach(trace => {
+    for (let i = 0; i < trace.x.length; i++) {
+      let timestamp = trace.x[i] ?? "";
+
+      if (typeof timestamp === "number") {
+        timestamp = new Date(timestamp).toLocaleString("en-US", { 
+          year: "2-digit",
+          month: "2-digit", 
+          day: "2-digit", 
+          hour: "2-digit", 
+          minute: "2-digit", 
+          second: "2-digit",
+          hour12: true
+        }).replace(",", "");
+      }
+
+      csvContent += `${timestamp},${trace.y[i]}\n`;
+    }
+  });
+
+  return csvContent;
+}
+
+// Modified single plot CSV download function
 function csvDownload(m) {
-  const moduleEl = m.closest('.soundModule'); // or whatever class wraps one module
+  const moduleEl = m.closest('.soundModule');
   if (!moduleEl) {
     console.error("Could not find parent module");
     return;
@@ -1122,42 +2487,99 @@ function csvDownload(m) {
   let reading = moduleEl.parentNode.querySelector('.readings').value;
   let sensor = moduleEl.parentNode.querySelector('.sensors').value;
 
-  const traces = m.data;
-  if (!traces) return;
+  const csvContent = generateCSV(m, reading, sensor);
+  if (!csvContent) return;
 
-  // Set column names to Timestamp, Reading
-  let csvContent = `Timestamp,${reading} Reading\n`;
-
-  traces.forEach(trace => {
-      for (let i = 0; i < trace.x.length; i++) {
-          let timestamp = trace.x[i] ?? "";
-
-          // Keep same format as x-axis timestamps
-          if (typeof timestamp === "number") {
-              timestamp = new Date(timestamp).toLocaleString("en-US", { 
-                  year: "2-digit",
-                  month: "2-digit", 
-                  day: "2-digit", 
-                  hour: "2-digit", 
-                  minute: "2-digit", 
-                  second: "2-digit",
-                  hour12: true
-          }).replace(",", "");
-      }
-
-      csvContent += `${timestamp},${trace.y[i]}\n`;
-    }
-  });
+  // Get display name for the sensor
+  const displayName = sensorDisplayName(sensor);
 
   const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
   const link = document.createElement("a");
   link.href = URL.createObjectURL(blob);
-  link.download = `${sensor}_${reading}.csv`;
+  link.download = `${displayName}_${reading}.csv`;  // Using display name here
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);
 }
 
+// Download all plots as ZIP
+// Download all plots as ZIP
+async function downloadAllPlots() {
+  const zip = new JSZip();
+  const processed = new Set();
+  
+  // Use the soundModules array that already tracks all modules
+  if (soundModules.length === 0) {
+    alert('No plots available to download');
+    return;
+  }
+
+  soundModules.forEach((moduleEl, index) => {
+    // Get the Plotly plot element within this module
+    const plotElement = moduleEl.querySelector('.plot');
+    if (!plotElement || !plotElement.data) {
+      console.log(`Module ${index} has no plot data`);
+      return;
+    }
+
+    // Get sensor and reading values from THIS module's selects
+    const readingSelect = moduleEl.querySelector('.readings');
+    const sensorSelect = moduleEl.querySelector('.sensors');
+    
+    const reading = readingSelect?.value;
+    const sensor = sensorSelect?.value;
+    
+    if (!reading || !sensor) {
+      console.log(`Module ${index} missing sensor or reading`);
+      return;
+    }
+
+    // Create unique key for this sensor/reading pair (using raw sensor name)
+    const key = `${sensor}_${reading}`;
+    
+    // Skip if already processed
+    if (processed.has(key)) {
+      console.log(`Skipping duplicate: ${key}`);
+      return;
+    }
+    processed.add(key);
+
+    // Generate CSV content
+    const csvContent = generateCSV(plotElement, reading, sensor);
+    if (csvContent) {
+      // Get display name for the sensor
+      const displayName = sensorDisplayName(sensor);
+      
+      // Add to ZIP with descriptive filename using display name
+      zip.file(`${displayName}_${reading}.csv`, csvContent);
+      console.log(`Added to ZIP: ${displayName}_${reading}.csv`);
+    }
+  });
+
+  // Check if any files were added
+  if (Object.keys(zip.files).length === 0) {
+    alert('No data available to download');
+    return;
+  }
+
+  console.log(`Creating ZIP with ${Object.keys(zip.files).length} files`);
+
+  // Generate ZIP and trigger download
+  const zipBlob = await zip.generateAsync({ type: 'blob' });
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(zipBlob);
+  
+  // Use timestamp in filename
+  const timestamp = new Date().toISOString().slice(0, 10);
+  link.download = `workspace_${timestamp}.zip`;
+  
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+}
+
+// Add event listener to the download button
+document.getElementById('download').addEventListener('click', downloadAllPlots);
 // Add a helper function to fix timestamp format
 function fixTimestamp(ts) {
   // Remove trailing 'Z' then split on 'T'
@@ -1167,6 +2589,7 @@ function fixTimestamp(ts) {
   let parts = timePart.split(':').map(p => p.padStart(2, '0'));
   return `${datePart}T${parts.join(':')}Z`;
 }
+
 
 async function setDateBoundsForSelection() {
   const database = document.getElementById('databases').value;
@@ -1335,3 +2758,76 @@ function dataToMidiPitches(normalizedData, scale) {
   const scaleLength = scale.length;
   return normalizedData.map(value => scale[Math.floor(value * (scaleLength - 1))]);
 }
+
+async function retrieveMetadata() {
+  let db = document.getElementById('databases').value;
+  let url = `/metadata?database=${db}`;
+
+  try {
+    const response = await fetch(url);
+
+    if (!response.ok) {
+      return null;
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error('Error: ', error);
+    return null;
+  }
+}
+
+metadataBtn.onclick = async function () {
+  const metadataContainer = document.getElementById('metadataContainer');
+
+  if (isMetadataDisplayed) {
+    metadataContainer.style.display = 'none';
+    isMetadataDisplayed = false;
+    metadataBtn.textContent = 'View Metadata';
+    return;
+  }
+
+  if (metadata == null) {
+    return;
+  }
+
+  metadataBtn.textContent = "Loading...";
+  metadataContainer.style.display = 'flex';
+  metadataBtn.textContent = "Close";
+
+  if (metadata == null) {
+    metadataContainer.innerHTML = `
+        <h3>No metadata :(</h3>
+        `;
+  } else {
+    let metadataDeploymentDate = metadata['deployment_date'];
+    let metadataLatitude = metadata['latitude'];
+    let metadataLongitude = metadata['longitude'];
+    let metadataOwner = metadata['owner'];
+
+    metadataContainer.innerHTML = `
+        <div id="metadataSection">
+          <h3>Deployment Date: </h3>
+          <p id="metadataDeploymentDate">${metadataDeploymentDate}</p>
+        </div>
+
+        <div id="metadataSection">
+          <h3>Latitude: </h3>
+          <p id="metadataLatitude">${metadataLatitude}</p>
+        </div>
+
+        <div id="metadataSection">
+          <h3>Longitude: </h3>
+          <p id="metadataLongitude">${metadataLongitude}</p>
+        </div>
+
+        <div id="metadataSection">
+          <h3>Owner: </h3>
+          <p id="metadataOwner">${metadataOwner}</p>
+        </div>
+        `;
+  }
+  
+  isMetadataDisplayed = true;
+  return;
+};
