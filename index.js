@@ -1589,8 +1589,7 @@ document.addEventListener('DOMContentLoaded', () => {
     modalOption.textContent = pair.name;
     modalPresetDropdown.appendChild(modalOption);
   });
-
-  // Handle preset selection inside the popup 
+// Handle preset selection inside the popup 
   modalPresetDropdown.addEventListener('change', async (event) => {
     if (event.target.value !== 'default') {
       const presetData = JSON.parse(event.target.value);
@@ -1635,6 +1634,27 @@ document.addEventListener('DOMContentLoaded', () => {
       
     }
   });
+  // Handle selection from the named dropdown
+// Handle selection from the named dropdown
+  const modalPreset = document.getElementById("modalPreset");
+  modalPreset.addEventListener('change', async e => {
+    handleDatasetChange(e);
+    isMetadataDisplayed = false;
+    metadataContainer.style.display = 'none';
+    
+    metadataBtn.style.display = "block";
+    metadataBtn.textContent = 'Loading...';
+    metadata = await retrieveMetadata();
+
+    if (metadata == null) {
+      metadataBtn.textContent = 'No Metadata'
+    } else {
+      metadataBtn.textContent = 'View Metadata';
+    }
+
+    return;
+  });
+
   workspaceHasData = false;
   updateClearWorkspaceButton();
 
