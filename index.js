@@ -59,6 +59,138 @@ var retrievedData;
 // Array to hold x-axis data for each plot
 let plotXData = {};
 
+// Undo/Redo state management
+let historyStack = [];
+let historyIndex = -1;
+let isRestoring = false; // Flag to prevent capturing state while restoring
+const MAX_HISTORY = 50; // Limit history to prevent memory issues
+
+// ====== UNDO/REDO FUNCTIONALITY ======
+function captureState() {
+  return {
+    modules: soundModules.map(module => ({
+      id: module.id,
+      sensor: module.querySelector('.sensors')?.value,
+      reading: module.querySelector('.readings')?.value,
+      volume: module.querySelector('.volume')?.value,
+      soundType: module.querySelector('.soundTypes')?.value,
+      tessitura: module.querySelector('.tessitura')?.value,
+      tonic: module.querySelector('.tonic')?.value,
+      scale: module.querySelector('.scale')?.value,
+      sustainNotes: module.querySelector('.sustainNotes')?.checked
+    })),
+    database: document.getElementById('databases')?.value,
+    device: document.getElementById('devices')?.value,
+    bpm: document.getElementById('bpm')?.value,
+    masterVolume: document.getElementById('masterVolume')?.value,
+    numPackets: document.getElementById('numpackets')?.value,
+    prescaler: document.getElementById('prescaler')?.value
+  };
+}
+
+// Save state to history
+function saveState() {
+
+  if (isRestoring) {
+    return; // Don't save state if we're currently restoring (prevents infinite loop)
+  }
+
+  // Remove any future states if we're not at the end
+  if (historyIndex < historyStack.length - 1) {
+    historyStack = historyStack.slice(0, historyIndex + 1);
+  }
+  
+  historyStack.push(captureState());
+  
+  // Limit history size
+  if (historyStack.length > MAX_HISTORY) {
+    historyStack.shift();
+  } else {
+    historyIndex++;
+  }
+  
+  updateUndoRedoButtons();
+}
+
+// Restore state from history
+function restoreState(state) {
+  isRestoring = true;
+  
+  try {
+    // Stop any playback
+    stopSynths();
+    
+    // Restore global settings
+    if (state.database) document.getElementById('databases').value = state.database;
+    if (state.device) document.getElementById('devices').value = state.device;
+    if (state.bpm) {
+      document.getElementById('bpm').value = state.bpm;
+      document.getElementById('bpmText').innerText = state.bpm;
+      bpm = state.bpm;
+    }
+    if (state.masterVolume) document.getElementById('masterVolume').value = state.masterVolume;
+    if (state.numPackets) document.getElementById('numpackets').value = state.numPackets;
+    if (state.prescaler) document.getElementById('prescaler').value = state.prescaler;
+    
+    // Remove all modules
+    const modulesContainer = document.getElementById('modulesContainer');
+    while (modulesContainer.firstChild) {
+      modulesContainer.removeChild(modulesContainer.firstChild);
+    }
+    soundModules = [];
+    
+    // Recreate modules with saved state
+    state.modules.forEach((moduleState, index) => {
+      addSoundModule();
+      const module = soundModules[index];
+      
+      // Restore module settings
+      if (moduleState.sensor) module.querySelector('.sensors').value = moduleState.sensor;
+      if (moduleState.reading) {
+        setReadings(index);
+        module.querySelector('.readings').value = moduleState.reading;
+      }
+      if (moduleState.volume) module.querySelector('.volume').value = moduleState.volume;
+      if (moduleState.soundType) module.querySelector('.soundTypes').value = moduleState.soundType;
+      if (moduleState.tessitura) module.querySelector('.tessitura').value = moduleState.tessitura;
+      if (moduleState.tonic) module.querySelector('.tonic').value = moduleState.tonic;
+      if (moduleState.scale) module.querySelector('.scale').value = moduleState.scale;
+      if (moduleState.sustainNotes !== undefined) {
+        module.querySelector('.sustainNotes').checked = moduleState.sustainNotes;
+        sustainNotes[index] = moduleState.sustainNotes;
+      }
+      
+      // Replot if data exists
+      if (retrievedData) {
+        plot(index);
+      }
+    });
+    
+    updateUndoRedoButtons();
+  } finally {
+    // ALWAYS reset the flag, even if there's an error
+    isRestoring = false;
+  }
+}
+
+// Update undo/redo button states
+function updateUndoRedoButtons() {
+  const undoBtn = document.getElementById('undo');
+  const redoBtn = document.getElementById('redo');
+  
+  if (undoBtn) {
+    undoBtn.disabled = historyIndex <= 0;
+    undoBtn.style.opacity = historyIndex <= 0 ? '0.5' : '1';
+    undoBtn.style.cursor = historyIndex <= 0 ? 'not-allowed' : 'pointer';
+  }
+  
+  if (redoBtn) {
+    redoBtn.disabled = historyIndex >= historyStack.length - 1;
+    redoBtn.style.opacity = historyIndex >= historyStack.length - 1 ? '0.5' : '1';
+    redoBtn.style.cursor = historyIndex >= historyStack.length - 1 ? 'not-allowed' : 'pointer';
+  }
+}
+
 // Function to initialize a sound module
 async function addSoundModule() {
   console.log('Adding a new sound module...');
@@ -105,6 +237,8 @@ async function addSoundModule() {
   if (isPlaying) {
     setupSynth(moduleId); // Create a new FM synth
   }
+
+  saveState(); // Capture state after adding a new module
 }
 
 document.getElementById('addModule').onclick = addSoundModule;
@@ -165,7 +299,7 @@ function attachRemoveListener(soundModule) {
       removeBtn.dataset.moduleId = index;
     });
 
-    console.log(`Removed module ${moduleId}`);
+    saveState(); // Capture state after removing a module
   });
 }
 
@@ -184,6 +318,7 @@ function attachSensorListener(soundModule) {
     const selectedSensor = event.target.value;
     setReadings(soundModules.indexOf(soundModule));
     console.log(`Sensor for ${soundModule.id} set to ${selectedSensor}`);
+    saveState(); // Capture state after changing sensor
   });
 }
 
@@ -193,6 +328,7 @@ function attachReadingListener(soundModule) {
     const selectedReading = event.target.value;
     plot(soundModules.indexOf(soundModule));
     console.log(`Reading for ${soundModule.id} set to ${selectedReading}`);
+    saveState(); // Capture state after changing reading
   });
 }
 
@@ -223,7 +359,7 @@ function attachCollapseListener(soundModule) {
         if (otherOptions && otherOptions !== options) {
           otherOptions.style.display = 'none';
           if (otherBtn) {
-            otherBtn.innerHTML = ' More Options <span class="arrow-icon">▼</span>';
+            otherBtn.innerHTML = ' Sound Options <span class="arrow-icon">▼</span>';
           }
         }
       });
@@ -232,7 +368,7 @@ function attachCollapseListener(soundModule) {
       collapseBtn.innerHTML = ' Hide Options <span class="arrow-icon">▲</span>';
     } else {
       options.style.display = 'none';
-      collapseBtn.innerHTML = ' More Options <span class="arrow-icon">▼</span>';
+      collapseBtn.innerHTML = ' Sound Options <span class="arrow-icon">▼</span>';
     }
     
     // NO setTimeout needed! The Observer handles it instantly.
@@ -638,6 +774,366 @@ function updateClearWorkspaceButton() {
   btn.classList.toggle("disabled", btn.disabled);
 }
 
+
+const ONBOARDING_STORAGE_KEY = 'ear2earth-onboarding-v1-complete';
+
+function shouldRunOnboarding() {
+  return localStorage.getItem(ONBOARDING_STORAGE_KEY) !== 'true';
+}
+
+function setOnboardingComplete() {
+  localStorage.setItem(ONBOARDING_STORAGE_KEY, 'true');
+}
+
+function resetToLastPacketsMode() {
+  const lastXPacketsRadio = document.getElementById('lastXPackets');
+  const timeRangeRadio = document.getElementById('timeRange');
+  const numpacketsInput = document.getElementById('numpacketsInput');
+  const skipPackets = document.getElementById('skipPackets');
+  const dateRangeText = document.getElementById('dateRangeText');
+  const startTimeInput = document.getElementById('startTime');
+  const endTimeInput = document.getElementById('endTime');
+
+  if (lastXPacketsRadio) lastXPacketsRadio.checked = true;
+  if (timeRangeRadio) timeRangeRadio.checked = false;
+  if (numpacketsInput) numpacketsInput.style.display = 'block';
+  if (skipPackets) skipPackets.style.display = 'block';
+  if (dateRangeText) dateRangeText.textContent = 'Date Range';
+  if (startTimeInput) startTimeInput.value = '';
+  if (endTimeInput) endTimeInput.value = '';
+}
+
+function startFirstTimeOnboarding() {
+  const dataSourceModal = document.getElementById('dataSourceModal');
+  const dateTimeModal = document.getElementById('dateTimeModal');
+
+  const steps = [
+    {
+      selectors: ['#openPresetModal'],
+      title: 'Choose Data Source',
+      text: 'Start here to open the dataset and device selector.',
+      showDataSourceModal: false,
+      showDateTimeModal: false
+    },
+    {
+      selectors: ['#modalPreset'],
+      title: 'Select a Preset',
+      text: 'Choose a named preset to auto-fill database and device selections.',
+      showDataSourceModal: true,
+      showDateTimeModal: false
+    },
+    {
+      selectors: ['#databases'],
+      title: 'Select a Dataset',
+      text: 'Pick the database containing the packets you want to sonify.',
+      showDataSourceModal: true,
+      showDateTimeModal: false
+    },
+    {
+      selectors: ['#devices'],
+      title: 'Select a Device',
+      text: 'Choose the device/collection within the selected dataset.',
+      showDataSourceModal: true,
+      showDateTimeModal: false
+    },
+    {
+      selectors: ['#confirmDataSource'],
+      title: 'Confirm Source',
+      text: 'Save your dataset and device selection for retrieval.',
+      showDataSourceModal: true,
+      showDateTimeModal: false
+    },
+    {
+      selectors: ['#dataOptions label[for="lastXPackets"]', '#dataOptions label[for="timeRange"]'],
+      title: 'Packet Mode',
+      text: 'Pick between Last Packets and Date Range modes.',
+      anchorSelector: '#dataOptions',
+      cardPlacement: 'below',
+      showDataSourceModal: false,
+      showDateTimeModal: false
+    },
+    {
+      selectors: ['.packet-inputs-group'],
+      title: 'Packet Setup',
+      text: 'Configure packet count and prescaler (use every Nth packet).',
+      showDataSourceModal: false,
+      showDateTimeModal: false
+    },
+    {
+      selectors: ['#dateRangeLabel'],
+      title: 'Date Range',
+      text: 'Click Date Range to open the date/time picker modal.',
+      showDataSourceModal: false,
+      showDateTimeModal: false
+    },
+    {
+      selectors: ['#modalStartTime', '#modalEndTime', '#modalPrescaler'],
+      title: 'Select Date & Time Range',
+      text: 'Set start time, end time, and "Use of every" together in this modal.',
+      beforeShow: () => {
+        document.getElementById('timeRange').checked = true;
+      },
+      anchorSelector: '#confirmDateTime',
+      cardPlacement: 'below',
+      showDataSourceModal: false,
+      showDateTimeModal: true
+    },
+    {
+      selectors: ['#confirmDateTime'],
+      title: 'Apply Date Range',
+      text: 'Apply the selected window for time-based retrieval.',
+      showDataSourceModal: false,
+      showDateTimeModal: true
+    },
+    {
+      selectors: ['#retrieve'],
+      title: 'Retrieve Data',
+      text: 'Fetch packets after source and packet settings are configured.',
+      showDataSourceModal: false,
+      showDateTimeModal: false
+    },
+    {
+      selectors: ['.soundModule .sensors'],
+      title: 'Sensor Mapping',
+      text: 'Each track can target a sensor from the retrieved data.',
+      showDataSourceModal: false,
+      showDateTimeModal: false
+    },
+    {
+      selectors: ['.soundModule .readings'],
+      title: 'Reading Mapping',
+      text: 'Choose which reading for the selected sensor drives the notes.',
+      showDataSourceModal: false,
+      showDateTimeModal: false
+    },
+    {
+      selectors: ['.soundModule .collapse-btn'],
+      title: 'Sound Options',
+      text: 'Use Sound Options to open the scrollable sound settings menu for this track.',
+      showDataSourceModal: false,
+      showDateTimeModal: false
+    },
+    {
+      selectors: ['.soundModule .moduleBottomOptions'],
+      title: 'Advanced Sound Controls',
+      text: 'Here you can adjust tonic, scale, tessitura, sustain notes, and sound type.',
+      beforeShow: () => {
+        const collapseBtn = document.querySelector('.soundModule .collapse-btn');
+        const options = document.querySelector('.soundModule .moduleBottomOptions');
+        if (collapseBtn && options && (options.style.display === 'none' || options.style.display === '')) {
+          collapseBtn.click();
+        }
+      },
+      showDataSourceModal: false,
+      showDateTimeModal: false
+    },
+    {
+      selectors: ['#addModule'],
+      title: 'Add Tracks',
+      text: 'Add more sound modules to map multiple sensor readings.',
+      showDataSourceModal: false,
+      showDateTimeModal: false
+    },
+    {
+      selectors: ['#play', '#stop', '#bpmContainer', '#speedOptions'],
+      title: 'Playback Controls',
+      text: 'Use Play/Stop, BPM, and speed controls to audition results.',
+      showDataSourceModal: false,
+      showDateTimeModal: false
+    },
+    {
+      selectors: ['#metadataButton'],
+      title: 'Metadata',
+      text: 'Open metadata for context about the current dataset.',
+      showDataSourceModal: false,
+      showDateTimeModal: false
+    },
+    {
+      selectors: ['#clearWorkspace'],
+      title: 'Clear Workspace',
+      text: 'Reset tracks and state when starting a new exploration.',
+      showDataSourceModal: false,
+      showDateTimeModal: false
+    }
+  ];
+
+  const overlay = document.createElement('div');
+  overlay.className = 'onboarding-overlay';
+
+  const card = document.createElement('div');
+  card.className = 'onboarding-card';
+  card.innerHTML = `
+    <div class="onboarding-title"></div>
+    <div class="onboarding-text"></div>
+    <div class="onboarding-footer">
+      <span class="onboarding-progress"></span>
+      <div class="onboarding-controls">
+        <button type="button" class="onboarding-btn onboarding-skip">Skip</button>
+        <button type="button" class="onboarding-btn onboarding-back">Back</button>
+        <button type="button" class="onboarding-btn onboarding-next">Next</button>
+      </div>
+    </div>
+  `;
+
+  document.body.appendChild(overlay);
+  document.body.appendChild(card);
+
+  const titleEl = card.querySelector('.onboarding-title');
+  const textEl = card.querySelector('.onboarding-text');
+  const progressEl = card.querySelector('.onboarding-progress');
+  const skipBtn = card.querySelector('.onboarding-skip');
+  const backBtn = card.querySelector('.onboarding-back');
+  const nextBtn = card.querySelector('.onboarding-next');
+
+  let stepIndex = 0;
+  let highlightedEls = [];
+
+  function clearHighlight() {
+    if (highlightedEls.length === 0) return;
+    highlightedEls.forEach(el => el.classList.remove('onboarding-highlight'));
+    highlightedEls = [];
+  }
+
+  function placeCard(target, placement = 'auto') {
+    const rect = target.getBoundingClientRect();
+    const margin = 12;
+    const cardRect = card.getBoundingClientRect();
+    const maxTop = window.innerHeight - cardRect.height - margin;
+    const maxLeft = window.innerWidth - cardRect.width - margin;
+
+    function clamp(value, min, max) {
+      return Math.min(Math.max(value, min), max);
+    }
+
+    const positions = {
+      below: {
+        top: rect.bottom + margin,
+        left: rect.left + (rect.width - cardRect.width) / 2
+      },
+      above: {
+        top: rect.top - cardRect.height - margin,
+        left: rect.left + (rect.width - cardRect.width) / 2
+      },
+      right: {
+        top: rect.top + (rect.height - cardRect.height) / 2,
+        left: rect.right + margin
+      },
+      left: {
+        top: rect.top + (rect.height - cardRect.height) / 2,
+        left: rect.left - cardRect.width - margin
+      }
+    };
+
+    const orderedPlacements = placement === 'auto'
+      ? ['below', 'above', 'right', 'left']
+      : [placement, 'below', 'above', 'right', 'left'];
+
+    let chosen = positions.below;
+    for (const candidate of orderedPlacements) {
+      const p = positions[candidate];
+      if (
+        p.top >= margin &&
+        p.left >= margin &&
+        p.top <= maxTop &&
+        p.left <= maxLeft
+      ) {
+        chosen = p;
+        break;
+      }
+    }
+
+    const top = clamp(chosen.top, margin, maxTop);
+    const left = clamp(chosen.left, margin, maxLeft);
+    card.style.top = `${top}px`;
+    card.style.left = `${left}px`;
+  }
+
+  function closeTour(markComplete = true) {
+    clearHighlight();
+    overlay.remove();
+    card.remove();
+    document.getElementById('dataSourceModal').style.display = 'none';
+    document.getElementById('dateTimeModal').style.display = 'none';
+    document.getElementById('dataSourceModal').classList.remove('onboarding-modal-active');
+    document.getElementById('dateTimeModal').classList.remove('onboarding-modal-active');
+    resetToLastPacketsMode();
+    if (markComplete) {
+      setOnboardingComplete();
+    }
+    window.removeEventListener('resize', handleViewportUpdate);
+    window.removeEventListener('scroll', handleViewportUpdate, true);
+  }
+
+  function renderStep() {
+    if (stepIndex < 0) stepIndex = 0;
+    if (stepIndex >= steps.length) {
+      closeTour(true);
+      return;
+    }
+
+    const step = steps[stepIndex];
+    if (typeof step.beforeShow === 'function') {
+      step.beforeShow();
+    }
+
+    if (dataSourceModal) {
+      dataSourceModal.style.display = step.showDataSourceModal ? 'flex' : 'none';
+      dataSourceModal.classList.toggle('onboarding-modal-active', !!step.showDataSourceModal);
+    }
+    if (dateTimeModal) {
+      dateTimeModal.style.display = step.showDateTimeModal ? 'flex' : 'none';
+      dateTimeModal.classList.toggle('onboarding-modal-active', !!step.showDateTimeModal);
+    }
+
+    const targets = (step.selectors || [])
+      .map(selector => document.querySelector(selector))
+      .filter(Boolean);
+
+    if (targets.length === 0) {
+      stepIndex += 1;
+      renderStep();
+      return;
+    }
+
+    clearHighlight();
+    highlightedEls = targets;
+    highlightedEls.forEach(el => el.classList.add('onboarding-highlight'));
+    const anchorTarget = step.anchorSelector
+      ? (document.querySelector(step.anchorSelector) || targets[0])
+      : targets[0];
+
+    anchorTarget.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'nearest' });
+
+    titleEl.textContent = step.title;
+    textEl.textContent = step.text;
+    progressEl.textContent = `${stepIndex + 1}/${steps.length}`;
+    backBtn.disabled = stepIndex === 0;
+    nextBtn.textContent = stepIndex === steps.length - 1 ? 'Finish' : 'Next';
+
+    requestAnimationFrame(() => placeCard(anchorTarget, step.cardPlacement || 'auto'));
+  }
+
+  function handleViewportUpdate() {
+    if (highlightedEls.length === 0) return;
+    placeCard(highlightedEls[0]);
+  }
+
+  skipBtn.addEventListener('click', () => closeTour(true));
+  backBtn.addEventListener('click', () => {
+    stepIndex -= 1;
+    renderStep();
+  });
+  nextBtn.addEventListener('click', () => {
+    stepIndex += 1;
+    renderStep();
+  });
+
+  window.addEventListener('resize', handleViewportUpdate);
+  window.addEventListener('scroll', handleViewportUpdate, true);
+
+  renderStep();
+}
+
 // Attach a single event listener to the speedOptions container
 document.getElementById('speedOptions').addEventListener('change', handleSpeedChange);
 
@@ -781,7 +1277,30 @@ document.addEventListener('DOMContentLoaded', () => {
       // Update the button text to show what was selected
       if (selectedPreset !== 'default') {
         const presetData = JSON.parse(selectedPreset);
-        openPresetBtn.textContent = presetData.name;  // Shows preset name
+        // Clear button
+        openPresetBtn.textContent = '';
+        
+        // Add preset name
+        const nameDiv = document.createElement('div');
+        nameDiv.textContent = presetData.name;
+        nameDiv.style.fontWeight = '500';
+        openPresetBtn.appendChild(nameDiv);
+        
+        // Add database
+        const dbDiv = document.createElement('div');
+        dbDiv.textContent = presetData.database;
+        dbDiv.style.fontSize = '10px';
+        dbDiv.style.opacity = '0.7';
+        openPresetBtn.appendChild(dbDiv);
+        
+        // Add device
+        const deviceDiv = document.createElement('div');
+        deviceDiv.textContent = presetData.device;
+        deviceDiv.style.fontSize = '10px';
+        deviceDiv.style.opacity = '0.7';
+        openPresetBtn.appendChild(deviceDiv);
+
+        // old button text update: openPresetBtn.textContent = presetData.name;
       } else {
         openPresetBtn.textContent = `${selectedDatabase} - ${selectedDevice}`;
       }
@@ -791,7 +1310,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // const retrieveByNameDropdown = document.getElementById('retrieveByNameDropdown');
 
   // === Date/Time Range Modal Functionality ===
   const dateTimeModal = document.getElementById('dateTimeModal');
@@ -910,6 +1428,89 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
+  // ==== Popover functionality for Metadata and Packet Refresh info buttons ====
+  const popover = document.getElementById('popover');
+  const popoverBody = popover.querySelector('.popover-body');
+  const popoverClose = popover.querySelector('.popover-close');
+
+  function showPopover(button, content) {
+    // Set content
+    popoverBody.textContent = content;
+    
+    // Position popover below the button
+    const rect = button.getBoundingClientRect();
+    popover.style.display = 'block';
+    popover.style.left = rect.left + 'px';
+    popover.style.top = (rect.bottom + 8) + 'px';
+  }
+
+  function hidePopover() {
+    popover.style.display = 'none';
+  }
+
+  // Close button
+  popoverClose.addEventListener('click', hidePopover);
+
+  // Close when clicking outside
+  document.addEventListener('click', (e) => {
+    if (!popover.contains(e.target) && !e.target.closest('.icon-btn')) {
+      hidePopover();
+    }
+  });
+
+  // Add to your info buttons
+  const metadataHelp = document.getElementById('metadataHelp');
+  const refreshHelp = document.getElementById('refreshHelp');
+  
+  if (metadataHelp) {
+    metadataHelp.addEventListener('click', (e) => {
+      e.stopPropagation();
+      showPopover(e.currentTarget, 'Metadata shows device deployment information including date, location (latitude/longitude), and database owner.');
+    });
+  }
+  
+  if (refreshHelp) {
+    refreshHelp.addEventListener('click', (e) => {
+      e.stopPropagation();
+      showPopover(e.currentTarget, 'Reloads the latest packet data from your selected source while preserving your workspace configuration and tracks.');
+    });
+  }
+
+  // ====== UNDO/REDO button functionality ======
+  const undoBtn = document.getElementById('undo');
+  const redoBtn = document.getElementById('redo');
+
+  if (undoBtn) {
+    undoBtn.addEventListener('click', () => {
+      if (historyIndex > 0) {
+        historyIndex--;
+        restoreState(historyStack[historyIndex]);
+        showStatusMessage('Undone', 'info');
+      }
+    });
+  }
+
+  if (redoBtn) {
+    redoBtn.addEventListener('click', () => {
+      if (historyIndex < historyStack.length - 1) {
+        historyIndex++;
+        restoreState(historyStack[historyIndex]);
+        showStatusMessage('Redone', 'info');
+      }
+    });
+  }
+
+  // Status message notification function
+  function showStatusMessage(message, type = 'success') {
+    const statusMessage = document.getElementById('status-message');
+    statusMessage.textContent = message;
+    statusMessage.className = `status-message show ${type}`;
+    
+    setTimeout(() => {
+      statusMessage.className = 'status-message';
+    }, 3000); // Hide after 3 seconds
+  }
+
   // Initialize draggable toolbar sections
   const topmenu = document.querySelector('.topmenu');
   
@@ -980,17 +1581,9 @@ document.addEventListener('DOMContentLoaded', () => {
     },
   ];
 
-  // Populate the "Retrieve by Name" dropdown with predefined database/device pairs
+  // Populate the preset dropdown with predefined database/device pairs
   predefinedPairs.forEach(pair => {
-    // BEFORE: main preset dropdown
-    /* 
-    let option = document.createElement('option');
-    option.value = JSON.stringify(pair); // Store as a JSON string
-    option.textContent = pair.name;
-    retrieveByNameDropdown.appendChild(option);
-    */
-
-    // NEW: Add to modal preset dropdown
+    // Add to modal preset dropdown
     let modalOption = document.createElement('option');
     modalOption.value = JSON.stringify(pair); // Store as a JSON string
     modalOption.textContent = pair.name;
@@ -1042,28 +1635,17 @@ document.addEventListener('DOMContentLoaded', () => {
       
     }
   });
-  // Handle selection from the named dropdown
-  const modalPreset = document.getElementById("modalPreset");
-  modalPreset.addEventListener('change', async e => {
-    handleDatasetChange(e);
-    isMetadataDisplayed = false;
-    metadataContainer.style.display = 'none';
-    
-    metadataBtn.style.display = "block";
-    metadataBtn.textContent = 'Loading...';
-    metadata = await retrieveMetadata();
-
-    if (metadata == null) {
-      metadataBtn.textContent = 'No Metadata'
-    } else {
-      metadataBtn.textContent = 'View Metadata';
-    }
-
-    return;
-  });
-
   workspaceHasData = false;
   updateClearWorkspaceButton();
+
+  saveState(); // Save initial state for undo/redo
+  updateUndoRedoButtons();
+  
+  if (shouldRunOnboarding()) {
+    setTimeout(() => {
+      startFirstTimeOnboarding();
+    }, 350);
+  }
 });
 
 // Listener for "Dataset Name" dropdown
@@ -1349,6 +1931,8 @@ document.getElementById('retrieve').onclick = async function () {
       
       workspaceHasData = true;
       updateClearWorkspaceButton();
+
+      saveState(); // Save state after data retrieval and module initialization
     })
     .catch(error => console.error('Error:', error));
 };
@@ -1669,7 +2253,12 @@ function buildGlobalTimeline(xData, xMin, xMax, masterTicks) {
       tickangle: 0,
       automargin: false,
       gridcolor: "rgba(0, 0, 0, 0.56)",
-      fixedrange: true 
+      fixedrange: true,
+      tickfont: {
+        family: "Google Sans, sans-serif",
+        size: 12,
+        color: "rgb(0, 0, 0)"
+      }
     },
     yaxis: { visible: false, fixedrange: true, range: [0, 1] },
     paper_bgcolor: "rgba(0,0,0,0)",
@@ -1801,15 +2390,27 @@ function plot(moduleIdx) {
         autosize: true
       };
 
-      let config = { responsive: true, 
+      // Add CSV button to Plotly's default buttons
+      let csvButton = {
+        name: 'csvDownload',
+        title: 'Download Data as CSV',
+        icon: {
+          width: 24,
+          height: 24,
+          path: 'M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7ZM14 2v4a2 2 0 0 0 2 2h4M8 13h2M8 17h2M14 13h2M14 17h2',
+          color: '#fff'
+        },
+        click: csvDownload
+      };
+
+      // Add config parameter
+      let config = {
+        responsive: true,
+        // Modify button order and inclusion
         modeBarButtons: [
-          ['zoom2d', 
-            'pan2d', 
-            'zoomIn2d', 
-            'zoomOut2d', 
-            'autoScale2d'
-          ]
-        ] };
+          ['zoom2d', 'pan2d', 'zoomIn2d', 'zoomOut2d', 'autoScale2d', csvButton]
+        ]
+      };
 
       // Build plot
       Plotly.newPlot(m.querySelector('.plot'), plotData, layout, config);
@@ -1845,8 +2446,39 @@ function plot(moduleIdx) {
 }
 
 
+// Extract CSV generation into a reusable helper function
+function generateCSV(plotElement, reading, sensor) {
+  const traces = plotElement.data;
+  if (!traces) return null;
+
+  let csvContent = `Timestamp,${reading} Reading\n`;
+
+  traces.forEach(trace => {
+    for (let i = 0; i < trace.x.length; i++) {
+      let timestamp = trace.x[i] ?? "";
+
+      if (typeof timestamp === "number") {
+        timestamp = new Date(timestamp).toLocaleString("en-US", { 
+          year: "2-digit",
+          month: "2-digit", 
+          day: "2-digit", 
+          hour: "2-digit", 
+          minute: "2-digit", 
+          second: "2-digit",
+          hour12: true
+        }).replace(",", "");
+      }
+
+      csvContent += `${timestamp},${trace.y[i]}\n`;
+    }
+  });
+
+  return csvContent;
+}
+
+// Modified single plot CSV download function
 function csvDownload(m) {
-  const moduleEl = m.closest('.soundModule'); // or whatever class wraps one module
+  const moduleEl = m.closest('.soundModule');
   if (!moduleEl) {
     console.error("Could not find parent module");
     return;
@@ -1855,42 +2487,99 @@ function csvDownload(m) {
   let reading = moduleEl.parentNode.querySelector('.readings').value;
   let sensor = moduleEl.parentNode.querySelector('.sensors').value;
 
-  const traces = m.data;
-  if (!traces) return;
+  const csvContent = generateCSV(m, reading, sensor);
+  if (!csvContent) return;
 
-  // Set column names to Timestamp, Reading
-  let csvContent = `Timestamp,${reading} Reading\n`;
-
-  traces.forEach(trace => {
-      for (let i = 0; i < trace.x.length; i++) {
-          let timestamp = trace.x[i] ?? "";
-
-          // Keep same format as x-axis timestamps
-          if (typeof timestamp === "number") {
-              timestamp = new Date(timestamp).toLocaleString("en-US", { 
-                  year: "2-digit",
-                  month: "2-digit", 
-                  day: "2-digit", 
-                  hour: "2-digit", 
-                  minute: "2-digit", 
-                  second: "2-digit",
-                  hour12: true
-          }).replace(",", "");
-      }
-
-      csvContent += `${timestamp},${trace.y[i]}\n`;
-    }
-  });
+  // Get display name for the sensor
+  const displayName = sensorDisplayName(sensor);
 
   const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
   const link = document.createElement("a");
   link.href = URL.createObjectURL(blob);
-  link.download = `${sensor}_${reading}.csv`;
+  link.download = `${displayName}_${reading}.csv`;  // Using display name here
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);
 }
 
+// Download all plots as ZIP
+// Download all plots as ZIP
+async function downloadAllPlots() {
+  const zip = new JSZip();
+  const processed = new Set();
+  
+  // Use the soundModules array that already tracks all modules
+  if (soundModules.length === 0) {
+    alert('No plots available to download');
+    return;
+  }
+
+  soundModules.forEach((moduleEl, index) => {
+    // Get the Plotly plot element within this module
+    const plotElement = moduleEl.querySelector('.plot');
+    if (!plotElement || !plotElement.data) {
+      console.log(`Module ${index} has no plot data`);
+      return;
+    }
+
+    // Get sensor and reading values from THIS module's selects
+    const readingSelect = moduleEl.querySelector('.readings');
+    const sensorSelect = moduleEl.querySelector('.sensors');
+    
+    const reading = readingSelect?.value;
+    const sensor = sensorSelect?.value;
+    
+    if (!reading || !sensor) {
+      console.log(`Module ${index} missing sensor or reading`);
+      return;
+    }
+
+    // Create unique key for this sensor/reading pair (using raw sensor name)
+    const key = `${sensor}_${reading}`;
+    
+    // Skip if already processed
+    if (processed.has(key)) {
+      console.log(`Skipping duplicate: ${key}`);
+      return;
+    }
+    processed.add(key);
+
+    // Generate CSV content
+    const csvContent = generateCSV(plotElement, reading, sensor);
+    if (csvContent) {
+      // Get display name for the sensor
+      const displayName = sensorDisplayName(sensor);
+      
+      // Add to ZIP with descriptive filename using display name
+      zip.file(`${displayName}_${reading}.csv`, csvContent);
+      console.log(`Added to ZIP: ${displayName}_${reading}.csv`);
+    }
+  });
+
+  // Check if any files were added
+  if (Object.keys(zip.files).length === 0) {
+    alert('No data available to download');
+    return;
+  }
+
+  console.log(`Creating ZIP with ${Object.keys(zip.files).length} files`);
+
+  // Generate ZIP and trigger download
+  const zipBlob = await zip.generateAsync({ type: 'blob' });
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(zipBlob);
+  
+  // Use timestamp in filename
+  const timestamp = new Date().toISOString().slice(0, 10);
+  link.download = `workspace_${timestamp}.zip`;
+  
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+}
+
+// Add event listener to the download button
+document.getElementById('download').addEventListener('click', downloadAllPlots);
 // Add a helper function to fix timestamp format
 function fixTimestamp(ts) {
   // Remove trailing 'Z' then split on 'T'

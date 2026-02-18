@@ -31,6 +31,7 @@
       charset="utf-8"
 
     ></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 
     <!--<script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.min.js"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.11.1/addons/p5.sound.min.js"></script>-->
@@ -124,7 +125,7 @@
                 View Metadata
               </button>
               <!-- Help/Info button for metadata -->
-              <button id="toolButton" class="icon-btn" title="Help">
+              <button id="metadataHelp" class="icon-btn" title="Help">
                 <i data-lucide="info"></i>
               </button>
             </div>
@@ -183,7 +184,7 @@
                 <i data-lucide="share-2"></i>
               </button>
               <!-- Download workspace data -->
-              <button id="download" class="icon-btn-small" title="Download">
+              <button id="download" class="icon-btn-small" title="Download Workspace as CSV">
                 <i data-lucide="file-down"></i>
               </button>
               <!-- Undo last action -->
@@ -204,7 +205,7 @@
                 <span class="action-label">Packet Refresh</span>
               </button>
               <!-- Help/Info button for refresh -->
-              <button id="toolButton" class="icon-btn" title="Help">
+              <button id="refreshHelp" class="icon-btn" title="Help">
                 <i data-lucide="info"></i>
               </button>
             </div>
@@ -282,6 +283,17 @@
           <button id="confirmDateTime" class="primary-btn">Apply</button>
         </div>
       </div>
+
+      <!-- Modal for tooltips (info) -->
+      <div id="popover" class="popover" style="display: none;">
+        <div class="popover-content">
+          <button class="popover-close">&times;</button>
+          <div class="popover-body"></div>
+        </div>
+      </div>
+
+      <!-- Status message notification -->
+      <div id="status-message" class="status-message"></div>
       <!-- ============================================ -->
 
       <div id="metadataContainer">
@@ -293,7 +305,6 @@
         <div id="globalTimeline"></div>
       </div>
       <!-- =============================================== -->
-
 
       <div id="modulesContainer"></div>
       <button id="addModule">

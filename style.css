@@ -13,7 +13,7 @@
   --standard-blue: #036dee;
   --hover-blue: rgb(16, 80, 158);
   --main-grey: #DFDFDF;
-  --active-grey: #eaeaeaba;
+  --active-grey: #9e9e9eba;
   --hover-grey: #bebebe;
 }
 
@@ -64,14 +64,70 @@ nav#nav ul li a {
   text-decoration: none;
   color: #030303;
 }
-main {
-  margin-top: 0px;
+
+.onboarding-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(10, 15, 26, 0.55);
+  z-index: 12000;
 }
 
-/* ================== TOP MENU ================== */
-/* =====================================================
-   TOP MENU - MAIN CONTAINER & STRUCTURE
-===================================================== */
+.onboarding-card {
+  position: fixed;
+  width: min(360px, calc(100vw - 24px));
+  background: #ffffff;
+  border: 1px solid #d6dbe3;
+  border-radius: 10px;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.2);
+  padding: 12px;
+  z-index: 12002;
+}
+
+.onboarding-title {
+  font-size: 14px;
+  font-weight: 700;
+  margin-bottom: 6px;
+  color: #111827;
+}
+
+.onboarding-text {
+  font-size: 12px;
+  line-height: 1.4;
+  color: #374151;
+}
+
+.onboarding-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 12px;
+  gap: 8px;
+}
+
+.onboarding-progress {
+  font-size: 11px;
+  color: #6b7280;
+}
+
+.onboarding-controls {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.onboarding-btn {
+  border: 1px solid #c8cfda;
+  background: #f8fafc;
+  color: #111827;
+  border-radius: 6px;
+  padding: 6px 10px;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.onboarding-btn:hover {
+  background: #eef2f7;
+}
 .topmenu {
   display: flex;
   flex-direction: row;
@@ -112,12 +168,118 @@ main {
 }
 
 .topmenu .toolbar .row {
+
+.onboarding-btn:disabled {
+  cursor: default;
+  opacity: 0.55;
+}
+
+.onboarding-next {
+  border-color: var(--standard-blue);
+  background: var(--standard-blue);
+  color: #fff;
+}
+
+.onboarding-next:hover {
+  background: var(--hover-blue);
+}
+
+.onboarding-highlight {
+  position: relative;
+  z-index: 12001 !important;
+  box-shadow: 0 0 0 3px rgba(3, 109, 238, 0.9);
+  border-radius: 6px;
+}
+
+.modal.onboarding-modal-active {
+  z-index: 12001;
+}
+
+.modal.onboarding-modal-active .modal-content,
+.modal.onboarding-modal-active .modal-form,
+.modal.onboarding-modal-active .form-group,
+.modal.onboarding-modal-active #presetElements,
+.modal.onboarding-modal-active #databaseElements,
+.modal.onboarding-modal-active #deviceElements,
+.modal.onboarding-modal-active #confirmDataSource,
+.modal.onboarding-modal-active #confirmDateTime {
+  position: relative;
+  z-index: 12002;
+  opacity: 1;
+  filter: none;
+}
+
+#speedOptions.onboarding-highlight {
+  box-shadow: none;
+}
+
+#speedOptions.onboarding-highlight::after {
+  content: "";
+  position: absolute;
+  top: -3px;
+  bottom: -3px;
+  left: -10px;
+  right: 3px;
+  border: 3px solid rgba(3, 109, 238, 0.9);
+  border-radius: 6px;
+  pointer-events: none;
+}
+
+main {
+  margin-top: 0px;
+}
+
+/* ================== TOP MENU ================== */
+/* =====================================================
+   TOP MENU - MAIN CONTAINER & STRUCTURE
+.topmenu {
+  display: flex;
+  flex-direction: row;
+  gap: 0px;
+  flex-wrap: nowrap;
+  width: 100% !important;
+  background-color: #fff !important;
+  overflow-y: hidden;
+  overflow-x: auto; /* Allow horizontal scrolling when content doesn't fit */
+  /* Hide scrollbar for Firefox */
+  scrollbar-width: none;
+  /* Hide scrollbar for IE and Edge */
+  -ms-overflow-style: none;
+}
+
+/* Hide scrollbar for Chrome, Safari and Opera */
+.topmenu::-webkit-scrollbar {
+  display: none;
+}
+
+.toolbar-wrapper {
+  display: flex;
+  align-items: center;
+  height: 100%;
+  width: 100%;
+  padding-right: 1px;
+  padding-left: 1px;
+}
+
+.topmenu .toolbar {
+  height: auto;
+  background: #ffffff !important;
+  box-shadow: 0px 1px 0px rgba(0, 0, 0, 0.04) inset;
+  padding: 8px 12px;
+  margin-bottom: 0px;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+
+.topmenu .toolbar .row {
   display: flex;
   align-items: center;
   gap: 11px;
   flex-wrap: nowrap;
   width: 100%;
-  justify-content: space-between; /* Distribute space evenly */
+  justify-content: flex-start; /* Distribute space evenly */
+  align-content: flex-start;
 }
 
 .topmenu .group {
@@ -150,7 +312,6 @@ main {
 
 /* =====================================================
    TOP MENU - PRESET BUTTON
-===================================================== */
 #openPresetModal {
   width: 100px;
   height: 57px;
@@ -169,6 +330,7 @@ main {
   align-items: center;
   justify-content: center;
   gap: 4px;
+  text-wrap: wrap;
 }
 
 #openPresetModal:hover {
@@ -183,7 +345,6 @@ main {
 
 /* =====================================================
    TOP MENU - DATA OPTIONS (RADIO BUTTONS)
-===================================================== */
 /* Container for Last Packets / Date Range options */
 #dataOptions {
   display: flex;
@@ -195,6 +356,7 @@ main {
   height: 57px;
   margin: 1px;
   margin-left: 1px;
+  align-items: stretch;
 }
 
 /* Radio button labels styled as buttons */
@@ -256,7 +418,6 @@ main {
 
 /* =====================================================
    TOP MENU - PACKET INPUTS
-===================================================== */
 /* Container for packet input fields (stacked vertically) */
 .packet-inputs-group {
   display: flex;
@@ -343,7 +504,6 @@ main {
 
 /* =====================================================
    TOP MENU - PRIMARY BUTTONS (RETRIEVE, ETC.)
-===================================================== */
 .primary-btn {
   width: 70px; 
   height: 57px;
@@ -366,7 +526,6 @@ main {
 
 /* =====================================================
    TOP MENU - METADATA & INFO BUTTONS
-===================================================== */
 /* Metadata button */
 #metadataButton {
   padding: 0px;
@@ -414,8 +573,8 @@ main {
   background-color: var(--hover-grey);
 }
 
-/* For Retreve packets */
-#toolButton {
+#metadataHelp,
+#refreshHelp {
   width: 12px;
   height: 12px;
   border: 0px;
@@ -430,35 +589,13 @@ main {
   align-self: flex-start;
 }
 
-#toolButton:hover {
+#metadataHelp:hover,
+#refreshHelp:hover {
   background-color: var(--hover-grey);
 }
 
 
-#toolButton svg {
-  width: 11px;
-  height: 11px;
-  flex-shrink: 0;
-}
-
-/* info button - next to metadata */
-#infoButton {
-  width: 12px;
-  height: 12px;
-  border: 0px;
-  border-radius: 3px;
-  cursor: pointer;
-  position: relative;
-  top: 0px;
-  z-index: 100;
-  background-color: var(--main-grey);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  align-self: flex-start;
-}
-
-#infoButton svg {
+#refreshHelp svg, #metadataHelp svg {
   width: 11px;
   height: 11px;
   flex-shrink: 0;
@@ -466,7 +603,6 @@ main {
 
 /* =====================================================
    TOP MENU - PLAYBACK CONTROLS
-===================================================== */
 /* Volume control container */
 .control-group {
   display: flex;
@@ -655,7 +791,6 @@ main {
 
 /* =====================================================
    TOP MENU - MULTI-FUNCTION GRID
-===================================================== */
 /* 2x2 grid for share/download/undo/redo */
 .multi-function-grid {
   display: grid;
@@ -696,7 +831,584 @@ main {
 
 /* =====================================================
    TOP MENU - ACTION BUTTONS (REFRESH & CLEAR)
-===================================================== */
+/* Refresh button */
+.action-btn {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 0px;
+  background: var(--main-grey);
+  border: 1px;
+  border-radius: 3px;
+  cursor: pointer;
+  font-size: 12px;
+  height: 57px;
+  width: 97px;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  flex-direction: column;
+  justify-content: center;
+  text-align: center;
+  margin-left: -7px;
+}
+
+.action-btn:hover {
+  background: var(--hover-grey);
+}
+
+.action-btn:active {
+  background: #e0e0e0;
+  transform: scale(0.98);
+}
+
+.action-btn svg {
+  width: 18px;
+  height: 18px;  
+  flex-shrink: 0;
+}
+
+/* Clear Workspace button */
+.clear-btn {
+  padding: 4px 4px;
+  background: var(--main-grey);
+  border: 1px;
+  border-radius: 3px;
+  cursor: pointer;
+  font-size: 12px;
+  color: #000000;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  height: 57px;
+  width: 100px;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  text-align: center;
+  gap: 4px;
+  align-items: center;
+#openPresetModal {
+  width: 100px;
+  height: 57px;
+  padding: 0;
+  border: none;
+  border-radius: 3px;
+  background: var(--main-grey);
+  color: black;
+  cursor: pointer;
+  text-align: center;
+  font-size: 13px;
+  margin-left: 0px;
+  margin-right: -2px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+}
+
+#openPresetModal:hover {
+  background-color: var(--hover-grey) !important;
+}
+
+#openPresetModal svg {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+}
+
+/* =====================================================
+   TOP MENU - DATA OPTIONS (RADIO BUTTONS)
+/* Container for Last Packets / Date Range options */
+#dataOptions {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 0;
+  background: transparent;
+  border: none;
+  height: 57px;
+  margin: 1px;
+  margin-left: 1px;
+}
+
+/* Radio button labels styled as buttons */
+#dataOptions label {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 2px 2px;
+  cursor: pointer;
+  font-size: 12px;
+  background: var(--main-grey);
+  border-radius: 3px;
+  transition: all 0.2s ease;
+  width: 80px; 
+  height: 57px;
+  justify-content: center; 
+  color: black;
+  margin-left: -6px;
+  white-space: nowrap;
+}
+
+#dataOptions label:hover {
+  background: var(--hover-grey);
+}
+
+/* Hide the actual radio input circles */
+#dataOptions input[type="radio"] {
+  display: none;
+}
+
+/* Highlight selected option */
+#dataOptions label:has(input[type="radio"]:checked) {
+  background: var(--active-grey);
+  color: black;
+}
+
+/* Specific label sizing */
+#dataOptions label[for="timeRange"] {
+  width: auto;
+  min-width: 100px;
+  font-size: 12px;
+  gap: 8px;
+}
+
+#dataOptions label[for="lastXPackets"] {
+  width: auto;
+  min-width: 100px;
+  font-size: 12px;
+  gap: 5px;
+}
+
+/* Icon sizing in data options */
+#dataOptions svg {
+  width: 15px;
+  height: 15px;
+  flex-shrink: 0;
+  align-items: flex-start;
+}
+
+/* =====================================================
+   TOP MENU - PACKET INPUTS
+/* Container for packet input fields (stacked vertically) */
+.packet-inputs-group {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  margin-left: -8px;
+  height: 57px;
+}
+
+/* Number of packets input container */
+#numpacketsInput,
+#skipPackets {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 4px;
+  padding: 2px;
+  background: var(--main-grey);
+  border: 1px;
+  border-radius: 3px !important;
+  height: 25px !important;
+  color: black;
+  font-size: 12px !important;
+  width: 115px;
+  white-space: nowrap;
+  margin-left: 6px;
+}
+
+#numpacketsInput {
+  margin: 0px;
+  font-size: 12px !important;
+  text-align: center !important;
+  border-radius: 3px !important;
+}
+
+#numpacketsInput label {
+  margin-bottom: 0px;
+  margin-left: 6px;
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+/* Number input field */
+.topmenu #numpackets {
+  width: 25px;
+  height: 15px;
+  padding: 2px 2px;
+  margin-left: 6px;
+  background-color: white;
+  border: 1px solid var(--main-grey);
+  border-radius: 1px;
+  cursor: pointer;
+  text-align: center !important;
+  margin-left: 1px !important;
+  border-radius: 3px !important;
+}
+
+/* Prescaler container */
+#skipPackets {
+  margin: 0;
+}
+
+#skipPackets .muted {
+  font-size: 12px !important;
+  white-space: nowrap;
+  color: #000000;
+  margin-left: 6px;
+}
+
+/* Prescaler input field */
+.topmenu #prescaler {
+  width: 25px;
+  height: 15px;
+  padding: 2px 2px;
+  font-size: 13px !important;
+  border-radius: 3px;
+  margin-left: 1px;
+  align-items: center !important;
+  background-color: white;
+  border: 1px solid var(--main-grey);
+  cursor: pointer;
+  text-align: center !important;
+}
+
+/* =====================================================
+   TOP MENU - PRIMARY BUTTONS (RETRIEVE, ETC.)
+.primary-btn {
+  width: 70px; 
+  height: 57px;
+  padding: 5px;
+  font-size: 12px;
+  background: var(--standard-blue);
+  color: #fff;
+  border: none;
+  border-radius: 3px;
+  cursor: pointer;
+  margin-left: -7px;
+  margin-right: 5px;
+  text-wrap: wrap;
+  text-align: center;
+}
+
+.topmenu .primary-btn:hover {
+  background: var(--hover-blue) !important;
+}
+
+/* =====================================================
+   TOP MENU - METADATA & INFO BUTTONS
+/* Metadata button */
+#metadataButton {
+  padding: 0px;
+  padding-right: 0px; 
+  position: relative;
+  border-radius: 3px;
+  border: 1px;
+  background: var(--main-grey);
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  font-size: 12px;
+  width: 100px; 
+  height: 57px;
+}
+
+#metadataButton svg {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+}
+
+/* Small info buttons */
+.icon-btn {
+  width: 12px;
+  height: 12px;
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto;
+  margin-right: 1px;
+  background-color: var(--main-grey);
+  padding: 8px;
+}
+
+.icon-btn:hover {
+  background-color: var(--hover-grey);
+}
+
+/* For Retreve packets */
+#toolButton {
+  width: 12px;
+  height: 12px;
+  border: 0px;
+  border-radius: 3px;
+  cursor: pointer;
+  position: relative;
+  z-index: 10;
+  background-color: var(--main-grey);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  align-self: flex-start;
+}
+
+#toolButton:hover {
+  background-color: var(--hover-grey);
+}
+
+
+#toolButton svg {
+  width: 11px;
+  height: 11px;
+  flex-shrink: 0;
+}
+
+/* info button - next to metadata */
+#infoButton {
+  width: 12px;
+  height: 12px;
+  border: 0px;
+  border-radius: 3px;
+  cursor: pointer;
+  position: relative;
+  top: 0px;
+  z-index: 100;
+  background-color: var(--main-grey);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  align-self: flex-start;
+}
+
+#infoButton svg {
+  width: 11px;
+  height: 11px;
+  flex-shrink: 0;
+}
+
+/* =====================================================
+   TOP MENU - PLAYBACK CONTROLS
+/* Volume control container */
+.control-group {
+  display: flex;
+  align-items: center;
+  font-weight: 500;
+  padding: 4px 12px;
+  background: var(--main-grey);
+  border: 1px;
+  border-radius: 3px;
+  height: 57px;
+  margin-left: 0px;
+}
+
+.control-group label {
+  white-space: nowrap;
+  color: #333;
+  font-size: 12px;
+  margin-top: 10px;
+  margin-bottom: -5px;
+}
+
+.control-group input[type="range"] {
+  height: 6px;
+}
+
+/* Master Volume - vertical stacked layout */
+.control-group:has(#masterVolume) {
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 0px 12px;
+  gap: 13px;
+  height: 57px;
+  margin-right: 1px;
+}
+
+.control-group:has(#masterVolume) label {
+  font-weight: 400;
+  color: #000000;
+}
+
+#masterVolume {
+  accent-color: var(--standard-blue);
+  min-width: 135px;
+  font-weight: 450 !important;
+  font-size: 13px;
+  margin-bottom: 13px;
+}
+
+
+/* Transport controls container (play/stop buttons) */
+.transport-group {
+}
+
+.clear-btn:hover {
+  background: var(--hover-grey);
+}
+
+.clear-btn svg {
+  width: 20px;
+  height: 20px;  
+  flex-shrink: 0;
+}
+
+/* =====================================================
+   TOP MENU - DRAGGABLE SECTIONS
+/* Wrapper for each draggable section */
+.draggable-section {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  position: relative;
+  padding-left: 2px;
+  padding-right: 6px;
+  flex-shrink: 0; /* Don't shrink sections */
+  flex-grow: 1; /* Grow sections to fill space */
+  min-width: 0;
+}
+
+.draggable-section:last-child {
+  border-right: none;
+}
+
+/* Allow items inside sections to grow */
+.draggable-section .group,
+.draggable-section .control-group,
+.draggable-section .transport-group {
+  flex-grow: 1;
+}
+
+/* Drag handle icon */
+.drag-handle {
+  position: absolute;
+  left: -20px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 20px;
+  height: 30px;
+  cursor: grab;
+  background: transparent;
+  border: none;
+  color: #48484846;
+  font-size: 15px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+}
+
+.drag-handle:hover {
+  color: #666;
+}
+
+.drag-handle:active {
+  cursor: grabbing;
+}
+
+/* SortableJS dragging states */
+.sortable-ghost {
+  opacity: 0.4; /* Semi-transparent while dragging */
+}
+
+.sortable-drag {
+  opacity: 0.9;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+}
+
+/* =====================================================
+  COLLAPSIBLE DATA SOURCE OPTIONS
+/* Collapse button  */
+.collapse-btn {
+  background: none;
+  border: none;
+  font-size: 12.8px;
+  font-weight: 600;
+  font-family: "Google Sans", sans-serif;
+  margin-bottom: 6px;
+  color: #333;
+  cursor: pointer;
+  text-align: left;
+  padding: 0px;
+  display: block;
+  width: fit-content;
+}
+
+.arrow-icon {
+  color: var(--standard-blue);
+  margin-left: 0px;
+  font-size: 13px;
+  vertical-align: middle;
+}
+
+/* Data source container (hidden by default) */
+#dataSource {
+  display: none;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+#databaseElements, 
+#deviceElements {
+  display: flex;
+  gap: 2px;
+  align-items: center;
+  padding: 0;
+  border: none;
+  border-radius: 3px;
+  margin-left: -8px;
+}
+
+/* 2x2 grid for share/download/undo/redo */
+.multi-function-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr; /* 2 columns */
+  grid-template-rows: 1fr 1fr; /* 2 rows */
+  gap: 3px;
+  height: 57px;
+}
+
+.icon-btn-small {
+  width: 100%;
+  height: 100%;
+  background: var(--main-grey);
+  border: 1px;
+  border-radius: 3px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  color: #000000;
+}
+
+.icon-btn-small:hover {
+  background: var(--hover-grey);
+}
+
+.icon-btn-small:active {
+  background: #e0e0e0;
+  transform: scale(0.95);
+}
+
+.multi-function-grid svg {
+  width: 16px;
+  height: 16px;  
+  flex-shrink: 0;
+}
+
+/* =====================================================
+   TOP MENU - ACTION BUTTONS (REFRESH & CLEAR)
 /* Refresh button */
 .action-btn {
   display: flex;
@@ -767,7 +1479,6 @@ main {
 
 /* =====================================================
    TOP MENU - DRAGGABLE SECTIONS
-===================================================== */
 /* Wrapper for each draggable section */
 .draggable-section {
   display: flex;
@@ -831,7 +1542,6 @@ main {
 
 /* =====================================================
   COLLAPSIBLE DATA SOURCE OPTIONS
-===================================================== */
 /* Collapse button  */
 .collapse-btn {
   background: none;
@@ -1017,6 +1727,12 @@ main {
   border-radius: 5px;
   margin-bottom: 3px;
   overflow: hidden; /* Prevents overflow artifacts during snap-resizing */
+}
+
+#globalTimeline .xtick text {
+  letter-spacing: .4px !important;
+  font-weight: 400 !important;
+  color: #000000;
 }
 
 
@@ -1270,6 +1986,7 @@ main {
   color: #fff;
   border: 1px solid var(--standard-blue);
   border-radius: 3px;
+  font-size: 14px;
 }
 
 /* ==== POPUP for date range selection ==== */
@@ -1332,58 +2049,104 @@ main {
   color: #fff;
   border: 1px solid var(--standard-blue);
   border-radius: 3px;
+   font-size: 14px;
 }
 
-#user-guide-page {
-  display: flex;
-  justify-self: center;
-  flex-direction: column;
-  max-width: 1250px;
-  width: 75vw;
-  
-  background-color: var(--main-grey) !important;
-  padding: 0 10px;
-  margin-top: 25px;
-
+/* ======== POPOVER FOR METADATA & PACKET REFRESH ========== */
+.popover {
+  position: absolute;
+  background: white;
+  border: 1px solid #ccc;
   border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  padding: 14px;
+  max-width: 200px;
+  z-index: 10000;
+  font-size: 10px;
+  line-height: 1.5;
 }
 
-#user-guide-page h3 {
-  color: var(--standard-blue);
-
-  font-size: 24px;
+.popover::before {
+  content: '';
+  position: absolute;
+  width: 0;
+  height: 0;
+  border: 8px solid transparent;
+  border-bottom-color: white;
+  top: -16px;
+  left: 5px;
+  z-index: 10001; /* Make sure it's on top */
 }
 
-#user-guide-page h4 {
-  color: var(--standard-blue);
-  font-size: 20px;
+/* Arrow border (optional - makes it look cleaner) */
+.popover::after {
+  content: '';
+  position: absolute;
+  width: 0;
+  height: 0;
+  border: 9px solid transparent;
+  border-bottom-color: #ccc;
+  top: -18px;
+  left: 4px;
+  z-index: 10000;
 }
 
-#user-guide-page p, #user-guide-page ol, #user-guide-page ul li {
-  font-size: 16px;
-  margin-bottom: 25px;
+.popover-close {
+  position: absolute;
+  top: 6px;
+  right: 4px;
+  background: none;
+  border: none;
+  font-size: 15px;
+  cursor: pointer;
+  color: #666;
 }
 
-#top-heading {
-  display: flex;
-  justify-content: center;
+.popover-close:hover {
+  color: #000;
 }
 
-#user-guide-title {
-  font-size: 36px;
-  margin: 50px 0;
+.popover-body {
+  margin-top: 8px;
 }
 
-.user-guide-img {
-  border: 2px solid black;
-  display: flex;
-  width: 80%;
 
-  justify-self: center;
-  margin: 50px 0;
+/* ====== STATUS MESSAGE NOTIFICATION ======== */
+.status-message {
+  position: fixed;
+  bottom: 30px;
+  right: 30px;
+  background: #333;
+  color: white;
+  padding: 16px 24px;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  font-size: 14px;
+  z-index: 10001;
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.3s ease, transform 0.3s ease;
+  pointer-events: none;
 }
 
-#page-title {
-  text-decoration: none;
-  color: inherit;
+.status-message.show {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+.status-message.success {
+  background: #4caf50;
+}
+
+.status-message.error {
+  background: #f44336;
+}
+
+.status-message.warning {
+  background: #ff9800;
+}
+
+.status-message.info {
+  background: var(--standard-blue);
 }

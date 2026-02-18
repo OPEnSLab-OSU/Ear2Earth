@@ -10,8 +10,8 @@ export function sensorDisplayName(rawKey) {
   // dictionary mapping for other sensors
   const map = {
     TSL2591: "Light",
-    MS5803_119: "Hydrostatic Pressure",
-    MS5803_118: "Atmospheric Pressure",
+    MS5803_119: "Hydrostatic",
+    MS5803_118: "Atmospheric",
     TippingBucket: "Rainfall Gauge",
     Teros10: "Soil Moisture",
     A55311: "Magnetic Encoder",
@@ -20,6 +20,7 @@ export function sensorDisplayName(rawKey) {
     DFR_MultiGas_2: "Ozone",
     Sen55: "Air Quality Index",
     T6793: "CO2",
+    Analog: "Battery Voltage"
   };
 
   return map[rawKey] ?? rawKey; // backwards compatible fallback
