@@ -1186,6 +1186,29 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
+  function updateToolbarScale() {
+  const DESIGN_WIDTH = 1440;
+  const MIN_SCALE    = 0.45;
+
+  const raw   = window.innerWidth / DESIGN_WIDTH;
+  // Clamp to a minimum but allow unlimited growth above 1.0
+  // Use 0.99 instead of 1.0 as the effective baseline to prevent
+  // 1-2px overflow from sub-pixel rounding at exact design width
+  const scale = Math.max(MIN_SCALE, raw * 0.99);
+
+  document.documentElement.style.setProperty('--tb-scale', scale);
+  }
+
+  // Run immediately — sized before first paint
+  updateToolbarScale();
+
+  // Debounced resize handler
+  let _tbScaleTimer;
+  window.addEventListener('resize', () => {
+    clearTimeout(_tbScaleTimer);
+    _tbScaleTimer = setTimeout(updateToolbarScale, 30);
+  });
+
   // Initialize Lucide icons
   lucide.createIcons();
 
