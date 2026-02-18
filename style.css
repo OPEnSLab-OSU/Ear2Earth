@@ -223,13 +223,14 @@ main {
 }
 
 .topmenu .toolbar {
-  height: 46px;
+  height: auto;
   background: #ffffff !important;
   box-shadow: 0px 1px 0px rgba(0, 0, 0, 0.04) inset;
-  padding: var(--pad) 12px;
+  padding: 8px 12px;
   margin-bottom: 0px;
   display: flex;
   flex-direction: row;
+  align-items: center;
 }
 
 .topmenu .toolbar .row {
@@ -238,7 +239,8 @@ main {
   gap: 11px;
   flex-wrap: nowrap;
   width: 100%;
-  justify-content: space-between; /* Distribute space evenly */
+  justify-content: flex-start; /* Distribute space evenly */
+  align-content: flex-start;
 }
 
 .topmenu .group {
