@@ -1,3 +1,6 @@
+/* =====================================================
+   CSS CUSTOM PROPERTIES
+===================================================== */
 :root {
   --gap: 20px;
   --pad: 12px;
@@ -7,49 +10,60 @@
   --primary: #00b4d8;
   --primary-hover: #0077b6;
   --muted: #666;
-  /* Possible green combo for accent color */
-  /* --standard-blue: #6c8951;
-  --hover-blue: #5c7645; */
   --standard-blue: #036dee;
   --hover-blue: rgb(16, 80, 158);
   --main-grey: #DFDFDF;
   --active-grey: #9e9e9eba;
   --hover-grey: #bebebe;
+
+  --tb-scale: 1;
+
+  --tb-h:        calc(var(--tb-scale) * 58px);
+  --tb-fs:       calc(var(--tb-scale) * 12.5px);
+  --tb-fs-sm:    calc(var(--tb-scale) * 12.5px);
+  --tb-fs-md:    calc(var(--tb-scale) * 12.5px);
+  --tb-icon-sm:  calc(var(--tb-scale) * 15px);
+  --tb-icon-md:  calc(var(--tb-scale) * 18px);
+  --tb-icon-lg:  calc(var(--tb-scale) * 20px);
+  --tb-icon-xl:  calc(var(--tb-scale) * 40px);
+  --tb-gap:      calc(var(--tb-scale) * 5px);   /* reduced from 11px */
+  --tb-pad:      calc(var(--tb-scale) * 8px);   /* reduced from 12px */
+  --tb-radius:   calc(var(--tb-scale) * 3px);
+
+  --sidebar-width: 251px;
 }
 
-/* Just testing co-authoring here, ignore*/
-
-/* Base */
+/* =====================================================
+   BASE
+===================================================== */
 body {
   background: #f4f4f9;
   color: #333;
   margin: 0;
-  padding: 0px;
+  padding: 0;
   font-family: "Google Sans", sans-serif;
   font-optical-sizing: auto;
-  font-style: light;
-  font-weight: 700px !important;
+  font-style: normal;
+  font-weight: 400;
 }
+
 header {
   background: var(--main-grey);
   color: #030303;
-  /* padding: top right bottom left; */
   padding: 20px;
   font-size: 15px;
   font-family: "Google Sans", sans-serif;
-  font-optical-sizing: auto;
-  font-style: light;
-  font-weight: 100px !important;
   text-align: left;
   display: flex;
   justify-content: space-between;
-  border-radius: 0px;
-  align-items: flex-end; 
+  align-items: flex-end;
 }
+
 header h2 {
-  line-height: 1; 
+  line-height: 1;
   margin: 0;
 }
+
 nav#nav ul {
   list-style-type: none;
   display: flex;
@@ -58,13 +72,20 @@ nav#nav ul {
   margin: 0;
   font-size: 14px;
   font-weight: bold;
-  font-weight: 80px !important;
 }
+
 nav#nav ul li a {
   text-decoration: none;
   color: #030303;
 }
 
+main {
+  margin-top: 0;
+}
+
+/* =====================================================
+   ONBOARDING
+===================================================== */
 .onboarding-overlay {
   position: fixed;
   inset: 0;
@@ -125,14 +146,8 @@ nav#nav ul li a {
   cursor: pointer;
 }
 
-.onboarding-btn:hover {
-  background: #eef2f7;
-}
-
-.onboarding-btn:disabled {
-  cursor: default;
-  opacity: 0.55;
-}
+.onboarding-btn:hover { background: #eef2f7; }
+.onboarding-btn:disabled { cursor: default; opacity: 0.55; }
 
 .onboarding-next {
   border-color: var(--standard-blue);
@@ -140,9 +155,7 @@ nav#nav ul li a {
   color: #fff;
 }
 
-.onboarding-next:hover {
-  background: var(--hover-blue);
-}
+.onboarding-next:hover { background: var(--hover-blue); }
 
 .onboarding-highlight {
   position: relative;
@@ -151,9 +164,7 @@ nav#nav ul li a {
   border-radius: 6px;
 }
 
-.modal.onboarding-modal-active {
-  z-index: 12001;
-}
+.modal.onboarding-modal-active { z-index: 12001; }
 
 .modal.onboarding-modal-active .modal-content,
 .modal.onboarding-modal-active .modal-form,
@@ -169,94 +180,78 @@ nav#nav ul li a {
   filter: none;
 }
 
-#speedOptions.onboarding-highlight {
-  box-shadow: none;
-}
+#speedOptions.onboarding-highlight { box-shadow: none; }
 
 #speedOptions.onboarding-highlight::after {
   content: "";
   position: absolute;
-  top: -3px;
-  bottom: -3px;
-  left: -10px;
-  right: 3px;
+  top: -3px; bottom: -3px;
+  left: -10px; right: 3px;
   border: 3px solid rgba(3, 109, 238, 0.9);
   border-radius: 6px;
   pointer-events: none;
 }
 
-main {
-  margin-top: 0px;
-}
-
-/* ================== TOP MENU ================== */
 /* =====================================================
-   TOP MENU - MAIN CONTAINER & STRUCTURE
+TOP MENU 
 ===================================================== */
 .topmenu {
   display: flex;
   flex-direction: row;
-  gap: 0px;
+  gap: 0;
   flex-wrap: nowrap;
-  width: 100% !important;
-  background-color: #fff !important;
-  overflow-y: hidden;
-  overflow-x: auto; /* Allow horizontal scrolling when content doesn't fit */
-  /* Hide scrollbar for Firefox */
-  scrollbar-width: none;
-  /* Hide scrollbar for IE and Edge */
-  -ms-overflow-style: none;
-}
-
-/* Hide scrollbar for Chrome, Safari and Opera */
-.topmenu::-webkit-scrollbar {
-  display: none;
+  width: 100%;
+  background-color: #fff;
+  /* Clip sub-pixel bleed — scale system guarantees fit */
+  overflow: hidden;
 }
 
 .toolbar-wrapper {
   display: flex;
   align-items: center;
-  height: 100%;
   width: 100%;
-  padding-right: 1px;
-  padding-left: 1px;
+  height: calc(var(--tb-h) + var(--tb-pad) * 2);
+  box-sizing: border-box;
 }
 
 .topmenu .toolbar {
-  height: auto;
-  background: #ffffff !important;
+  height: calc(var(--tb-h) + var(--tb-pad) * 2);
+  background: #ffffff;
   box-shadow: 0px 1px 0px rgba(0, 0, 0, 0.04) inset;
-  padding: 8px 12px;
-  margin-bottom: 0px;
+  padding: var(--tb-pad);
+  margin-bottom: 0;
   display: flex;
   flex-direction: row;
   align-items: center;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .topmenu .toolbar .row {
   display: flex;
   align-items: center;
-  gap: 11px;
+  /* Inter-section gap — matches origiSnal 11px */
+  gap: calc(var(--tb-scale) * 15.5px);
   flex-wrap: nowrap;
   width: 100%;
-  justify-content: flex-start; /* Distribute space evenly */
-  align-content: flex-start;
+  justify-content: flex-start;
+  align-content: center;
 }
 
 .topmenu .group {
   display: inline-flex;
   align-items: center;
-  gap: 5px;
+  gap: calc(var(--tb-scale) * 4px);
   position: relative;
 }
 
 .topmenu .muted {
   color: var(--muted);
-  font-size: 12px;
-  margin-left: 6px;
+  font-size: var(--tb-fs);
+  margin-left: calc(var(--tb-scale) * 4px);
 }
 
-/* Generic input styling */
+/* Generic input styling inside toolbar */
 .topmenu label,
 .topmenu select,
 .topmenu input[type="text"],
@@ -266,285 +261,212 @@ main {
   display: inline-flex;
   width: auto;
   margin: 0;
-  font-size: 12px;
+  font-size: var(--tb-fs);
   align-items: center;
   text-align: center;
 }
 
 /* =====================================================
-   TOP MENU - PRESET BUTTON
+   TOP MENU — PRESET BUTTON
 ===================================================== */
 #openPresetModal {
-  width: 100px;
-  height: 57px;
+  width:  calc(var(--tb-scale) * 100px);
+  height: var(--tb-h);
   padding: 0;
   border: none;
-  border-radius: 3px;
+  border-radius: var(--tb-radius);
   background: var(--main-grey);
   color: black;
   cursor: pointer;
   text-align: center;
-  font-size: 13px;
-  margin-left: 0px;
-  margin-right: -2px;
+  font-size: var(--tb-fs);
+  margin: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 4px;
+  gap: calc(var(--tb-scale) * 4px);
   text-wrap: wrap;
-}
-
-#openPresetModal:hover {
-  background-color: var(--hover-grey) !important;
-}
+}#openPresetModal:hover { background-color: var(--hover-grey); }
 
 #openPresetModal svg {
-  width: 20px;
-  height: 20px;
+  width:  var(--tb-icon-lg);
+  height: var(--tb-icon-lg);
   flex-shrink: 0;
 }
 
 /* =====================================================
-   TOP MENU - DATA OPTIONS (RADIO BUTTONS)
+   TOP MENU — DATA OPTIONS (RADIO BUTTONS)
 ===================================================== */
-/* Container for Last Packets / Date Range options */
 #dataOptions {
   display: flex;
   flex-direction: column;
-  gap: 3px;
+  gap: calc(var(--tb-scale) * 3px);
   padding: 0;
   background: transparent;
   border: none;
-  height: 57px;
-  margin: 1px;
-  margin-left: 1px;
+  height: var(--tb-h);
+  margin: 0;
   align-items: stretch;
 }
 
-/* Radio button labels styled as buttons */
 #dataOptions label {
   display: flex;
   align-items: center;
-  gap: 2px;
-  padding: 2px 2px;
+  gap: calc(var(--tb-scale) * 5px);
+  padding: 0 calc(var(--tb-scale) * 8px);
   cursor: pointer;
-  font-size: 12px;
+  font-size: var(--tb-fs);
   background: var(--main-grey);
-  border-radius: 3px;
+  border-radius: var(--tb-radius);
   transition: all 0.2s ease;
-  width: 80px; 
-  height: 57px;
-  justify-content: center; 
+  min-width: calc(var(--tb-scale) * 105px);
+  height: 50%;
+  justify-content: flex-start;
   color: black;
-  margin-left: -6px;
   white-space: nowrap;
+  box-sizing: border-box;
 }
 
-#dataOptions label:hover {
-  background: var(--hover-grey);
-}
+#dataOptions label:hover { background: var(--hover-grey); }
+#dataOptions input[type="radio"] { display: none; }
 
-/* Hide the actual radio input circles */
-#dataOptions input[type="radio"] {
-  display: none;
-}
-
-/* Highlight selected option */
 #dataOptions label:has(input[type="radio"]:checked) {
   background: var(--active-grey);
   color: black;
 }
 
-/* Specific label sizing */
-#dataOptions label[for="timeRange"] {
-  width: auto;
-  min-width: 100px;
-  font-size: 12px;
-  gap: 8px;
-}
-
-#dataOptions label[for="lastXPackets"] {
-  width: auto;
-  min-width: 100px;
-  font-size: 12px;
-  gap: 5px;
-}
-
-/* Icon sizing in data options */
 #dataOptions svg {
-  width: 15px;
-  height: 15px;
+  width:  var(--tb-icon-sm);
+  height: var(--tb-icon-sm);
   flex-shrink: 0;
-  align-items: flex-start;
 }
 
 /* =====================================================
-   TOP MENU - PACKET INPUTS
+   TOP MENU — PACKET INPUTS
 ===================================================== */
-/* Container for packet input fields (stacked vertically) */
 .packet-inputs-group {
   display: flex;
   flex-direction: column;
-  gap: 3px;
-  margin-left: -8px;
-  height: 57px;
+  gap: calc(var(--tb-scale) * 3px);
+  height: var(--tb-h);
+  margin: 0;
 }
 
-/* Number of packets input container */
 #numpacketsInput,
 #skipPackets {
   display: flex;
   flex-direction: row;
   align-items: center;
-  gap: 4px;
-  padding: 2px;
+  gap: calc(var(--tb-scale) * 7px);
+  padding: 0 calc(var(--tb-scale) * 7px);
   background: var(--main-grey);
-  border: 1px;
-  border-radius: 3px !important;
-  height: 25px !important;
+  border-radius: var(--tb-radius);
+  height: calc(50% - calc(var(--tb-scale) * 1.5px));
   color: black;
-  font-size: 12px !important;
-  width: 115px;
+  font-size: var(--tb-fs);
+  width: calc(var(--tb-scale) * 120px);
   white-space: nowrap;
-  margin-left: 6px;
-}
-
-#numpacketsInput {
-  margin: 0px;
-  font-size: 12px !important;
-  text-align: center !important;
-  border-radius: 3px !important;
+  margin: 0;
+  box-sizing: border-box;
 }
 
 #numpacketsInput label {
-  margin-bottom: 0px;
-  margin-left: 6px;
-  font-size: 12px;
+  margin: 0;
+  font-size: var(--tb-fs);
   white-space: nowrap;
 }
 
-/* Number input field */
-.topmenu #numpackets {
-  width: 25px;
-  height: 15px;
-  padding: 2px 2px;
-  margin-left: 6px;
+.topmenu #numpackets,
+.topmenu #prescaler {
+  width:  calc(var(--tb-scale) * 30px);
+  height: calc(var(--tb-scale) * 22px);
   background-color: white;
   border: 1px solid var(--main-grey);
-  border-radius: 1px;
+  border-radius: var(--tb-radius);
   cursor: pointer;
-  text-align: center !important;
-  margin-left: 1px !important;
-  border-radius: 3px !important;
-}
-
-/* Prescaler container */
-#skipPackets {
+  text-align: center;
+  font-size: var(--tb-fs);
+  box-sizing: border-box;
   margin: 0;
 }
 
 #skipPackets .muted {
-  font-size: 12px !important;
+  font-size: var(--tb-fs);
   white-space: nowrap;
   color: #000000;
-  margin-left: 6px;
-}
-
-/* Prescaler input field */
-.topmenu #prescaler {
-  width: 25px;
-  height: 15px;
-  padding: 2px 2px;
-  font-size: 13px !important;
-  border-radius: 3px;
-  margin-left: 1px;
-  align-items: center !important;
-  background-color: white;
-  border: 1px solid var(--main-grey);
-  cursor: pointer;
-  text-align: center !important;
+  margin: 0;
 }
 
 /* =====================================================
-   TOP MENU - PRIMARY BUTTONS (RETRIEVE, ETC.)
+   TOP MENU — PRIMARY BUTTONS (RETRIEVE, ETC.)
 ===================================================== */
 .primary-btn {
-  width: 70px; 
-  height: 57px;
-  padding: 5px;
-  font-size: 12px;
+  width:  calc(var(--tb-scale) * 70px);
+  height: var(--tb-h);
+  padding: calc(var(--tb-scale) * 5px);
+  font-size: var(--tb-fs) !important;
   background: var(--standard-blue);
   color: #fff;
   border: none;
-  border-radius: 3px;
+  border-radius: var(--tb-radius);
   cursor: pointer;
-  margin-left: -7px;
-  margin-right: 5px;
+  margin: 0;
   text-wrap: wrap;
   text-align: center;
 }
 
-.topmenu .primary-btn:hover {
-  background: var(--hover-blue) !important;
-}
+.topmenu .primary-btn:hover { background: var(--hover-blue); }
 
 /* =====================================================
-   TOP MENU - METADATA & INFO BUTTONS
+   TOP MENU — METADATA & INFO BUTTONS
 ===================================================== */
-/* Metadata button */
 #metadataButton {
-  padding: 0px;
-  padding-right: 0px; 
+  padding: 0;
   position: relative;
-  border-radius: 3px;
-  border: 1px;
+  border-radius: var(--tb-radius);
+  border: none;
   background: var(--main-grey);
   cursor: pointer;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 4px;
-  font-size: 12px;
-  width: 100px; 
-  height: 57px;
+  gap: calc(var(--tb-scale) * 4px);
+  font-size: var(--tb-fs);
+  width:  calc(var(--tb-scale) * 100px);
+  height: var(--tb-h);
 }
 
 #metadataButton svg {
-  width: 20px;
-  height: 20px;
+  width:  var(--tb-icon-lg);
+  height: var(--tb-icon-lg);
   flex-shrink: 0;
 }
 
-/* Small info buttons */
 .icon-btn {
-  width: 12px;
-  height: 12px;
+  width:  calc(var(--tb-scale) * 29px);
+  height: calc(var(--tb-scale) * 29px);
   border: 1px solid var(--border);
-  border-radius: 3px;
+  border-radius: var(--tb-radius);
   cursor: pointer;
   transition: all 0.2s ease;
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
-  margin: 0 auto;
-  margin-right: 1px;
   background-color: var(--main-grey);
-  padding: 8px;
+  padding: 0;
+  margin: 0;
 }
 
-.icon-btn:hover {
-  background-color: var(--hover-grey);
-}
+.icon-btn:hover { background-color: var(--hover-grey); }
 
 #metadataHelp,
 #refreshHelp {
-  width: 12px;
-  height: 12px;
-  border: 0px;
-  border-radius: 3px;
+  width:  calc(var(--tb-scale) * 19px);
+  height: calc(var(--tb-scale) * 19px);
+  border: none;
+  border-radius: var(--tb-radius);
   cursor: pointer;
   position: relative;
   z-index: 10;
@@ -553,149 +475,141 @@ main {
   align-items: center;
   justify-content: center;
   align-self: flex-start;
+  padding: 0;
+  margin: 0;
 }
 
 #metadataHelp:hover,
-#refreshHelp:hover {
-  background-color: var(--hover-grey);
-}
+#refreshHelp:hover { background-color: var(--hover-grey); }
 
-
-#refreshHelp svg, #metadataHelp svg {
-  width: 11px;
-  height: 11px;
+#refreshHelp svg,
+#metadataHelp svg {
+  width:  calc(var(--tb-scale) * 12.5px);
+  height: calc(var(--tb-scale) * 12.5px);
   flex-shrink: 0;
 }
 
 /* =====================================================
-   TOP MENU - PLAYBACK CONTROLS
+   TOP MENU — PLAYBACK CONTROLS
 ===================================================== */
-/* Volume control container */
 .control-group {
   display: flex;
   align-items: center;
   font-weight: 500;
-  padding: 4px 12px;
+  padding: 0 var(--tb-pad);
   background: var(--main-grey);
-  border: 1px;
-  border-radius: 3px;
-  height: 57px;
-  margin-left: 0px;
+  border-radius: var(--tb-radius);
+  height: var(--tb-h);
+  box-sizing: border-box;
+  margin: 0;
 }
 
 .control-group label {
   white-space: nowrap;
   color: #333;
-  font-size: 12px;
-  margin-top: 10px;
-  margin-bottom: -5px;
+  font-size: var(--tb-fs);
 }
 
 .control-group input[type="range"] {
-  height: 6px;
+  height: calc(var(--tb-scale) * 6px);
 }
 
-/* Master Volume - vertical stacked layout */
+/* Master Volume — vertical stack */
 .control-group:has(#masterVolume) {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 0px 12px;
-  gap: 13px;
-  height: 57px;
-  margin-right: 1px;
+  padding: 0 var(--tb-pad);
+  gap: calc(var(--tb-scale) * 4px);
+  height: var(--tb-h);
 }
 
 .control-group:has(#masterVolume) label {
-  font-weight: 400;
+  font-weight: 450;
   color: #000000;
+  margin: 0;
 }
 
 #masterVolume {
   accent-color: var(--standard-blue);
-  min-width: 135px;
-  font-weight: 450 !important;
-  font-size: 13px;
-  margin-bottom: 13px;
+  min-width: calc(var(--tb-scale) * 145px);
+  font-size: var(--tb-fs-md);
+  margin: 0;
 }
 
-
-/* Transport controls container (play/stop buttons) */
+/* Transport controls (play/stop) */
 .transport-group {
   display: flex;
-  gap: 2px;
+  gap: calc(var(--tb-scale) * 3px);
   align-items: center;
   padding: 0;
   border: none;
-  border-radius: 3px;
-  margin-left: -8px;
+  border-radius: var(--tb-radius);
+  margin: 0;
 }
 
-/* Play and Stop buttons */
 .square-btn {
-  width: 60px;
-  height: 57px;
-  border-radius: 3px;
+  width:  calc(var(--tb-scale) * 60px);
+  height: var(--tb-h);
+  border-radius: var(--tb-radius);
   cursor: pointer;
   transition: filter 0.2s ease;
-  background-color: var(--main-grey); 
-  border: 0px;
+  background-color: var(--main-grey);
+  border: none;
   display: flex;
   align-items: center;
   justify-content: center;
-  outline: none;  
-  margin-right: 1px;
+  outline: none;
+  margin: 0;
 }
 
 .square-btn svg {
-  width: 40px;
-  height: 40px;  
+  width:  var(--tb-icon-xl);
+  height: var(--tb-icon-xl);
   flex-shrink: 0;
-  fill: currentColor; /* Fill the play/stop icons */
-  stroke: none; /* Remove outline */
+  fill: currentColor;
+  stroke: none;
 }
 
-.square-btn:hover {
-  filter: brightness(0.9);
-}
+.square-btn:hover { filter: brightness(0.9); }
 
-/* BPM container */
-/* BPM container */
 #bpmContainer {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 0px 12px;
-  gap: 12px;
-  height: 57px;
+  padding: 0 var(--tb-pad);
+  gap: calc(var(--tb-scale) * 12px);
+  height: var(--tb-h);
   background: var(--main-grey);
-  border: 1px;
-  border-radius: 3px;
-  min-width: 135px; 
+  border-radius: var(--tb-radius);
+  min-width: calc(var(--tb-scale) * 145px);
   position: relative;
+  box-sizing: border-box;
+  justify-content: center;
+  margin: 0;
 }
 
 #bpmLabel {
-  font-size: 12px;
+  font-size: var(--tb-fs);
   font-weight: 450;
   margin: 0;
   display: inline-block;
-  margin-left: -38px;
+  margin-left: calc(var(--tb-scale) * -38px);
+  margin-top: calc(var(--tb-scale) * 0px);
   color: #000000;
-  margin-top: 13px;
 }
 
 
 /* BPM value display (overlays on slider) */
 #bpmText {
-  font-size: 12px;
+  font-size: var(--tb-fs);
   font-weight: 450;
-  min-width: 30px;
+  min-width: calc(var(--tb-scale) * 30px);
   text-align: center;
   color: #000000;
   position: absolute;
-  margin-top: 13px;
-  margin-left: 18px;
+  margin-top: calc(var(--tb-scale) * -10px);
+  margin-left: calc(var(--tb-scale) * 18px);
 }
 
 #bpmText {
@@ -711,82 +625,67 @@ main {
 
 #bpm {
   accent-color: var(--standard-blue);
-  width: 130px;
-  height: 6px;
-  margin-top: -3.8px;
+  width: calc(var(--tb-scale) * 135px);
+  height: calc(var(--tb-scale) * 6px);
+  margin-top: calc(var(--tb-scale) * -8px);
 }
 
-/* Speed options (1x, 2x, 4x, 8x) */
+/* Speed options (1x 2x 4x 8x) */
 #speedOptions {
-  height: 57px;
-  width: 60px;
-  gap: 3px;
-  padding: 0; 
-  background: none; 
+  height: var(--tb-h);
+  width:  calc(var(--tb-scale) * 57px);
+  gap: calc(var(--tb-scale) * 3px) !important;
+  padding: 0;
+  background: none;
+  margin: 0;
 }
 
-#speedOptions input[type="radio"] {
-  display: none; /* Hide radio buttons */
-}
+#speedOptions input[type="radio"] { display: none; }
 
-/* Speed option labels styled as buttons */
 #speedOptions label {
   width: 100%;
   height: 100%;
   background: var(--main-grey);
-  border-radius: 3px;
+  border-radius: var(--tb-radius);
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
   transition: all 0.2s ease;
   color: #000000;
-  font-size: 12px;
-  font-weight: 500;
-  margin: 0; 
-  margin-left: -7px;
+  font-size: var(--tb-fs);
+  font-weight: 450;
+  margin: 0;
 }
 
-#speedOptions label:hover {
-  background: var(--hover-grey);
-}
+#speedOptions label:hover { background: var(--hover-grey); }
 
-/* Selected speed option */
 #speedOptions input[type="radio"]:checked + label {
   background: var(--active-grey);
   font-weight: 700;
 }
 
-#speedOptions label:active {
-  transform: scale(0.95);
-}
-
-/* Playback container (might not be used) */
-#playbackContainer {
-  display: flex;
-  justify-content: center;
-  gap: 20px;
-  margin: 30px;
-}
+#speedOptions label:active { transform: scale(0.95); }
 
 /* =====================================================
-   TOP MENU - MULTI-FUNCTION GRID
+   TOP MENU — MULTI-FUNCTION GRID (share/dl/undo/redo)
 ===================================================== */
-/* 2x2 grid for share/download/undo/redo */
 .multi-function-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr; /* 2 columns */
-  grid-template-rows: 1fr 1fr; /* 2 rows */
-  gap: 3px;
-  height: 57px;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr 1fr;
+  gap: calc(var(--tb-scale) * 3px);
+  height: var(--tb-h);
+  width: calc(var(--tb-scale) * 57px);
+  margin: 0;
 }
 
 .icon-btn-small {
   width: 100%;
   height: 100%;
   background: var(--main-grey);
-  border: 1px;
-  border-radius: 3px;
+  border: none;
+  border-radius: var(--tb-radius);
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -795,160 +694,121 @@ main {
   color: #000000;
 }
 
-.icon-btn-small:hover {
-  background: var(--hover-grey);
-}
-
-.icon-btn-small:active {
-  background: #e0e0e0;
-  transform: scale(0.95);
-}
+.icon-btn-small:hover  { background: var(--hover-grey); }
+.icon-btn-small:active { background: #e0e0e0; transform: scale(0.95); }
 
 .multi-function-grid svg {
-  width: 16px;
-  height: 16px;  
+  width:  calc(var(--tb-scale) * 15px);
+  height: calc(var(--tb-scale) * 15px);
   flex-shrink: 0;
 }
 
 /* =====================================================
-   TOP MENU - ACTION BUTTONS (REFRESH & CLEAR)
+   TOP MENU — ACTION BUTTONS (REFRESH & CLEAR)
 ===================================================== */
-/* Refresh button */
 .action-btn {
   display: flex;
   align-items: center;
-  gap: 7px;
-  padding: 0px;
+  gap: calc(var(--tb-scale) * 4px);
+  padding: 0 calc(var(--tb-scale) * 6px);
   background: var(--main-grey);
-  border: 1px;
-  border-radius: 3px;
+  border: none;
+  border-radius: var(--tb-radius);
   cursor: pointer;
-  font-size: 12px;
-  height: 57px;
-  width: 97px;
+  font-size: var(--tb-fs);
+  height: var(--tb-h);
+  width:  calc(var(--tb-scale) * 100px);
   transition: all 0.2s ease;
   white-space: nowrap;
   flex-direction: column;
   justify-content: center;
   text-align: center;
-  margin-left: -7px;
+  margin: 0;
 }
 
-.action-btn:hover {
-  background: var(--hover-grey);
-}
-
-.action-btn:active {
-  background: #e0e0e0;
-  transform: scale(0.98);
-}
+.action-btn:hover  { background: var(--hover-grey); }
+.action-btn:active { background: #e0e0e0; transform: scale(0.98); }
 
 .action-btn svg {
-  width: 18px;
-  height: 18px;  
+  width:  var(--tb-icon-md);
+  height: var(--tb-icon-md);
   flex-shrink: 0;
 }
 
-/* Clear Workspace button */
 .clear-btn {
-  padding: 4px 4px;
+  padding: 0 calc(var(--tb-scale) * 6px);
   background: var(--main-grey);
-  border: 1px;
-  border-radius: 3px;
+  border: none;
+  border-radius: var(--tb-radius);
   cursor: pointer;
-  font-size: 12px;
+  font-size: var(--tb-fs);
   color: #000000;
   transition: all 0.2s ease;
   white-space: nowrap;
-  height: 57px;
-  width: 100px;
-  position: relative;
+  height: var(--tb-h);
+  width:  calc(var(--tb-scale) * 100px);
   display: flex;
   flex-direction: column;
   justify-content: center;
   text-align: center;
-  gap: 4px;
+  gap: calc(var(--tb-scale) * 4px);
   align-items: center;
+  margin: 0;
 }
 
-.clear-btn:hover {
-  background: var(--hover-grey);
-}
+.clear-btn:hover { background: var(--hover-grey); }
 
 .clear-btn svg {
-  width: 20px;
-  height: 20px;  
+  width:  var(--tb-icon-lg);
+  height: var(--tb-icon-lg);
   flex-shrink: 0;
 }
 
 /* =====================================================
-   TOP MENU - DRAGGABLE SECTIONS
+   TOP MENU — DRAGGABLE SECTIONS
 ===================================================== */
-/* Wrapper for each draggable section */
 .draggable-section {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: calc(var(--tb-scale) * 3px);
   position: relative;
-  padding-left: 2px;
-  padding-right: 6px;
-  flex-shrink: 0; /* Don't shrink sections */
-  flex-grow: 1; /* Grow sections to fill space */
-  min-width: 0;
+  padding-left:  calc(var(--tb-scale) * 2px);
+  padding-right: calc(var(--tb-scale) * 6px);
+  margin-left: calc(var(--tb-scale) * 3px);
+  flex-shrink: 0;
+  flex-grow: 0;
 }
 
-.draggable-section:last-child {
-  border-right: none;
-}
+.draggable-section:last-child { border-right: none; }
 
-/* Allow items inside sections to grow */
-.draggable-section .group,
-.draggable-section .control-group,
-.draggable-section .transport-group {
-  flex-grow: 1;
-}
-
-/* Drag handle icon */
+/* Drag handle sits in the gap between sections via negative left offset */
 .drag-handle {
   position: absolute;
-  left: -20px;
+  left: calc(var(--tb-scale) * -20px);
   top: 50%;
   transform: translateY(-50%);
-  width: 20px;
-  height: 30px;
+  width:  calc(var(--tb-scale) * 20px);
+  height: calc(var(--tb-scale) * 30px);
   cursor: grab;
   background: transparent;
   border: none;
   color: #48484846;
-  font-size: 15px;
+  font-size: calc(var(--tb-scale) * 15px);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 10;
 }
 
-.drag-handle:hover {
-  color: #666;
-}
+.drag-handle:hover  { color: #666; }
+.drag-handle:active { cursor: grabbing; }
 
-.drag-handle:active {
-  cursor: grabbing;
-}
-
-/* SortableJS dragging states */
-.sortable-ghost {
-  opacity: 0.4; /* Semi-transparent while dragging */
-}
-
-.sortable-drag {
-  opacity: 0.9;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-}
+.sortable-ghost { opacity: 0.4; }
+.sortable-drag  { opacity: 0.9; box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
 
 /* =====================================================
-  COLLAPSIBLE DATA SOURCE OPTIONS
+   COLLAPSIBLE DATA SOURCE OPTIONS
 ===================================================== */
-/* Collapse button  */
 .collapse-btn {
   background: none;
   border: none;
@@ -959,19 +819,17 @@ main {
   color: #333;
   cursor: pointer;
   text-align: left;
-  padding: 0px;
+  padding: 0;
   display: block;
   width: fit-content;
 }
 
 .arrow-icon {
   color: var(--standard-blue);
-  margin-left: 0px;
   font-size: 13px;
   vertical-align: middle;
 }
 
-/* Data source container (hidden by default) */
 #dataSource {
   display: none;
   gap: 10px;
@@ -979,7 +837,7 @@ main {
   flex-wrap: wrap;
 }
 
-#databaseElements, 
+#databaseElements,
 #deviceElements {
   display: flex;
   flex-direction: column;
@@ -1006,23 +864,24 @@ main {
   font-size: 12px;
 }
 
-/* ================== SOUND MODULES ================== */
+/* =====================================================
+   SOUND MODULES
+===================================================== */
 .rightPlot {
   flex: 1;
   display: flex;
   flex-direction: column;
-  /* REMOVE the fixed height: 250px; */
-  min-height: 250px; /* Keeps a base size when menu is small */
+  min-height: 250px;
   border-radius: 5px;
-  /* height: 100%; is usually not needed if parent is flex and align-items is stretch */
 }
 
 .volumeContainer {
-  margin-left: 0px;
+  margin-left: 0;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: 0px;
+  gap: 0;
+  accent-color: var(--standard-blue);
 }
 
 .volumeContainer label {
@@ -1040,39 +899,32 @@ main {
   color: black;
   border: none;
   cursor: pointer;
-  
-  /* Resetting flex behavior */
   display: flex;
-  justify-content: flex-start; /* Aligns the 'X' to the left of the 30px box */
+  justify-content: flex-start;
   align-items: center;
-  
-  position: relative; 
+  position: relative;
   background: transparent;
-  
-  /* Use a negative margin to 'pull' it over the parent's padding if necessary */
   margin-bottom: -4px;
-  
   padding: 0;
   z-index: 20;
 }
 
 .removeModule::before {
   content: "×";
-  font-size: 23px; /* Making it a bit bolder to match your screenshots */
+  font-size: 23px;
   line-height: 1;
   color: black;
 }
 
 .moduleTopOptions {
-  margin-top: 10px; /* Space between "volume" top */
-  margin-bottom: 5px; /* Space between "volume" bottom */
+  margin-top: 10px;
+  margin-bottom: 5px;
   display: flex;
   justify-content: space-between;
   align-items: left;
-  height: 40px; /* Height of all options */
+  height: 40px;
 }
 
-/* LEFT SIDE: All menu items */
 .leftMenu {
   width: 220px;
   flex-shrink: 0;
@@ -1085,20 +937,16 @@ main {
   font-weight: 600;
 }
 
-/* Screen Reader utility (like blind or low-vision users) */
 .u-sr-only {
   position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
+  width: 1px; height: 1px;
+  padding: 0; margin: -1px;
   overflow: hidden;
   clip: rect(0 0 0 0);
   clip-path: inset(50%);
   border: 0;
   white-space: nowrap;
 }
-
 
 .timeline-row {
   display: grid;
@@ -1109,12 +957,6 @@ main {
   border-radius: 5px;
 }
 
-/* same width as sidebar */
-:root {
-  --sidebar-width: 251px;   /* ← change to whatever your menu is */
-  border-radius: 5px;
-}
-
 .timeline-spacer {
   width: 100%;
   margin-bottom: 3px;
@@ -1122,16 +964,14 @@ main {
   display: block;
 }
 
-
-/* UNIVERSAL X-AXIS  */
 #globalTimeline {
-  height: 35px; /* Ensure this matches your buildGlobalTimeline height */
+  height: 35px;
   width: 100%;
   display: block;
   background: var(--main-grey) !important;
   border-radius: 5px;
   margin-bottom: 3px;
-  overflow: hidden; /* Prevents overflow artifacts during snap-resizing */
+  overflow: hidden;
 }
 
 #globalTimeline .xtick text {
@@ -1140,26 +980,22 @@ main {
   color: #000000;
 }
 
-
-/* ================== MODULES / PLOT (unchanged) ================== */
-/* Adjusted layout for module options */
+/* =====================================================
+   MODULES / PLOT
+===================================================== */
 .moduleDataOptions {
-  display: flex; /* Use flexbox to arrange children horizontally */
+  display: flex;
   flex-direction: column;
-  gap: 10px; /* Add space between the children */
-  margin-bottom: 15px; /* Add space below the options for visual clarity */
-}
-
-.volumeContainer {
-  accent-color: var(--standard-blue);
+  gap: 10px;
+  margin-bottom: 15px;
 }
 
 .sensorsContainer,
 .readingsContainer {
-  flex: 1; /* Make each container take up equal space */
-  display: flex; /* Optional: Flexbox within each container if you want finer control */
-  flex-direction: column; /* Keep label and select in vertical alignment */
-  gap: 5px; /* Space between label and select */
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
   width: 100%;
 }
 
@@ -1179,45 +1015,23 @@ main {
 }
 
 .moduleBottomOptions {
-  display: none; 
-  /* Use border-box so padding doesn't add to the width */
-  box-sizing: border-box; 
-  
-  /* Calculate width: 100% minus the left and right margins you want */
-  width: calc(100% - 3px); 
-  
-  /* Centers the box within the left menu */
-  margin: 5px auto; 
-  
-  
+  display: none;
+  box-sizing: border-box;
+  width: calc(100% - 3px);
+  margin: 5px auto;
   padding: 10px;
   border: 1px solid #ddd;
   border-radius: 5px;
   background-color: #f4f4f4;
-
-  max-height: 170px;    /* Adjust this value based on how much space you want to take up */
-  overflow-y: auto;     /* Adds vertical scrollbar when content exceeds max-height */
-  overflow-x: hidden;   /* Prevents horizontal shifting */
+  max-height: 170px;
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
-/* Optional: Style the scrollbar to match your clean UI */
-.moduleBottomOptions::-webkit-scrollbar {
-  width: 6px;
-}
-
-.moduleBottomOptions::-webkit-scrollbar-track {
-  background: #f1f1f1;
-  border-radius: 10px;
-}
-
-.moduleBottomOptions::-webkit-scrollbar-thumb {
-  background: var(--main-grey);
-  border-radius: 10px;
-}
-
-.moduleBottomOptions::-webkit-scrollbar-thumb:hover {
-  background: #999;
-}
+.moduleBottomOptions::-webkit-scrollbar       { width: 6px; }
+.moduleBottomOptions::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 10px; }
+.moduleBottomOptions::-webkit-scrollbar-thumb { background: var(--main-grey); border-radius: 10px; }
+.moduleBottomOptions::-webkit-scrollbar-thumb:hover { background: #999; }
 
 .moduleBottomOptions label {
   font-size: 12px;
@@ -1245,7 +1059,6 @@ main {
   border: 1px solid var(--main-grey);
 }
 
-/* Maintain flexbox styling for module layout */
 #modulesContainer {
   display: flex;
   flex-direction: column;
@@ -1256,12 +1069,11 @@ main {
 .soundModule {
   display: flex;
   flex-direction: row;
-  height: auto;           /* Let the content define the height */
-  min-height: 250px;      /* Minimum starting height */
-  margin-bottom: 0px;
-  align-items: stretch;   /* Forces leftMenu and Plot to stay same height */
-  overflow: visible;      /* Prevents clipping */
+  height: auto;
+  min-height: 250px;
+  margin-bottom: 0;
   align-items: stretch;
+  overflow: visible;
 }
 
 .moduleOptions {
@@ -1274,20 +1086,16 @@ main {
   margin: 0 10px;
 }
 
-/* color: #000000;
-  font-size: 12px;
-  font-weight: 500; */
-
 #addModule {
   display: flex;
   justify-content: center;
   align-items: center;
   gap: 5px;
   margin: 8px auto;
-  width:100%;
+  width: 100%;
   height: 40px;
   background-color: var(--main-grey);
-  color: #000000; 
+  color: #000000;
   cursor: pointer;
   font-family: "Google Sans", sans-serif;
   font-size: 13px;
@@ -1295,31 +1103,25 @@ main {
   flex-shrink: 0;
   border: none;
   border-radius: 5px;
-  position: relative;
-  background-image: none;
-  transition: background-color 0.3s ease, border-color 0.3s ease;
+  transition: background-color 0.3s ease;
 }
 
-/* Style for the image inside button */
 #addModule .add-icon {
-  height: 17px !important; 
-  width: auto; 
-  vertical-align: middle !important; 
+  height: 17px !important;
+  width: auto;
+  vertical-align: middle !important;
 }
 
-#addModule:hover {
-  background: var(--hover-grey);
-  filter: none; 
-}
+#addModule:hover { background: var(--hover-grey); }
 
-/* ================== POP-UP FOR PRESET, DATABASE, DEVICE ================== */
+/* =====================================================
+   MODALS
+===================================================== */
 .modal {
   position: fixed;
   z-index: 1000;
-  left: 0;
-  top: 0;
-  width: 100%;
-  height: 100%;
+  left: 0; top: 0;
+  width: 100%; height: 100%;
   background-color: rgba(0, 0, 0, 0.6);
   display: flex;
   align-items: center;
@@ -1345,8 +1147,7 @@ main {
 
 .close-modal {
   position: absolute;
-  right: 15px;
-  top: 15px;
+  right: 15px; top: 15px;
   font-size: 28px;
   font-weight: bold;
   color: #999;
@@ -1355,9 +1156,7 @@ main {
   transition: color 0.2s ease;
 }
 
-.close-modal:hover {
-  color: #333;
-}
+.close-modal:hover { color: #333; }
 
 .modal-content #presetElements,
 .modal-content #databaseElements,
@@ -1394,8 +1193,6 @@ main {
   font-size: 14px;
 }
 
-/* ==== POPUP for date range selection ==== */
- 
 .modal-form {
   display: flex;
   flex-direction: column;
@@ -1422,11 +1219,10 @@ main {
   width: 96%;
 }
 
-/* Custom square dropdown for prescaler in modal */
 #modalPrescaler {
   background-color: white;
   border: 1px solid var(--main-grey);
-  padding: 8px 8px 8px 8px;
+  padding: 8px;
   border-radius: 4px;
   cursor: pointer;
 }
@@ -1439,11 +1235,6 @@ main {
   text-align: center !important;
 }
 
-/* Date range button styling */
-#timeRangeButton button {
-  white-space: nowrap;
-}
-
 .modal-content #confirmDateTime {
   width: 96%;
   height: auto;
@@ -1454,10 +1245,12 @@ main {
   color: #fff;
   border: 1px solid var(--standard-blue);
   border-radius: 3px;
-   font-size: 14px;
+  font-size: 14px;
 }
 
-/* ======== POPOVER FOR METADATA & PACKET REFRESH ========== */
+/* =====================================================
+   POPOVER
+===================================================== */
 .popover {
   position: absolute;
   background: white;
@@ -1474,32 +1267,26 @@ main {
 .popover::before {
   content: '';
   position: absolute;
-  width: 0;
-  height: 0;
+  width: 0; height: 0;
   border: 8px solid transparent;
   border-bottom-color: white;
-  top: -16px;
-  left: 5px;
-  z-index: 10001; /* Make sure it's on top */
+  top: -16px; left: 5px;
+  z-index: 10001;
 }
 
-/* Arrow border (optional - makes it look cleaner) */
 .popover::after {
   content: '';
   position: absolute;
-  width: 0;
-  height: 0;
+  width: 0; height: 0;
   border: 9px solid transparent;
   border-bottom-color: #ccc;
-  top: -18px;
-  left: 4px;
+  top: -18px; left: 4px;
   z-index: 10000;
 }
 
 .popover-close {
   position: absolute;
-  top: 6px;
-  right: 4px;
+  top: 6px; right: 4px;
   background: none;
   border: none;
   font-size: 15px;
@@ -1507,20 +1294,15 @@ main {
   color: #666;
 }
 
-.popover-close:hover {
-  color: #000;
-}
+.popover-close:hover { color: #000; }
+.popover-body { margin-top: 8px; }
 
-.popover-body {
-  margin-top: 8px;
-}
-
-
-/* ====== STATUS MESSAGE NOTIFICATION ======== */
+/* =====================================================
+   STATUS MESSAGE
+===================================================== */
 .status-message {
   position: fixed;
-  bottom: 30px;
-  right: 30px;
+  bottom: 30px; right: 30px;
   background: #333;
   color: white;
   padding: 16px 24px;
@@ -1534,78 +1316,8 @@ main {
   pointer-events: none;
 }
 
-.status-message.show {
-  opacity: 1;
-  transform: translateY(0);
-  pointer-events: auto;
-}
-
-.status-message.success {
-  background: #4caf50;
-}
-
-.status-message.error {
-  background: #f44336;
-}
-
-.status-message.warning {
-  background: #ff9800;
-}
-
-.status-message.info {
-  background: var(--standard-blue);
-}
-
-#user-guide-page {
-  display: flex;
-  justify-self: center;
-  flex-direction: column;
-  max-width: 1250px;
-  width: 75vw;
-  
-  background-color: var(--main-grey) !important;
-  padding: 0 10px;
-  margin-top: 25px;
-
-  border-radius: 8px;
-}
-
-#user-guide-page h3 {
-  color: var(--standard-blue);
-
-  font-size: 24px;
-}
-
-#user-guide-page h4 {
-  color: var(--standard-blue);
-  font-size: 20px;
-}
-
-#user-guide-page p, #user-guide-page ol, #user-guide-page ul li {
-  font-size: 16px;
-  margin-bottom: 25px;
-}
-
-#top-heading {
-  display: flex;
-  justify-content: center;
-}
-
-#user-guide-title {
-  font-size: 36px;
-  margin: 50px 0;
-}
-
-.user-guide-img {
-  border: 2px solid black;
-  display: flex;
-  width: 80%;
-
-  justify-self: center;
-  margin: 50px 0;
-}
-
-#page-title {
-  text-decoration: none;
-  color: inherit;
-}
+.status-message.show    { opacity: 1; transform: translateY(0); pointer-events: auto; }
+.status-message.success { background: #4caf50; }
+.status-message.error   { background: #f44336; }
+.status-message.warning { background: #ff9800; }
+.status-message.info    { background: var(--standard-blue); }
