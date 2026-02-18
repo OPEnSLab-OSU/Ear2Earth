@@ -783,6 +783,24 @@ function setOnboardingComplete() {
   localStorage.setItem(ONBOARDING_STORAGE_KEY, 'true');
 }
 
+function resetToLastPacketsMode() {
+  const lastXPacketsRadio = document.getElementById('lastXPackets');
+  const timeRangeRadio = document.getElementById('timeRange');
+  const numpacketsInput = document.getElementById('numpacketsInput');
+  const skipPackets = document.getElementById('skipPackets');
+  const dateRangeText = document.getElementById('dateRangeText');
+  const startTimeInput = document.getElementById('startTime');
+  const endTimeInput = document.getElementById('endTime');
+
+  if (lastXPacketsRadio) lastXPacketsRadio.checked = true;
+  if (timeRangeRadio) timeRangeRadio.checked = false;
+  if (numpacketsInput) numpacketsInput.style.display = 'block';
+  if (skipPackets) skipPackets.style.display = 'block';
+  if (dateRangeText) dateRangeText.textContent = 'Date Range';
+  if (startTimeInput) startTimeInput.value = '';
+  if (endTimeInput) endTimeInput.value = '';
+}
+
 function startFirstTimeOnboarding() {
   const dataSourceModal = document.getElementById('dataSourceModal');
   const dateTimeModal = document.getElementById('dateTimeModal');
@@ -873,13 +891,6 @@ function startFirstTimeOnboarding() {
       showDateTimeModal: false
     },
     {
-      selectors: ['#addModule'],
-      title: 'Add Tracks',
-      text: 'Add more sound modules to map multiple sensor readings.',
-      showDataSourceModal: false,
-      showDateTimeModal: false
-    },
-    {
       selectors: ['.soundModule .sensors'],
       title: 'Sensor Mapping',
       text: 'Each track can target a sensor from the retrieved data.',
@@ -911,6 +922,13 @@ function startFirstTimeOnboarding() {
           collapseBtn.click();
         }
       },
+      showDataSourceModal: false,
+      showDateTimeModal: false
+    },
+    {
+      selectors: ['#addModule'],
+      title: 'Add Tracks',
+      text: 'Add more sound modules to map multiple sensor readings.',
       showDataSourceModal: false,
       showDateTimeModal: false
     },
@@ -1036,6 +1054,7 @@ function startFirstTimeOnboarding() {
     document.getElementById('dateTimeModal').style.display = 'none';
     document.getElementById('dataSourceModal').classList.remove('onboarding-modal-active');
     document.getElementById('dateTimeModal').classList.remove('onboarding-modal-active');
+    resetToLastPacketsMode();
     if (markComplete) {
       setOnboardingComplete();
     }
