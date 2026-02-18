@@ -19,9 +19,9 @@
   --tb-scale: 1;
 
   --tb-h:        calc(var(--tb-scale) * 58px);
-  --tb-fs:       calc(var(--tb-scale) * 12px);
-  --tb-fs-sm:    calc(var(--tb-scale) * 11px);
-  --tb-fs-md:    calc(var(--tb-scale) * 13px);
+  --tb-fs:       calc(var(--tb-scale) * 12.5px);
+  --tb-fs-sm:    calc(var(--tb-scale) * 12.5px);
+  --tb-fs-md:    calc(var(--tb-scale) * 12.5px);
   --tb-icon-sm:  calc(var(--tb-scale) * 15px);
   --tb-icon-md:  calc(var(--tb-scale) * 18px);
   --tb-icon-lg:  calc(var(--tb-scale) * 20px);
@@ -279,7 +279,7 @@ TOP MENU
   color: black;
   cursor: pointer;
   text-align: center;
-  font-size: var(--tb-fs-md);
+  font-size: var(--tb-fs);
   margin: 0;
   display: flex;
   flex-direction: column;
@@ -365,7 +365,7 @@ TOP MENU
   height: calc(50% - calc(var(--tb-scale) * 1.5px));
   color: black;
   font-size: var(--tb-fs);
-  width: calc(var(--tb-scale) * 118px);
+  width: calc(var(--tb-scale) * 120px);
   white-space: nowrap;
   margin: 0;
   box-sizing: border-box;
@@ -405,7 +405,7 @@ TOP MENU
   width:  calc(var(--tb-scale) * 70px);
   height: var(--tb-h);
   padding: calc(var(--tb-scale) * 5px);
-  font-size: var(--tb-fs);
+  font-size: var(--tb-fs) !important;
   background: var(--standard-blue);
   color: #fff;
   border: none;
@@ -445,8 +445,8 @@ TOP MENU
 }
 
 .icon-btn {
-  width:  calc(var(--tb-scale) * 28px);
-  height: calc(var(--tb-scale) * 28px);
+  width:  calc(var(--tb-scale) * 29px);
+  height: calc(var(--tb-scale) * 29px);
   border: 1px solid var(--border);
   border-radius: var(--tb-radius);
   cursor: pointer;
@@ -463,8 +463,8 @@ TOP MENU
 
 #metadataHelp,
 #refreshHelp {
-  width:  calc(var(--tb-scale) * 18px);
-  height: calc(var(--tb-scale) * 18px);
+  width:  calc(var(--tb-scale) * 19px);
+  height: calc(var(--tb-scale) * 19px);
   border: none;
   border-radius: var(--tb-radius);
   cursor: pointer;
@@ -484,8 +484,8 @@ TOP MENU
 
 #refreshHelp svg,
 #metadataHelp svg {
-  width:  calc(var(--tb-scale) * 11px);
-  height: calc(var(--tb-scale) * 11px);
+  width:  calc(var(--tb-scale) * 12.5px);
+  height: calc(var(--tb-scale) * 12.5px);
   flex-shrink: 0;
 }
 
@@ -520,19 +520,19 @@ TOP MENU
   align-items: center;
   justify-content: center;
   padding: 0 var(--tb-pad);
-  gap: calc(var(--tb-scale) * 6px);
+  gap: calc(var(--tb-scale) * 4px);
   height: var(--tb-h);
 }
 
 .control-group:has(#masterVolume) label {
-  font-weight: 400;
+  font-weight: 450;
   color: #000000;
   margin: 0;
 }
 
 #masterVolume {
   accent-color: var(--standard-blue);
-  min-width: calc(var(--tb-scale) * 150px);
+  min-width: calc(var(--tb-scale) * 145px);
   font-size: var(--tb-fs-md);
   margin: 0;
 }
@@ -573,17 +573,16 @@ TOP MENU
 
 .square-btn:hover { filter: brightness(0.9); }
 
-/* BPM container */
 #bpmContainer {
   display: flex;
   flex-direction: column;
   align-items: center;
   padding: 0 var(--tb-pad);
-  gap: calc(var(--tb-scale) * 6px);
+  gap: calc(var(--tb-scale) * 12px);
   height: var(--tb-h);
   background: var(--main-grey);
   border-radius: var(--tb-radius);
-  min-width: calc(var(--tb-scale) * 150px);
+  min-width: calc(var(--tb-scale) * 145px);
   position: relative;
   box-sizing: border-box;
   justify-content: center;
@@ -595,7 +594,8 @@ TOP MENU
   font-weight: 450;
   margin: 0;
   display: inline-block;
-  align-self: flex-start;
+  margin-left: calc(var(--tb-scale) * -38px);
+  margin-top: calc(var(--tb-scale) * 0px);
   color: #000000;
 }
 
@@ -606,15 +606,15 @@ TOP MENU
   text-align: center;
   color: #000000;
   position: absolute;
-  right: var(--tb-pad);
-  top: calc(var(--tb-scale) * 14px);
+  margin-top: calc(var(--tb-scale) * -10px);
+  margin-left: calc(var(--tb-scale) * 18px);
 }
 
 #bpm {
   accent-color: var(--standard-blue);
-  width:  calc(var(--tb-scale) * 135px);
+  width: calc(var(--tb-scale) * 135px);
   height: calc(var(--tb-scale) * 6px);
-  margin: 0;
+  margin-top: calc(var(--tb-scale) * -8px);
 }
 
 /* Speed options (1x 2x 4x 8x) */
@@ -641,7 +641,7 @@ TOP MENU
   transition: all 0.2s ease;
   color: #000000;
   font-size: var(--tb-fs);
-  font-weight: 500;
+  font-weight: 450;
   margin: 0;
 }
 
