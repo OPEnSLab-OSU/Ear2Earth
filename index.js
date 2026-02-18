@@ -2,6 +2,8 @@
 
 // Metadata
 let metadata;
+const metadataBtn = document.getElementById('metadataButton');
+let isMetadataDisplayed = false;
 
 // Playback boolean
 let isPlaying = false;
@@ -783,6 +785,24 @@ function setOnboardingComplete() {
   localStorage.setItem(ONBOARDING_STORAGE_KEY, 'true');
 }
 
+function resetToLastPacketsMode() {
+  const lastXPacketsRadio = document.getElementById('lastXPackets');
+  const timeRangeRadio = document.getElementById('timeRange');
+  const numpacketsInput = document.getElementById('numpacketsInput');
+  const skipPackets = document.getElementById('skipPackets');
+  const dateRangeText = document.getElementById('dateRangeText');
+  const startTimeInput = document.getElementById('startTime');
+  const endTimeInput = document.getElementById('endTime');
+
+  if (lastXPacketsRadio) lastXPacketsRadio.checked = true;
+  if (timeRangeRadio) timeRangeRadio.checked = false;
+  if (numpacketsInput) numpacketsInput.style.display = 'block';
+  if (skipPackets) skipPackets.style.display = 'block';
+  if (dateRangeText) dateRangeText.textContent = 'Date Range';
+  if (startTimeInput) startTimeInput.value = '';
+  if (endTimeInput) endTimeInput.value = '';
+}
+
 function startFirstTimeOnboarding() {
   const dataSourceModal = document.getElementById('dataSourceModal');
   const dateTimeModal = document.getElementById('dateTimeModal');
@@ -873,13 +893,6 @@ function startFirstTimeOnboarding() {
       showDateTimeModal: false
     },
     {
-      selectors: ['#addModule'],
-      title: 'Add Tracks',
-      text: 'Add more sound modules to map multiple sensor readings.',
-      showDataSourceModal: false,
-      showDateTimeModal: false
-    },
-    {
       selectors: ['.soundModule .sensors'],
       title: 'Sensor Mapping',
       text: 'Each track can target a sensor from the retrieved data.',
@@ -911,6 +924,13 @@ function startFirstTimeOnboarding() {
           collapseBtn.click();
         }
       },
+      showDataSourceModal: false,
+      showDateTimeModal: false
+    },
+    {
+      selectors: ['#addModule'],
+      title: 'Add Tracks',
+      text: 'Add more sound modules to map multiple sensor readings.',
       showDataSourceModal: false,
       showDateTimeModal: false
     },
@@ -1036,6 +1056,7 @@ function startFirstTimeOnboarding() {
     document.getElementById('dateTimeModal').style.display = 'none';
     document.getElementById('dataSourceModal').classList.remove('onboarding-modal-active');
     document.getElementById('dateTimeModal').classList.remove('onboarding-modal-active');
+    resetToLastPacketsMode();
     if (markComplete) {
       setOnboardingComplete();
     }
@@ -1591,8 +1612,7 @@ document.addEventListener('DOMContentLoaded', () => {
     modalOption.textContent = pair.name;
     modalPresetDropdown.appendChild(modalOption);
   });
-
-  // Handle preset selection inside the popup 
+// Handle preset selection inside the popup 
   modalPresetDropdown.addEventListener('change', async (event) => {
     if (event.target.value !== 'default') {
       const presetData = JSON.parse(event.target.value);
@@ -1637,6 +1657,27 @@ document.addEventListener('DOMContentLoaded', () => {
       
     }
   });
+  // Handle selection from the named dropdown
+// Handle selection from the named dropdown
+  const modalPreset = document.getElementById("modalPreset");
+  modalPreset.addEventListener('change', async e => {
+    handleDatasetChange(e);
+    isMetadataDisplayed = false;
+    metadataContainer.style.display = 'none';
+    
+    metadataBtn.style.display = "block";
+    metadataBtn.textContent = 'Loading...';
+    metadata = await retrieveMetadata();
+
+    if (metadata == null) {
+      metadataBtn.textContent = 'No Metadata'
+    } else {
+      metadataBtn.textContent = 'View Metadata';
+    }
+
+    return;
+  });
+
   workspaceHasData = false;
   updateClearWorkspaceButton();
 
@@ -2761,9 +2802,6 @@ function dataToMidiPitches(normalizedData, scale) {
   return normalizedData.map(value => scale[Math.floor(value * (scaleLength - 1))]);
 }
 
-const metadataBtn = document.getElementById('metadataButton');
-let isMetadataDisplayed = false;
-
 async function retrieveMetadata() {
   let db = document.getElementById('databases').value;
   let url = `/metadata?database=${db}`;
@@ -2788,16 +2826,11 @@ metadataBtn.onclick = async function () {
   if (isMetadataDisplayed) {
     metadataContainer.style.display = 'none';
     isMetadataDisplayed = false;
-    metadataBtn.style.backgroundColor = 'green';
     metadataBtn.textContent = 'View Metadata';
     return;
   }
 
-  if (metadataBtn.style.backgroundColor == "green") {
-      metadataBtn.style.backgroundColor = "#90EE90";
-  }
-
-  if (metadataBtn.style.backgroundColor == 'red') {
+  if (metadata == null) {
     return;
   }
 

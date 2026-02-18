@@ -599,6 +599,8 @@ TOP MENU
   color: #000000;
 }
 
+
+/* BPM value display (overlays on slider) */
 #bpmText {
   font-size: var(--tb-fs);
   font-weight: 450;
@@ -608,6 +610,17 @@ TOP MENU
   position: absolute;
   margin-top: calc(var(--tb-scale) * -10px);
   margin-left: calc(var(--tb-scale) * 18px);
+}
+
+#bpmText {
+  font-size: 12px;
+  font-weight: 450;
+  min-width: 30px;
+  text-align: center;
+  color: #000000;
+  position: absolute;
+  margin-top: 13px;
+  margin-left: 18px;
 }
 
 #bpm {
@@ -830,6 +843,25 @@ TOP MENU
   flex-direction: column;
   gap: 4px;
   min-width: 180px;
+}
+#metadataContainer {
+  display: none;
+  margin: 0 0 10px 0;
+  flex-direction: row;
+  justify-content: space-evenly;
+
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  background-color: #fff;
+}
+
+#metadataContainer h3 {
+  font-weight: bold;
+  font-size: 16px;
+}
+
+#metadataContainer p {
+  font-size: 12px;
 }
 
 /* =====================================================
