@@ -124,7 +124,7 @@
                 View Metadata
               </button>
               <!-- Help/Info button for metadata -->
-              <button id="toolButton" class="icon-btn" title="Help">
+              <button id="metadataHelp" class="icon-btn" title="Help">
                 <i data-lucide="info"></i>
               </button>
             </div>
@@ -204,7 +204,7 @@
                 <span class="action-label">Packet Refresh</span>
               </button>
               <!-- Help/Info button for refresh -->
-              <button id="toolButton" class="icon-btn" title="Help">
+              <button id="refreshHelp" class="icon-btn" title="Help">
                 <i data-lucide="info"></i>
               </button>
             </div>
@@ -282,6 +282,17 @@
           <button id="confirmDateTime" class="primary-btn">Apply</button>
         </div>
       </div>
+
+      <!-- Modal for tooltips (info) -->
+      <div id="popover" class="popover" style="display: none;">
+        <div class="popover-content">
+          <button class="popover-close">&times;</button>
+          <div class="popover-body"></div>
+        </div>
+      </div>
+
+      <!-- Status message notification -->
+      <div id="status-message" class="status-message"></div>
       <!-- ============================================ -->
 
       <!-- ========== Universal X-Axis =========== -->

@@ -57,6 +57,138 @@ var retrievedData;
 // Array to hold x-axis data for each plot
 let plotXData = {};
 
+// Undo/Redo state management
+let historyStack = [];
+let historyIndex = -1;
+let isRestoring = false; // Flag to prevent capturing state while restoring
+const MAX_HISTORY = 50; // Limit history to prevent memory issues
+
+// ====== UNDO/REDO FUNCTIONALITY ======
+function captureState() {
+  return {
+    modules: soundModules.map(module => ({
+      id: module.id,
+      sensor: module.querySelector('.sensors')?.value,
+      reading: module.querySelector('.readings')?.value,
+      volume: module.querySelector('.volume')?.value,
+      soundType: module.querySelector('.soundTypes')?.value,
+      tessitura: module.querySelector('.tessitura')?.value,
+      tonic: module.querySelector('.tonic')?.value,
+      scale: module.querySelector('.scale')?.value,
+      sustainNotes: module.querySelector('.sustainNotes')?.checked
+    })),
+    database: document.getElementById('databases')?.value,
+    device: document.getElementById('devices')?.value,
+    bpm: document.getElementById('bpm')?.value,
+    masterVolume: document.getElementById('masterVolume')?.value,
+    numPackets: document.getElementById('numpackets')?.value,
+    prescaler: document.getElementById('prescaler')?.value
+  };
+}
+
+// Save state to history
+function saveState() {
+
+  if (isRestoring) {
+    return; // Don't save state if we're currently restoring (prevents infinite loop)
+  }
+
+  // Remove any future states if we're not at the end
+  if (historyIndex < historyStack.length - 1) {
+    historyStack = historyStack.slice(0, historyIndex + 1);
+  }
+  
+  historyStack.push(captureState());
+  
+  // Limit history size
+  if (historyStack.length > MAX_HISTORY) {
+    historyStack.shift();
+  } else {
+    historyIndex++;
+  }
+  
+  updateUndoRedoButtons();
+}
+
+// Restore state from history
+function restoreState(state) {
+  isRestoring = true;
+  
+  try {
+    // Stop any playback
+    stopSynths();
+    
+    // Restore global settings
+    if (state.database) document.getElementById('databases').value = state.database;
+    if (state.device) document.getElementById('devices').value = state.device;
+    if (state.bpm) {
+      document.getElementById('bpm').value = state.bpm;
+      document.getElementById('bpmText').innerText = state.bpm;
+      bpm = state.bpm;
+    }
+    if (state.masterVolume) document.getElementById('masterVolume').value = state.masterVolume;
+    if (state.numPackets) document.getElementById('numpackets').value = state.numPackets;
+    if (state.prescaler) document.getElementById('prescaler').value = state.prescaler;
+    
+    // Remove all modules
+    const modulesContainer = document.getElementById('modulesContainer');
+    while (modulesContainer.firstChild) {
+      modulesContainer.removeChild(modulesContainer.firstChild);
+    }
+    soundModules = [];
+    
+    // Recreate modules with saved state
+    state.modules.forEach((moduleState, index) => {
+      addSoundModule();
+      const module = soundModules[index];
+      
+      // Restore module settings
+      if (moduleState.sensor) module.querySelector('.sensors').value = moduleState.sensor;
+      if (moduleState.reading) {
+        setReadings(index);
+        module.querySelector('.readings').value = moduleState.reading;
+      }
+      if (moduleState.volume) module.querySelector('.volume').value = moduleState.volume;
+      if (moduleState.soundType) module.querySelector('.soundTypes').value = moduleState.soundType;
+      if (moduleState.tessitura) module.querySelector('.tessitura').value = moduleState.tessitura;
+      if (moduleState.tonic) module.querySelector('.tonic').value = moduleState.tonic;
+      if (moduleState.scale) module.querySelector('.scale').value = moduleState.scale;
+      if (moduleState.sustainNotes !== undefined) {
+        module.querySelector('.sustainNotes').checked = moduleState.sustainNotes;
+        sustainNotes[index] = moduleState.sustainNotes;
+      }
+      
+      // Replot if data exists
+      if (retrievedData) {
+        plot(index);
+      }
+    });
+    
+    updateUndoRedoButtons();
+  } finally {
+    // ALWAYS reset the flag, even if there's an error
+    isRestoring = false;
+  }
+}
+
+// Update undo/redo button states
+function updateUndoRedoButtons() {
+  const undoBtn = document.getElementById('undo');
+  const redoBtn = document.getElementById('redo');
+  
+  if (undoBtn) {
+    undoBtn.disabled = historyIndex <= 0;
+    undoBtn.style.opacity = historyIndex <= 0 ? '0.5' : '1';
+    undoBtn.style.cursor = historyIndex <= 0 ? 'not-allowed' : 'pointer';
+  }
+  
+  if (redoBtn) {
+    redoBtn.disabled = historyIndex >= historyStack.length - 1;
+    redoBtn.style.opacity = historyIndex >= historyStack.length - 1 ? '0.5' : '1';
+    redoBtn.style.cursor = historyIndex >= historyStack.length - 1 ? 'not-allowed' : 'pointer';
+  }
+}
+
 // Function to initialize a sound module
 async function addSoundModule() {
   console.log('Adding a new sound module...');
@@ -103,6 +235,8 @@ async function addSoundModule() {
   if (isPlaying) {
     setupSynth(moduleId); // Create a new FM synth
   }
+
+  saveState(); // Capture state after adding a new module
 }
 
 document.getElementById('addModule').onclick = addSoundModule;
@@ -163,7 +297,7 @@ function attachRemoveListener(soundModule) {
       removeBtn.dataset.moduleId = index;
     });
 
-    console.log(`Removed module ${moduleId}`);
+    saveState(); // Capture state after removing a module
   });
 }
 
@@ -182,6 +316,7 @@ function attachSensorListener(soundModule) {
     const selectedSensor = event.target.value;
     setReadings(soundModules.indexOf(soundModule));
     console.log(`Sensor for ${soundModule.id} set to ${selectedSensor}`);
+    saveState(); // Capture state after changing sensor
   });
 }
 
@@ -191,6 +326,7 @@ function attachReadingListener(soundModule) {
     const selectedReading = event.target.value;
     plot(soundModules.indexOf(soundModule));
     console.log(`Reading for ${soundModule.id} set to ${selectedReading}`);
+    saveState(); // Capture state after changing reading
   });
 }
 
@@ -1271,6 +1407,89 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
+  // ==== Popover functionality for Metadata and Packet Refresh info buttons ====
+  const popover = document.getElementById('popover');
+  const popoverBody = popover.querySelector('.popover-body');
+  const popoverClose = popover.querySelector('.popover-close');
+
+  function showPopover(button, content) {
+    // Set content
+    popoverBody.textContent = content;
+    
+    // Position popover below the button
+    const rect = button.getBoundingClientRect();
+    popover.style.display = 'block';
+    popover.style.left = rect.left + 'px';
+    popover.style.top = (rect.bottom + 8) + 'px';
+  }
+
+  function hidePopover() {
+    popover.style.display = 'none';
+  }
+
+  // Close button
+  popoverClose.addEventListener('click', hidePopover);
+
+  // Close when clicking outside
+  document.addEventListener('click', (e) => {
+    if (!popover.contains(e.target) && !e.target.closest('.icon-btn')) {
+      hidePopover();
+    }
+  });
+
+  // Add to your info buttons
+  const metadataHelp = document.getElementById('metadataHelp');
+  const refreshHelp = document.getElementById('refreshHelp');
+  
+  if (metadataHelp) {
+    metadataHelp.addEventListener('click', (e) => {
+      e.stopPropagation();
+      showPopover(e.currentTarget, 'Metadata shows device deployment information including date, location (latitude/longitude), and database owner.');
+    });
+  }
+  
+  if (refreshHelp) {
+    refreshHelp.addEventListener('click', (e) => {
+      e.stopPropagation();
+      showPopover(e.currentTarget, 'Reloads the latest packet data from your selected source while preserving your workspace configuration and tracks.');
+    });
+  }
+
+  // ====== UNDO/REDO button functionality ======
+  const undoBtn = document.getElementById('undo');
+  const redoBtn = document.getElementById('redo');
+
+  if (undoBtn) {
+    undoBtn.addEventListener('click', () => {
+      if (historyIndex > 0) {
+        historyIndex--;
+        restoreState(historyStack[historyIndex]);
+        showStatusMessage('Undone', 'info');
+      }
+    });
+  }
+
+  if (redoBtn) {
+    redoBtn.addEventListener('click', () => {
+      if (historyIndex < historyStack.length - 1) {
+        historyIndex++;
+        restoreState(historyStack[historyIndex]);
+        showStatusMessage('Redone', 'info');
+      }
+    });
+  }
+
+  // Status message notification function
+  function showStatusMessage(message, type = 'success') {
+    const statusMessage = document.getElementById('status-message');
+    statusMessage.textContent = message;
+    statusMessage.className = `status-message show ${type}`;
+    
+    setTimeout(() => {
+      statusMessage.className = 'status-message';
+    }, 3000); // Hide after 3 seconds
+  }
+
   // Initialize draggable toolbar sections
   const topmenu = document.querySelector('.topmenu');
   
@@ -1398,6 +1617,9 @@ document.addEventListener('DOMContentLoaded', () => {
   workspaceHasData = false;
   updateClearWorkspaceButton();
 
+  saveState(); // Save initial state for undo/redo
+  updateUndoRedoButtons();
+  
   if (shouldRunOnboarding()) {
     setTimeout(() => {
       startFirstTimeOnboarding();
@@ -1688,6 +1910,8 @@ document.getElementById('retrieve').onclick = async function () {
       
       workspaceHasData = true;
       updateClearWorkspaceButton();
+
+      saveState(); // Save state after data retrieval and module initialization
     })
     .catch(error => console.error('Error:', error));
 };
