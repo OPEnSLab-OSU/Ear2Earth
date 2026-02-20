@@ -1272,7 +1272,7 @@ TOP MENU
   border: 1px solid #ccc;
   border-radius: 8px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  padding: 12px 2px 12px 12px;
+  padding: 12px 4px 12px 12px;
   width: calc(var(--tb-scale) * 300px);
   z-index: 10000;
   font-size: 14px;
