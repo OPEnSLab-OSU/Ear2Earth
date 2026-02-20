@@ -287,7 +287,11 @@ TOP MENU
   justify-content: center;
   gap: calc(var(--tb-scale) * 4px);
   text-wrap: wrap;
-}#openPresetModal:hover { background-color: var(--hover-grey); }
+}
+
+#openPresetModal:hover { 
+  background-color: var(--hover-grey); 
+}
 
 #openPresetModal svg {
   width:  var(--tb-icon-lg);
@@ -328,8 +332,13 @@ TOP MENU
   box-sizing: border-box;
 }
 
-#dataOptions label:hover { background: var(--hover-grey); }
-#dataOptions input[type="radio"] { display: none; }
+#dataOptions label:hover { 
+  background: var(--hover-grey); 
+}
+
+#dataOptions input[type="radio"] { 
+  display: none; 
+}
 
 #dataOptions label:has(input[type="radio"]:checked) {
   background: var(--active-grey);
@@ -416,7 +425,9 @@ TOP MENU
   text-align: center;
 }
 
-.topmenu .primary-btn:hover { background: var(--hover-blue); }
+.topmenu .primary-btn:hover { 
+  background: var(--hover-blue); 
+}
 
 /* =====================================================
    TOP MENU — METADATA & INFO BUTTONS
@@ -459,7 +470,9 @@ TOP MENU
   margin: 0;
 }
 
-.icon-btn:hover { background-color: var(--hover-grey); }
+.icon-btn:hover { 
+  background-color: var(--hover-grey); 
+}
 
 #metadataHelp,
 #refreshHelp {
@@ -480,7 +493,9 @@ TOP MENU
 }
 
 #metadataHelp:hover,
-#refreshHelp:hover { background-color: var(--hover-grey); }
+#refreshHelp:hover { 
+  background-color: var(--hover-grey); 
+}
 
 #refreshHelp svg,
 #metadataHelp svg {
@@ -571,7 +586,9 @@ TOP MENU
   stroke: none;
 }
 
-.square-btn:hover { filter: brightness(0.9); }
+.square-btn:hover { 
+  filter: brightness(0.9); 
+}
 
 #bpmContainer {
   display: flex;
@@ -627,7 +644,9 @@ TOP MENU
   margin: 0;
 }
 
-#speedOptions input[type="radio"] { display: none; }
+#speedOptions input[type="radio"] { 
+  display: none; 
+}
 
 #speedOptions label {
   width: 100%;
@@ -645,14 +664,18 @@ TOP MENU
   margin: 0;
 }
 
-#speedOptions label:hover { background: var(--hover-grey); }
+#speedOptions label:hover { 
+  background: var(--hover-grey); 
+}
 
 #speedOptions input[type="radio"]:checked + label {
   background: var(--active-grey);
   font-weight: 700;
 }
 
-#speedOptions label:active { transform: scale(0.95); }
+#speedOptions label:active { 
+  transform: scale(0.95); 
+}
 
 /* =====================================================
    TOP MENU — MULTI-FUNCTION GRID (share/dl/undo/redo)
@@ -681,8 +704,13 @@ TOP MENU
   color: #000000;
 }
 
-.icon-btn-small:hover  { background: var(--hover-grey); }
-.icon-btn-small:active { background: #e0e0e0; transform: scale(0.95); }
+.icon-btn-small:hover  { 
+  background: var(--hover-grey); 
+}
+.icon-btn-small:active { 
+  background: #e0e0e0; 
+  transform: scale(0.95); 
+}
 
 .multi-function-grid svg {
   width:  calc(var(--tb-scale) * 15px);
@@ -713,8 +741,13 @@ TOP MENU
   margin: 0;
 }
 
-.action-btn:hover  { background: var(--hover-grey); }
-.action-btn:active { background: #e0e0e0; transform: scale(0.98); }
+.action-btn:hover  {
+   background: var(--hover-grey); 
+  }
+
+.action-btn:active { 
+  background: #e0e0e0; transform: scale(0.98); 
+}
 
 .action-btn svg {
   width:  var(--tb-icon-md);
@@ -743,7 +776,9 @@ TOP MENU
   margin: 0;
 }
 
-.clear-btn:hover { background: var(--hover-grey); }
+.clear-btn:hover { 
+  background: var(--hover-grey); 
+}
 
 .clear-btn svg {
   width:  var(--tb-icon-lg);
@@ -766,7 +801,9 @@ TOP MENU
   flex-grow: 0;
 }
 
-.draggable-section:last-child { border-right: none; }
+.draggable-section:last-child { 
+  border-right: none; 
+}
 
 /* Drag handle sits in the gap between sections via negative left offset */
 .drag-handle {
@@ -787,11 +824,21 @@ TOP MENU
   z-index: 10;
 }
 
-.drag-handle:hover  { color: #666; }
-.drag-handle:active { cursor: grabbing; }
+.drag-handle:hover  { 
+  color: #666; 
+}
 
-.sortable-ghost { opacity: 0.4; }
-.sortable-drag  { opacity: 0.9; box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
+.drag-handle:active { 
+  cursor: grabbing; 
+}
+
+.sortable-ghost {
+  opacity: 0.4; 
+}
+
+.sortable-drag  { 
+  opacity: 0.9; box-shadow: 0 4px 12px rgba(0,0,0,0.2); 
+}
 
 /* =====================================================
    COLLAPSIBLE DATA SOURCE OPTIONS
@@ -1219,17 +1266,22 @@ TOP MENU
 /* =====================================================
    POPOVER
 ===================================================== */
-.popover {
+.popover, .popover1 {
   position: absolute;
   background: white;
   border: 1px solid #ccc;
   border-radius: 8px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  padding: 14px;
-  max-width: 200px;
+  padding: 12px 2px 12px 12px;
+  width: calc(var(--tb-scale) * 300px);
   z-index: 10000;
-  font-size: 10px;
+  font-size: 14px;
   line-height: 1.5;
+}
+
+.popover1 {
+  position: absolute;
+  z-index: 10002;
 }
 
 .popover::before {
@@ -1238,23 +1290,53 @@ TOP MENU
   width: 0; height: 0;
   border: 8px solid transparent;
   border-bottom-color: white;
-  top: -16px; left: 5px;
+  top: -16px; 
+  left: 5px;
   z-index: 10001;
 }
 
 .popover::after {
   content: '';
   position: absolute;
-  width: 0; height: 0;
+  width: 0; 
+  height: 0;
   border: 9px solid transparent;
   border-bottom-color: #ccc;
-  top: -18px; left: 4px;
+  top: -18px; 
+  left: 4px;
+  z-index: 10000;
+}
+
+.popover1::before {
+  content: '';
+  position: absolute;
+  width: 0;
+  height: 0;
+  border: 8px solid transparent;
+  border-bottom-color: white;
+  top: -16px;
+  left: auto;
+  right: 5px;
+  z-index: 10001;
+}
+
+.popover1::after {
+  content: '';
+  position: absolute;
+  width: 0;
+  height: 0;
+  border: 9px solid transparent;
+  border-bottom-color: #ccc;
+  top: -18px;
+  left: auto;
+  right: 4px;
   z-index: 10000;
 }
 
 .popover-close {
   position: absolute;
-  top: 6px; right: 4px;
+  top: 6px; 
+  right: 4px;
   background: none;
   border: none;
   font-size: 15px;
@@ -1262,8 +1344,13 @@ TOP MENU
   color: #666;
 }
 
-.popover-close:hover { color: #000; }
-.popover-body { margin-top: 8px; }
+.popover-close:hover { 
+  color: #000; 
+}
+
+.popover-body { 
+  margin-top: 2px; 
+}
 
 /* =====================================================
    STATUS MESSAGE

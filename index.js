@@ -1304,26 +1304,7 @@ document.addEventListener('DOMContentLoaded', () => {
         openPresetBtn.textContent = '';
         
         // Add preset name
-        const nameDiv = document.createElement('div');
-        nameDiv.textContent = presetData.name;
-        nameDiv.style.fontWeight = '500';
-        openPresetBtn.appendChild(nameDiv);
-        
-        // Add database
-        const dbDiv = document.createElement('div');
-        dbDiv.textContent = presetData.database;
-        dbDiv.style.fontSize = '10px';
-        dbDiv.style.opacity = '0.7';
-        openPresetBtn.appendChild(dbDiv);
-        
-        // Add device
-        const deviceDiv = document.createElement('div');
-        deviceDiv.textContent = presetData.device;
-        deviceDiv.style.fontSize = '10px';
-        deviceDiv.style.opacity = '0.7';
-        openPresetBtn.appendChild(deviceDiv);
-
-        // old button text update: openPresetBtn.textContent = presetData.name;
+        openPresetBtn.textContent = presetData.name;
       } else {
         openPresetBtn.textContent = `${selectedDatabase} - ${selectedDevice}`;
       }
@@ -1456,6 +1437,11 @@ document.addEventListener('DOMContentLoaded', () => {
   const popoverBody = popover.querySelector('.popover-body');
   const popoverClose = popover.querySelector('.popover-close');
 
+  const popover1 = document.getElementById('popover1');
+  const popover1Body = popover1.querySelector('.popover-body');
+  const popover1Close = popover1.querySelector('.popover-close');
+
+
   function showPopover(button, content) {
     // Set content
     popoverBody.textContent = content;
@@ -1467,21 +1453,37 @@ document.addEventListener('DOMContentLoaded', () => {
     popover.style.top = (rect.bottom + 8) + 'px';
   }
 
+  function showPopover1(button, content) {
+    popover1Body.textContent = content;
+    const rect = button.getBoundingClientRect();
+    popover1.style.display = 'block';
+    // Align to right edge of button
+    popover1.style.left = (rect.right - popover1.offsetWidth) + 'px';
+    popover1.style.top = (rect.bottom + 8) + 'px';
+  }
+
+
   function hidePopover() {
     popover.style.display = 'none';
   }
 
-  // Close button
+  function hidePopover1() {
+    popover1.style.display = 'none';
+  }
+
   popoverClose.addEventListener('click', hidePopover);
+  popover1Close.addEventListener('click', hidePopover1);
 
   // Close when clicking outside
   document.addEventListener('click', (e) => {
     if (!popover.contains(e.target) && !e.target.closest('.icon-btn')) {
       hidePopover();
     }
+    if (!popover1.contains(e.target) && !e.target.closest('.icon-btn')) {
+      hidePopover1();
+    }
   });
 
-  // Add to your info buttons
   const metadataHelp = document.getElementById('metadataHelp');
   const refreshHelp = document.getElementById('refreshHelp');
   
@@ -1495,7 +1497,7 @@ document.addEventListener('DOMContentLoaded', () => {
   if (refreshHelp) {
     refreshHelp.addEventListener('click', (e) => {
       e.stopPropagation();
-      showPopover(e.currentTarget, 'Reloads the latest packet data from your selected source while preserving your workspace configuration and tracks.');
+      showPopover1(e.currentTarget, 'Reloads the latest packet data from your selected source while preserving your workspace configuration and tracks.');
     });
   }
 
