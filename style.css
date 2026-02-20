@@ -1376,3 +1376,57 @@ TOP MENU
 .status-message.error   { background: #f44336; }
 .status-message.warning { background: #ff9800; }
 .status-message.info    { background: var(--standard-blue); }
+
+#user-guide-page {
+  display: flex;
+  justify-self: center;
+  flex-direction: column;
+  max-width: 1250px;
+  width: 75vw;
+  
+  background-color: var(--main-grey) !important;
+  padding: 0 10px;
+  margin-top: 25px;
+
+  border-radius: 8px;
+}
+
+#user-guide-page h3 {
+  color: var(--standard-blue);
+
+  font-size: 24px;
+}
+
+#user-guide-page h4 {
+  color: var(--standard-blue);
+  font-size: 20px;
+}
+
+#user-guide-page p, #user-guide-page ol, #user-guide-page ul li {
+  font-size: 16px;
+  margin-bottom: 25px;
+}
+
+#top-heading {
+  display: flex;
+  justify-content: center;
+}
+
+#user-guide-title {
+  font-size: 36px;
+  margin: 50px 0;
+}
+
+.user-guide-img {
+  border: 2px solid black;
+  display: flex;
+  width: 80%;
+
+  justify-self: center;
+  margin: 50px 0;
+}
+
+#page-title {
+  text-decoration: none;
+  color: inherit;
+}
