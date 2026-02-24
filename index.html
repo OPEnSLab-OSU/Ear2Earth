@@ -46,7 +46,7 @@
       <nav id="nav">
         <ul>
           <li><a href="user-guide.html">User Guide</a></li>
-          <li><a href="#">Contributors</a></li>
+          <li><a href="contributor-guide.html">Contributors</a></li>
           <li><a href="#">About</a></li>
         </ul>
       </nav>
@@ -119,9 +119,9 @@
             <!-- Metadata View Button -->
             <!-- Opens modal to display packet metadata information -->
             <div class="group">
-              <button id="metadataButton" class="pill-btn">
-                <i data-lucide="codeXml"></i>
-                View Metadata
+              <button id="metadataButton" class="pill-btn icon-btn">
+                <span data-lucide="codeXml" id="metadataIcon"></span>
+                <span id="metadataTxt">View Metadata</span>
               </button>
               <!-- Help/Info button for metadata -->
               <button id="metadataHelp" class="icon-btn" title="Help">
@@ -214,7 +214,7 @@
             <div class="group">
               <button id="clearWorkspace" class="clear-btn" title="Clear Workspace">
                 <i data-lucide="Paintbrush"></i>
-                Clear Workspace
+                Clear Space
               </button>
             </div>
 
@@ -285,10 +285,18 @@
 
       <!-- Modal for tooltips (info) -->
       <div id="popover" class="popover" style="display: none;">
-        <div class="popover-content">
           <button class="popover-close">&times;</button>
           <div class="popover-body"></div>
-        </div>
+      </div>
+
+      <div id="popover1" class= "popover1" style="display:none;">
+          <button class="popover-close">&times;</button>
+        <div class="popover-body"></div>
+      </div>
+
+      <div id="popover2" class= "popover2" style="display:none;">
+          <button class="popover-close">&times;</button>
+        <div class="popover-body"></div>
       </div>
 
       <!-- Status message notification -->

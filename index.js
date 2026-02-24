@@ -1210,6 +1210,29 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
+  function updateToolbarScale() {
+  const DESIGN_WIDTH = 1440;
+  const MIN_SCALE    = 0.45;
+
+  const raw   = window.innerWidth / DESIGN_WIDTH;
+  // Clamp to a minimum but allow unlimited growth above 1.0
+  // Use 0.99 instead of 1.0 as the effective baseline to prevent
+  // 1-2px overflow from sub-pixel rounding at exact design width
+  const scale = Math.max(MIN_SCALE, raw * 0.99);
+
+  document.documentElement.style.setProperty('--tb-scale', scale);
+  }
+
+  // Run immediately — sized before first paint
+  updateToolbarScale();
+
+  // Debounced resize handler
+  let _tbScaleTimer;
+  window.addEventListener('resize', () => {
+    clearTimeout(_tbScaleTimer);
+    _tbScaleTimer = setTimeout(updateToolbarScale, 30);
+  });
+
   // Initialize Lucide icons
   lucide.createIcons();
 
@@ -1284,26 +1307,7 @@ document.addEventListener('DOMContentLoaded', () => {
         openPresetBtn.textContent = '';
         
         // Add preset name
-        const nameDiv = document.createElement('div');
-        nameDiv.textContent = presetData.name;
-        nameDiv.style.fontWeight = '500';
-        openPresetBtn.appendChild(nameDiv);
-        
-        // Add database
-        const dbDiv = document.createElement('div');
-        dbDiv.textContent = presetData.database;
-        dbDiv.style.fontSize = '10px';
-        dbDiv.style.opacity = '0.7';
-        openPresetBtn.appendChild(dbDiv);
-        
-        // Add device
-        const deviceDiv = document.createElement('div');
-        deviceDiv.textContent = presetData.device;
-        deviceDiv.style.fontSize = '10px';
-        deviceDiv.style.opacity = '0.7';
-        openPresetBtn.appendChild(deviceDiv);
-
-        // old button text update: openPresetBtn.textContent = presetData.name;
+        openPresetBtn.textContent = presetData.name;
       } else {
         openPresetBtn.textContent = `${selectedDatabase} - ${selectedDevice}`;
       }
@@ -1436,6 +1440,15 @@ document.addEventListener('DOMContentLoaded', () => {
   const popoverBody = popover.querySelector('.popover-body');
   const popoverClose = popover.querySelector('.popover-close');
 
+  const popover1 = document.getElementById('popover1');
+  const popover1Body = popover1.querySelector('.popover-body');
+  const popover1Close = popover1.querySelector('.popover-close');
+
+  const popover2 = document.getElementById('popover2');
+  const popover2Body = popover2.querySelector('.popover-body');
+  const popover2Close = popover2.querySelector('.popover-close');
+
+
   function showPopover(button, content) {
     // Set content
     popoverBody.textContent = content;
@@ -1447,21 +1460,52 @@ document.addEventListener('DOMContentLoaded', () => {
     popover.style.top = (rect.bottom + 8) + 'px';
   }
 
+  function showPopover1(button, content) {
+    popover1Body.textContent = content;
+    const rect = button.getBoundingClientRect();
+    popover1.style.display = 'block';
+    // Align to right edge of button
+    popover1.style.left = (rect.right - popover1.offsetWidth) + 'px';
+    popover1.style.top = (rect.bottom + 8) + 'px';
+  }
+
+  function showPopover2(button, content) {
+    popover2Body.textContent = content;
+    const rect = button.getBoundingClientRect();
+    popover2.style.display = 'block';
+    popover2.style.left = rect.left + 'px';
+    popover2.style.top = (rect.bottom + 8) + 'px';
+  }
+
   function hidePopover() {
     popover.style.display = 'none';
   }
 
-  // Close button
+  function hidePopover1() {
+    popover1.style.display = 'none';
+  }
+
+  function hidePopover2() {
+    popover2.style.display = 'none';
+  }
+
   popoverClose.addEventListener('click', hidePopover);
+  popover1Close.addEventListener('click', hidePopover1);
+  popover2Close.addEventListener('click', hidePopover2);
 
   // Close when clicking outside
   document.addEventListener('click', (e) => {
     if (!popover.contains(e.target) && !e.target.closest('.icon-btn')) {
       hidePopover();
     }
+    if (!popover1.contains(e.target) && !e.target.closest('.icon-btn')) {
+      hidePopover1();
+    }
+    if (!popover2.contains(e.target) && !e.target.closest('.icon-btn')) {
+      hidePopover2();
+    }
   });
 
-  // Add to your info buttons
   const metadataHelp = document.getElementById('metadataHelp');
   const refreshHelp = document.getElementById('refreshHelp');
   
@@ -1475,9 +1519,29 @@ document.addEventListener('DOMContentLoaded', () => {
   if (refreshHelp) {
     refreshHelp.addEventListener('click', (e) => {
       e.stopPropagation();
-      showPopover(e.currentTarget, 'Reloads the latest packet data from your selected source while preserving your workspace configuration and tracks.');
+      showPopover1(e.currentTarget, 'Reloads the latest packet data from your selected source while preserving your workspace configuration and tracks.');
     });
   }
+
+  metadataBtn.addEventListener("click", (e) => {
+  e.stopPropagation();
+
+  if (!metadata) {
+    showPopover2(e.currentTarget, "No available metadata");
+    isMetadataDisplayed = true;
+    return;
+  }
+
+  const metadataContent = `
+    Deployment Date: ${metadata.deployment_date}\n
+    Latitude: ${metadata.latitude}\n
+    Longitude: ${metadata.longitude}\n
+    Owner: ${metadata.owner}\n
+    `;
+
+  showPopover2(e.currentTarget, metadataContent);
+  isMetadataDisplayed = true;
+});
 
   // ====== UNDO/REDO button functionality ======
   const undoBtn = document.getElementById('undo');
@@ -1638,21 +1702,33 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
   // Handle selection from the named dropdown
+
 // Handle selection from the named dropdown
   const modalPreset = document.getElementById("modalPreset");
   modalPreset.addEventListener('change', async e => {
     handleDatasetChange(e);
     isMetadataDisplayed = false;
     metadataContainer.style.display = 'none';
-    
-    metadataBtn.style.display = "block";
-    metadataBtn.textContent = 'Loading...';
+
+    const metadataTxt = metadataBtn.querySelector('#metadataTxt');
+    let metadataIcon = metadataBtn.querySelector('#metadataIcon');
+
+    metadataIcon.setAttribute("data-lucide", "loader");
+    metadataTxt.textContent = 'Loading...';
+    lucide.createIcons();
     metadata = await retrieveMetadata();
 
+
     if (metadata == null) {
-      metadataBtn.textContent = 'No Metadata'
+      metadataIcon = metadataBtn.querySelector('#metadataIcon');
+      metadataIcon.setAttribute("data-lucide", "circle-off");
+      lucide.createIcons();
+      metadataTxt.textContent = 'No Metadata';
     } else {
-      metadataBtn.textContent = 'View Metadata';
+      metadataIcon = metadataBtn.querySelector('#metadataIcon');
+      metadataIcon.setAttribute("data-lucide", "codeXml");
+      lucide.createIcons();
+      metadataTxt.textContent = 'View Metadata';
     }
 
     return;
@@ -2800,57 +2876,4 @@ async function retrieveMetadata() {
   }
 }
 
-metadataBtn.onclick = async function () {
-  const metadataContainer = document.getElementById('metadataContainer');
 
-  if (isMetadataDisplayed) {
-    metadataContainer.style.display = 'none';
-    isMetadataDisplayed = false;
-    metadataBtn.textContent = 'View Metadata';
-    return;
-  }
-
-  if (metadata == null) {
-    return;
-  }
-
-  metadataBtn.textContent = "Loading...";
-  metadataContainer.style.display = 'flex';
-  metadataBtn.textContent = "Close";
-
-  if (metadata == null) {
-    metadataContainer.innerHTML = `
-        <h3>No metadata :(</h3>
-        `;
-  } else {
-    let metadataDeploymentDate = metadata['deployment_date'];
-    let metadataLatitude = metadata['latitude'];
-    let metadataLongitude = metadata['longitude'];
-    let metadataOwner = metadata['owner'];
-
-    metadataContainer.innerHTML = `
-        <div id="metadataSection">
-          <h3>Deployment Date: </h3>
-          <p id="metadataDeploymentDate">${metadataDeploymentDate}</p>
-        </div>
-
-        <div id="metadataSection">
-          <h3>Latitude: </h3>
-          <p id="metadataLatitude">${metadataLatitude}</p>
-        </div>
-
-        <div id="metadataSection">
-          <h3>Longitude: </h3>
-          <p id="metadataLongitude">${metadataLongitude}</p>
-        </div>
-
-        <div id="metadataSection">
-          <h3>Owner: </h3>
-          <p id="metadataOwner">${metadataOwner}</p>
-        </div>
-        `;
-  }
-  
-  isMetadataDisplayed = true;
-  return;
-};
