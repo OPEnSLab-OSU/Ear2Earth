@@ -59,6 +59,9 @@ var retrievedData;
 // Array to hold x-axis data for each plot
 let plotXData = {};
 
+// Track if onboarding is in progress
+let openPresetBtn;
+
 // Undo/Redo state management
 let historyStack = [];
 let historyIndex = -1;
@@ -84,7 +87,13 @@ function captureState() {
     bpm: document.getElementById('bpm')?.value,
     masterVolume: document.getElementById('masterVolume')?.value,
     numPackets: document.getElementById('numpackets')?.value,
-    prescaler: document.getElementById('prescaler')?.value
+    prescaler: document.getElementById('prescaler')?.value,
+    presetButtonText: document.getElementById('openPresetModal')?.textContent.trim(),
+    startTime: document.getElementById('startTime')?.value,
+    endTime: document.getElementById('endTime')?.value,
+    dateRangeText: document.getElementById('dateRangeText')?.textContent.trim(),
+    packetOption: document.querySelector('input[name="packetOption"]:checked')?.value,
+    retrievedData: retrievedData ? [...retrievedData] : null
   };
 }
 
@@ -119,8 +128,22 @@ function restoreState(state) {
   try {
     // Stop any playback
     stopSynths();
+
+    retrievedData = state.retrieveData || null;
     
     // Restore global settings
+    if (state.presetButtonText === '' || state.presetButtonText.includes('Select a Preset')) {
+      openPresetBtn.innerHTML = '';
+      const iconEl = document.createElement('i');
+      iconEl.setAttribute('data-lucide', 'folder-search');
+      openPresetBtn.appendChild(iconEl);
+      openPresetBtn.append(' Select Preset');
+      lucide.createIcons();
+      const modalPresetDropdown = document.getElementById('modalPreset');
+      if (modalPresetDropdown) modalPresetDropdown.value = 'default';
+    } else {
+      openPresetBtn.textContent = state.presetButtonText;
+    }
     if (state.database) document.getElementById('databases').value = state.database;
     if (state.device) document.getElementById('devices').value = state.device;
     if (state.bpm) {
@@ -131,6 +154,20 @@ function restoreState(state) {
     if (state.masterVolume) document.getElementById('masterVolume').value = state.masterVolume;
     if (state.numPackets) document.getElementById('numpackets').value = state.numPackets;
     if (state.prescaler) document.getElementById('prescaler').value = state.prescaler;
+
+    // Restore date range
+    if (state.startTime !== undefined) document.getElementById('startTime').value = state.startTime;
+    if (state.endTime !== undefined) document.getElementById('endTime').value = state.endTime;
+    if (state.dateRangeText !== undefined) document.getElementById('dateRangeText').textContent = state.dateRangeText;
+
+    // Restore packet option radio + show/hide inputs
+    if (state.packetOption) {
+      const radio = document.querySelector(`input[name="packetOption"][value="${state.packetOption}"]`);
+      if (radio) radio.checked = true;
+      const isLastX = state.packetOption === 'lastXPackets';
+      document.getElementById('numpacketsInput').style.display = isLastX ? '' : 'none';
+      document.getElementById('skipPackets').style.display = isLastX ? '' : 'none';
+    }
     
     // Remove all modules
     const modulesContainer = document.getElementById('modulesContainer');
@@ -163,6 +200,18 @@ function restoreState(state) {
       // Replot if data exists
       if (retrievedData) {
         plot(index);
+      } else {
+        const plotDiv = module.querySelector('.plot');
+        if (plotDiv) {
+          try { 
+            Plotly.purge(plotDiv);
+           } catch(e) {}
+        }
+      }
+
+      // Clear the global timeline if no data
+      if (!retrievedData) {
+        try { Plotly.purge(document.getElementById('globalTimeline')); } catch(e) {}
       }
     });
     
@@ -179,13 +228,13 @@ function updateUndoRedoButtons() {
   const redoBtn = document.getElementById('redo');
   
   if (undoBtn) {
-    undoBtn.disabled = historyIndex <= 0;
+    undoBtn.disabled = historyStack.length === 0 || historyIndex <= 0;
     undoBtn.style.opacity = historyIndex <= 0 ? '0.5' : '1';
     undoBtn.style.cursor = historyIndex <= 0 ? 'not-allowed' : 'pointer';
   }
   
   if (redoBtn) {
-    redoBtn.disabled = historyIndex >= historyStack.length - 1;
+    redoBtn.disabled = historyStack.length === 0 || historyIndex >= historyStack.length - 1;
     redoBtn.style.opacity = historyIndex >= historyStack.length - 1 ? '0.5' : '1';
     redoBtn.style.cursor = historyIndex >= historyStack.length - 1 ? 'not-allowed' : 'pointer';
   }
@@ -307,7 +356,10 @@ function attachVolumeListener(soundModule) {
   const volumeSlider = soundModule.querySelector('.volume');
   volumeSlider.addEventListener('input', event => {
     const volumeValue = parseFloat(event.target.value);
-    gainNodes[soundModules.indexOf(soundModule)].volume.value = volumeValue;
+    const idx = soundModules.indexOf(soundModule);
+    if (gainNodes[idx]) {
+      gainNodes[idx].volume.value = volumeValue;
+    }
     console.log(`Volume for ${soundModule.id} set to ${volumeValue} dB`);
   });
 }
@@ -340,7 +392,7 @@ function attachCollapseListener(soundModule) {
 
   // 1. Setup an Observer to watch for height changes in this specific module
   const resizeObserver = new ResizeObserver(() => {
-    if (plotDiv && (plotDiv.data || plotDiv.layout)) {
+    if (plotDiv && plotDiv.offsetParent != null && (plotDiv.data || plotDiv.layout)) {
       Plotly.Plots.resize(plotDiv);
     }
   });
@@ -1270,7 +1322,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const modal = document.getElementById('dataSourceModal');
   const closeBtn = document.querySelector('.close-modal');
   const confirmBtn = document.getElementById('confirmDataSource');
-  const openPresetBtn = document.getElementById('openPresetModal');  // Changed this line
+  openPresetBtn = document.getElementById('openPresetModal');  
   const modalPresetDropdown = document.getElementById('modalPreset');
 
   // Show modal when clicking the preset button
@@ -1309,6 +1361,7 @@ document.addEventListener('DOMContentLoaded', () => {
         openPresetBtn.textContent = `${selectedDatabase} - ${selectedDevice}`;
       }
       modal.style.display = 'none';
+      saveState();
     } else {
       alert('Please select both a database and a device');
     }
@@ -1366,6 +1419,7 @@ document.addEventListener('DOMContentLoaded', () => {
       modalPrescaler.value = '1';
       // Reset confirmation 
       dateRangeConfirmed = false;
+      saveState();
     }
   });
 
@@ -1376,8 +1430,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // Only reset if user hasn't confirmed a date range
     if (!dateRangeConfirmed) {
       lastXPacketsRadio.checked = true;
-      document.getElementById('numpacketsInput').style.display = 'block';
-      document.getElementById('skipPackets').style.display = 'block';
+      document.getElementById('numpacketsInput').style.display = '';
+      document.getElementById('skipPackets').style.display = '';
       dateRangeText.textContent = 'Date Range';
     }
   });
@@ -1415,6 +1469,7 @@ document.addEventListener('DOMContentLoaded', () => {
     dateRangeText.textContent = `${startDate} - ${endDate}`;
     dateRangeConfirmed = true; // Mark as confirmed
     dateTimeModal.style.display = 'none';
+    saveState();
   });
 
   // Close modal when clicking outside
@@ -1474,6 +1529,10 @@ document.addEventListener('DOMContentLoaded', () => {
   popoverClose.addEventListener('click', hidePopover);
   popover1Close.addEventListener('click', hidePopover1);
 
+  // Hide when leaving the popover itself
+  popover.addEventListener('mouseleave', hidePopover);
+  popover1.addEventListener('mouseleave', hidePopover1);
+
   // Close when clicking outside
   document.addEventListener('click', (e) => {
     if (!popover.contains(e.target) && !e.target.closest('.icon-btn')) {
@@ -1488,17 +1547,19 @@ document.addEventListener('DOMContentLoaded', () => {
   const refreshHelp = document.getElementById('refreshHelp');
   
   if (metadataHelp) {
-    metadataHelp.addEventListener('click', (e) => {
+    metadataHelp.addEventListener('mouseenter', (e) => {
       e.stopPropagation();
       showPopover(e.currentTarget, 'Metadata shows device deployment information including date, location (latitude/longitude), and database owner.');
     });
+    metadataHelp.addEventListener('mouseleave', hidePopover);
   }
   
   if (refreshHelp) {
-    refreshHelp.addEventListener('click', (e) => {
+    refreshHelp.addEventListener('mouseenter', (e) => {
       e.stopPropagation();
       showPopover1(e.currentTarget, 'Reloads the latest packet data from your selected source while preserving your workspace configuration and tracks.');
     });
+    refreshHelp.addEventListener('mouseleave', hidePopover1);
   }
 
   // ====== UNDO/REDO button functionality ======
@@ -1571,6 +1632,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Fetch databases and populate the dropdown
   fetchDatabases();
+
+  // Set null before first module is created 
+  retrievedData = null;
 
   // Create one soundModule on startup
   addSoundModule();
@@ -1683,7 +1747,7 @@ document.addEventListener('DOMContentLoaded', () => {
   workspaceHasData = false;
   updateClearWorkspaceButton();
 
-  saveState(); // Save initial state for undo/redo
+  //saveState(); // Save initial state for undo/redo
   updateUndoRedoButtons();
   
   if (shouldRunOnboarding()) {
@@ -1838,8 +1902,8 @@ document.getElementsByName('packetOption').forEach(radio => {
   radio.addEventListener('change', async function () {
     // If "lastXPackets" is selected, show the "numpackets" and "prescaler" input fields and hide the "startTime" and "endTime" input fields
     if (this.value === 'lastXPackets') {
-      numpacketsInput.style.display = 'block';
-      skipPackets.style.display = 'block';
+      numpacketsInput.style.display = '';
+      skipPackets.style.display = '';
       //timeInputs.style.display = 'none';
     }
     // If "timeRange" is selected, hide the "numpackets" input field and show the "startTime", "endTime" and "prescaler" input fields
@@ -1880,7 +1944,7 @@ document.getElementsByName('packetOption').forEach(radio => {
       });
     } else {
       // added 10/26
-      numpackets.style.display = 'block';
+      numpacketsInput.style.display = '';
     
       resetDates();
     }
