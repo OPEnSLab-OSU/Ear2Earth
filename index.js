@@ -211,7 +211,10 @@ async function addSoundModule() {
   // Populate the sound types dropdown
   const soundTypesSelect = newModule.querySelector('.soundTypes');
   soundTypesSelect.innerHTML = instrumentsMenuItems.join('');
-  soundTypesSelect.value = 'retro'; // Set default value
+  soundTypesSelect.value = 'harp'; // Set default value
+
+  const tessituraSelect = newModule.querySelector('.tessitura');
+  tessituraSelect.value = "Tenor";
 
   // Set default sustain notes for the new module
   sustainNotes[moduleId] = true; // Default to true
