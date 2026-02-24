@@ -119,9 +119,9 @@
             <!-- Metadata View Button -->
             <!-- Opens modal to display packet metadata information -->
             <div class="group">
-              <button id="metadataButton" class="pill-btn">
-                <i data-lucide="codeXml"></i>
-                View Metadata
+              <button id="metadataButton" class="pill-btn icon-btn">
+                <span data-lucide="codeXml" id="metadataIcon"></span>
+                <span id="metadataTxt">View Metadata</span>
               </button>
               <!-- Help/Info button for metadata -->
               <button id="metadataHelp" class="icon-btn" title="Help">
@@ -290,6 +290,11 @@
       </div>
 
       <div id="popover1" class= "popover1" style="display:none;">
+          <button class="popover-close">&times;</button>
+        <div class="popover-body"></div>
+      </div>
+
+      <div id="popover2" class= "popover2" style="display:none;">
           <button class="popover-close">&times;</button>
         <div class="popover-body"></div>
       </div>
