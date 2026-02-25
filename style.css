@@ -457,6 +457,10 @@ TOP MENU
   flex-shrink: 0;
 }
 
+#metadataButton:hover {
+  background-color: var(--hover-grey);
+}
+
 .icon-btn {
   width:  calc(var(--tb-scale) * 29px);
   height: calc(var(--tb-scale) * 29px);
@@ -504,6 +508,26 @@ TOP MENU
   width:  calc(var(--tb-scale) * 12.5px);
   height: calc(var(--tb-scale) * 12.5px);
   flex-shrink: 0;
+}
+
+#metadataContainer {
+  display: none;
+  margin: 0 0 10px 0;
+  flex-direction: row;
+  justify-content: space-evenly;
+
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  background-color: #fff;
+}
+
+#metadataContainer h3 {
+  font-weight: bold;
+  font-size: 16px;
+}
+
+#metadataContainer p {
+  font-size: 12px;
 }
 
 /* =====================================================
@@ -1269,7 +1293,7 @@ TOP MENU
 /* =====================================================
    POPOVER
 ===================================================== */
-.popover, .popover1 {
+.popover, .popover1, .popover2 {
   position: absolute;
   background: white;
   border: 1px solid #ccc;
@@ -1353,6 +1377,7 @@ TOP MENU
 
 .popover-body { 
   margin-top: 2px; 
+  white-space: pre-line;
 }
 
 /* =====================================================

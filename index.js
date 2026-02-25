@@ -260,7 +260,10 @@ async function addSoundModule() {
   // Populate the sound types dropdown
   const soundTypesSelect = newModule.querySelector('.soundTypes');
   soundTypesSelect.innerHTML = instrumentsMenuItems.join('');
-  soundTypesSelect.value = 'retro'; // Set default value
+  soundTypesSelect.value = 'harp'; // Set default value
+
+  const tessituraSelect = newModule.querySelector('.tessitura');
+  tessituraSelect.value = "Tenor";
 
   // Set default sustain notes for the new module
   sustainNotes[moduleId] = true; // Default to true
@@ -1496,6 +1499,10 @@ document.addEventListener('DOMContentLoaded', () => {
   const popover1Body = popover1.querySelector('.popover-body');
   const popover1Close = popover1.querySelector('.popover-close');
 
+  const popover2 = document.getElementById('popover2');
+  const popover2Body = popover2.querySelector('.popover-body');
+  const popover2Close = popover2.querySelector('.popover-close');
+
 
   function showPopover(button, content) {
     // Set content
@@ -1517,6 +1524,13 @@ document.addEventListener('DOMContentLoaded', () => {
     popover1.style.top = (rect.bottom + 8) + 'px';
   }
 
+  function showPopover2(button, content) {
+    popover2Body.textContent = content;
+    const rect = button.getBoundingClientRect();
+    popover2.style.display = 'block';
+    popover2.style.left = rect.left + 'px';
+    popover2.style.top = (rect.bottom + 8) + 'px';
+  }
 
   function hidePopover() {
     popover.style.display = 'none';
@@ -1526,8 +1540,13 @@ document.addEventListener('DOMContentLoaded', () => {
     popover1.style.display = 'none';
   }
 
+  function hidePopover2() {
+    popover2.style.display = 'none';
+  }
+
   popoverClose.addEventListener('click', hidePopover);
   popover1Close.addEventListener('click', hidePopover1);
+  popover2Close.addEventListener('click', hidePopover2);
 
   // Hide when leaving the popover itself
   popover.addEventListener('mouseleave', hidePopover);
@@ -1540,6 +1559,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     if (!popover1.contains(e.target) && !e.target.closest('.icon-btn')) {
       hidePopover1();
+    }
+    if (!popover2.contains(e.target) && !e.target.closest('.icon-btn')) {
+      hidePopover2();
     }
   });
 
@@ -1561,6 +1583,26 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     refreshHelp.addEventListener('mouseleave', hidePopover1);
   }
+
+  metadataBtn.addEventListener("click", (e) => {
+  e.stopPropagation();
+
+  if (!metadata) {
+    showPopover2(e.currentTarget, "No available metadata");
+    isMetadataDisplayed = true;
+    return;
+  }
+
+  const metadataContent = `
+    Deployment Date: ${metadata.deployment_date}\n
+    Latitude: ${metadata.latitude}\n
+    Longitude: ${metadata.longitude}\n
+    Owner: ${metadata.owner}\n
+    `;
+
+  showPopover2(e.currentTarget, metadataContent);
+  isMetadataDisplayed = true;
+});
 
   // ====== UNDO/REDO button functionality ======
   const undoBtn = document.getElementById('undo');
@@ -1724,21 +1766,33 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
   // Handle selection from the named dropdown
+
 // Handle selection from the named dropdown
   const modalPreset = document.getElementById("modalPreset");
   modalPreset.addEventListener('change', async e => {
     handleDatasetChange(e);
     isMetadataDisplayed = false;
     metadataContainer.style.display = 'none';
-    
-    metadataBtn.style.display = "block";
-    metadataBtn.textContent = 'Loading...';
+
+    const metadataTxt = metadataBtn.querySelector('#metadataTxt');
+    let metadataIcon = metadataBtn.querySelector('#metadataIcon');
+
+    metadataIcon.setAttribute("data-lucide", "loader");
+    metadataTxt.textContent = 'Loading...';
+    lucide.createIcons();
     metadata = await retrieveMetadata();
 
+
     if (metadata == null) {
-      metadataBtn.textContent = 'No Metadata'
+      metadataIcon = metadataBtn.querySelector('#metadataIcon');
+      metadataIcon.setAttribute("data-lucide", "circle-off");
+      lucide.createIcons();
+      metadataTxt.textContent = 'No Metadata';
     } else {
-      metadataBtn.textContent = 'View Metadata';
+      metadataIcon = metadataBtn.querySelector('#metadataIcon');
+      metadataIcon.setAttribute("data-lucide", "codeXml");
+      lucide.createIcons();
+      metadataTxt.textContent = 'View Metadata';
     }
 
     return;
@@ -2886,57 +2940,4 @@ async function retrieveMetadata() {
   }
 }
 
-metadataBtn.onclick = async function () {
-  const metadataContainer = document.getElementById('metadataContainer');
 
-  if (isMetadataDisplayed) {
-    metadataContainer.style.display = 'none';
-    isMetadataDisplayed = false;
-    metadataBtn.textContent = 'View Metadata';
-    return;
-  }
-
-  if (metadata == null) {
-    return;
-  }
-
-  metadataBtn.textContent = "Loading...";
-  metadataContainer.style.display = 'flex';
-  metadataBtn.textContent = "Close";
-
-  if (metadata == null) {
-    metadataContainer.innerHTML = `
-        <h3>No metadata :(</h3>
-        `;
-  } else {
-    let metadataDeploymentDate = metadata['deployment_date'];
-    let metadataLatitude = metadata['latitude'];
-    let metadataLongitude = metadata['longitude'];
-    let metadataOwner = metadata['owner'];
-
-    metadataContainer.innerHTML = `
-        <div id="metadataSection">
-          <h3>Deployment Date: </h3>
-          <p id="metadataDeploymentDate">${metadataDeploymentDate}</p>
-        </div>
-
-        <div id="metadataSection">
-          <h3>Latitude: </h3>
-          <p id="metadataLatitude">${metadataLatitude}</p>
-        </div>
-
-        <div id="metadataSection">
-          <h3>Longitude: </h3>
-          <p id="metadataLongitude">${metadataLongitude}</p>
-        </div>
-
-        <div id="metadataSection">
-          <h3>Owner: </h3>
-          <p id="metadataOwner">${metadataOwner}</p>
-        </div>
-        `;
-  }
-  
-  isMetadataDisplayed = true;
-  return;
-};
