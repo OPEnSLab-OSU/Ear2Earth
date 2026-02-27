@@ -362,6 +362,7 @@ TOP MENU
   gap: calc(var(--tb-scale) * 3px);
   height: var(--tb-h);
   margin: 0;
+  justify-content: space-between;
 }
 
 #numpacketsInput,
@@ -380,6 +381,7 @@ TOP MENU
   white-space: nowrap;
   margin: 0;
   box-sizing: border-box;
+  flex-shrink: 0;
 }
 
 #numpacketsInput label {
@@ -457,6 +459,10 @@ TOP MENU
   flex-shrink: 0;
 }
 
+#metadataButton:hover {
+  background-color: var(--hover-grey);
+}
+
 .icon-btn {
   width:  calc(var(--tb-scale) * 29px);
   height: calc(var(--tb-scale) * 29px);
@@ -484,7 +490,7 @@ TOP MENU
   border-radius: var(--tb-radius);
   cursor: pointer;
   position: relative;
-  z-index: 10;
+  z-index: 0;
   background-color: var(--main-grey);
   display: flex;
   align-items: center;
@@ -504,6 +510,26 @@ TOP MENU
   width:  calc(var(--tb-scale) * 12.5px);
   height: calc(var(--tb-scale) * 12.5px);
   flex-shrink: 0;
+}
+
+#metadataContainer {
+  display: none;
+  margin: 0 0 10px 0;
+  flex-direction: row;
+  justify-content: space-evenly;
+
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  background-color: #fff;
+}
+
+#metadataContainer h3 {
+  font-weight: bold;
+  font-size: 16px;
+}
+
+#metadataContainer p {
+  font-size: 12px;
 }
 
 /* =====================================================
@@ -537,7 +563,7 @@ TOP MENU
   align-items: center;
   justify-content: center;
   padding: 0 var(--tb-pad);
-  gap: calc(var(--tb-scale) * 4px);
+  gap: calc(var(--tb-scale) * 12px);
   height: var(--tb-h);
 }
 
@@ -625,7 +651,7 @@ TOP MENU
   text-align: center;
   color: #000000;
   position: absolute;
-  margin-top: calc(var(--tb-scale) * -10px);
+  margin-bottom: calc(var(--tb-scale) * 18px);
   margin-left: calc(var(--tb-scale) * 18px);
 }
 
@@ -633,7 +659,7 @@ TOP MENU
   accent-color: var(--standard-blue);
   width: calc(var(--tb-scale) * 135px);
   height: calc(var(--tb-scale) * 6px);
-  margin-top: calc(var(--tb-scale) * -8px);
+  margin-top: calc(var(--tb-scale) * 0px);
 }
 
 /* Speed options (1x 2x 4x 8x) */
@@ -690,6 +716,7 @@ TOP MENU
   height: var(--tb-h);
   width: calc(var(--tb-scale) * 57px);
   margin: 0;
+  flex-shrink: 0;
 }
 
 .icon-btn-small {
@@ -736,7 +763,7 @@ TOP MENU
   height: var(--tb-h);
   width:  calc(var(--tb-scale) * 100px);
   transition: all 0.2s ease;
-  white-space: nowrap;
+  white-space: normal;
   flex-direction: column;
   justify-content: center;
   text-align: center;
@@ -1268,7 +1295,7 @@ TOP MENU
 /* =====================================================
    POPOVER
 ===================================================== */
-.popover, .popover1 {
+.popover, .popover1, .popover2 {
   position: absolute;
   background: white;
   border: 1px solid #ccc;
@@ -1352,6 +1379,7 @@ TOP MENU
 
 .popover-body { 
   margin-top: 2px; 
+  white-space: pre-line;
 }
 
 /* =====================================================
