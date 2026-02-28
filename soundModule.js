@@ -114,8 +114,11 @@ function createSoundModuleTemplate(moduleId) {
 
             <!-- RIGHT SIDE: Plot -->
             <div class="rightPlot">
-                <div class="plot">
-                </div>
+            <div class="plot-title-bar"></div>
+            <div class="plot-body">
+                <div class="plot-yaxis-label"></div>
+                <div class="plot"></div>
+            </div>
             </div>
         </div>`;
 }
