@@ -429,7 +429,9 @@ TOP MENU
   text-align: center;
 }
 
-.topmenu .primary-btn:hover { background: var(--hover-blue); }
+.topmenu .primary-btn:hover { 
+  background: var(--hover-blue); 
+}
 
 /* =====================================================
    TOP MENU — METADATA & INFO BUTTONS
@@ -461,8 +463,6 @@ TOP MENU
   background-color: var(--hover-grey);
 }
 
-
-
 .icon-btn {
   width:  calc(var(--tb-scale) * 29px);
   height: calc(var(--tb-scale) * 29px);
@@ -490,6 +490,7 @@ TOP MENU
   border-radius: var(--tb-radius);
   cursor: pointer;
   position: relative;
+  z-index: 0;
   background-color: var(--main-grey);
   display: flex;
   align-items: center;
@@ -497,7 +498,6 @@ TOP MENU
   align-self: flex-start;
   padding: 0;
   margin: 0;
-  z-index: 0;
 }
 
 #metadataHelp:hover,
@@ -671,9 +671,9 @@ TOP MENU
   margin: 0;
 }
 
-#speedOptions input[type="radio"] {
+#speedOptions input[type="radio"] { 
   display: none; 
-  }
+}
 
 #speedOptions label {
   width: 100%;
@@ -700,7 +700,7 @@ TOP MENU
   font-weight: 700;
 }
 
-#speedOptions label:active {
+#speedOptions label:active { 
   transform: scale(0.95); 
 }
 
@@ -736,7 +736,7 @@ TOP MENU
   background: var(--hover-grey); 
 }
 .icon-btn-small:active { 
-  background: #e0e0e0;
+  background: #e0e0e0; 
   transform: scale(0.95); 
 }
 
@@ -769,12 +769,12 @@ TOP MENU
   margin: 0;
 }
 
-.action-btn:hover  { 
-  background: var(--hover-grey); 
-}
+.action-btn:hover  {
+   background: var(--hover-grey); 
+  }
+
 .action-btn:active { 
-  background: #e0e0e0;
-  transform: scale(0.98); 
+  background: #e0e0e0; transform: scale(0.98); 
 }
 
 .action-btn svg {
@@ -855,16 +855,17 @@ TOP MENU
 .drag-handle:hover  { 
   color: #666; 
 }
+
 .drag-handle:active { 
   cursor: grabbing; 
 }
 
-.sortable-ghost { 
+.sortable-ghost {
   opacity: 0.4; 
 }
+
 .sortable-drag  { 
-  opacity: 0.9; 
-  box-shadow: 0 4px 12px rgba(0,0,0,0.2); 
+  opacity: 0.9; box-shadow: 0 4px 12px rgba(0,0,0,0.2); 
 }
 
 /* =====================================================

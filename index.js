@@ -2949,4 +2949,3 @@ async function retrieveMetadata() {
     return null;
   }
 }
-

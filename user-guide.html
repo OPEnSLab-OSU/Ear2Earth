@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <link href="style.css" rel="stylesheet" />
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Rubik:wght@300&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Sigmar+One&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&family=Google+Sans:ital,opsz,wght@0,17..18,400..700;1,17..18,400..700&family=Inter:ital,opsz,wght@0,14..32,700;1,14..32,700&display=swap" rel="stylesheet">
+
+    <link
+      href="https://fonts.googleapis.com/css2?family=Dosis:wght@200..800&family=Sigmar+One&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&family=Inter:ital,opsz,wght@0,14..32,700;1,14..32,700&display=swap" rel="stylesheet">
+    <script
+      src="https://cdn.plot.ly/plotly-2.30.1.min.js"
+      charset="utf-8"
+    ></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+
+    <!--<script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.11.1/addons/p5.sound.min.js"></script>-->
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.45/Tone.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+  </head>
+  <body>
+    <header>
+        <title id="title">Ear2Earth</title>
+        <a href="index.html" id="page-title"><h2>ear2earth</h2></a>
+        <nav id="nav">
+        <ul>
+          <li><a href="user-guide.html">User Guide</a></li>
+          <li><a href="contributor-guide.html">Contributors</a></li>
+          <li><a href="#">About</a></li>
+        </ul>
+      </nav>
+    </header>
+
+    <main>
+        <div id="user-guide-page">
+            <div id="top-heading">
+                <h1 id="user-guide-title">Ear2Earth User Guide</h1>
+            </div>
+
+            <div id="intro-contents">
+                <div id="introduction">
+                    <h3>Introduction</h3>
+                    <p>
+                        This is a walkthrough to introduce users to the more complex features of Ear2Earth.
+                        This guide will introduce users to features such as sound module selection, metadata,
+                        sensor selection, and much more. 
+                    </p>
+                </div>
+                <div id="table-of-contents">
+                    <h3>Table of Contents</h3>
+                    <ol>
+                        <a href="#getting-started"><li>Getting Started</li></a>
+                        <a href="#selecting-data"><li>Selecting Presets</li></a>
+                        <a href="#retrieving-metadata"><li>Retrieving Metadata</li></a>
+                        <a href="#interpreting-tracks"><li>Interpreting Tracks</li></a>
+                        <a href="#setting-playback"><li>Setting Playback Options</li></a>
+                        <a href="#selecting-sensors"><li>Selecting Sensors and Readings</li></a>
+                        <a href="#sound-module"><li>Sound Module Options</li></a>
+                        <a href="#miscellaneous"><li>Miscellaneous Features</li></a>
+                        <a href="#troubleshooting"><li>Troubleshooting</li></a>
+                        <a href="#faqs"><li>FAQs</li></a>
+                    </ol>
+                </div>
+            </div>
+            <div id="getting-started">
+                <h3>1. Getting Started</h3>
+                <h4>1.1 Data Selection Menu</h4>
+                <p>
+                    The data selection menu is represented by all options within the top menu's left area.
+                    Users can select database presets, choose between packet options, retrieve data, and view
+                    metadata.
+                </p>
+                <img src="user_guide_images\image1.1.1.png" alt="highlighted data selection menu" class="user-guide-img"/>
+                <h4>1.2 Playback Menu</h4>
+                <p>
+                    The playback menu is represented by all options within the top menu's right area. Users 
+                    can play tracks, pause/stop tracks, and modify the BPM.
+                </p>
+                <img src="user_guide_images\image1.2.1.png" alt="highlighted playback menu" class="user-guide-img" />
+                <h4>1.3 Sound Module Selection</h4>
+                <p>
+                    Users can select from a variety of sound options to personalize their musical experience.
+                    These options include the tonic, instrumentation, scale, and tessitura.
+                </p>
+                <img src="user_guide_images\image1.3.1.png" alt="highlighted sound modules" class="user-guide-img"/>
+                <h4>1.4 Tracks</h4>
+                <p>
+                    Users can view their data in the form of a line graph. Each data point is associated with an individual 
+                    note. As the the data jumps "higher" in the y-axis, so does the notation. The same idea applies to lowering
+                    data.
+                </p>
+                <img src="user_guide_images\image1.4.1.png" alt="highlighted track" class="user-guide-img"/>
+            </div>
+            <div id="selecting-data">
+                <h3>2. Selecting Data</h3>
+                <h4>2.1 Selecting Presets</h4>
+                <p>
+                    Ear2Earth provides users with several pre-determined database presets. These presets are pairs of databases
+                    and associated devices. These presets retrieve information from a variety of sensors, each measuring different
+                    kinds of environmental data. 
+                    <br />
+                    <br />
+                    Presets are selected from the following dropdown menu:
+                    
+                </p>
+                <img src="user_guide_images\image2.1.1.png" alt="preset selection" class="user-guide-img"/>
+                <img src="user_guide_images\image2.1.2.png" alt="preset modal" class="user-guide-img"/>
+                <h4>2.2 Selecting Most Recent Packets</h4>
+                <p>
+                    In the context of Ear2Earth, a "packet" refers to one collection of retrieved data corresponding to a preset.
+                    This collection is representative of a single time frame. For example, a packet retrieved from the "Cascade Creek"
+                    preset provides the user with measurements for climate, light, hydrostatic pressure, atmospheric pressure, rainfall
+                    gauge, and soil moisture, all collected within a single second. 
+                    <br />
+                    <br />
+                    There are two methods of packet retrieval. The first method is selection of the 'x' most recent packets. The user 
+                    decides on a value, and Ear2Earth will retrieve that many packets, beginning from packet 'n - x,' where 'n' is the
+                    overall number of packets.
+                    <br />
+                    <br />
+                    The following radio selection allows users to choose this packet retrieval option:
+                </p>
+                <img src="user_guide_images\image2.2.1.png" alt="most recent packets selected" class="user-guide-img"/>
+                <p>
+                    Users can enter their desired number of retrieved packets in the following textbox:
+    
+                    
+                </p>
+                <img src="user_guide_images\image2.2.2.png" alt="user enters number of packets" class="user-guide-img"/>
+                <h4>2.3 Selecting a Time Range</h4>
+                <p>
+                    The second packet retrieval option is the selection of a time range. First, users must select the 'Time Range' radio
+                    option:
+                </p>
+                <img src="user_guide_images\image2.3.1.png" alt="time range selected" class="user-guide-img"/>
+                <img src="user_guide_images\image2.3.2.png" alt="time range options" class="user-guide-img"/>
+                <!-- <p>
+                    Afterwards, two date selection options will appear. Note that, given that a preset is selected, when a user selects the
+                    'time range' packet selection option, the date selections will automatically generate the earliest and latest packet retrievals
+                    respectively. For example, when 'Cascade Creek' is selected as the preset, when a user selects the 'Time Range' packet retrieval
+                    option, the following dates appear:
+                </p>
+                <img src="user_guide_images\image2.3.3.png" alt="automatic time range" class="user-guide-img"/>
+                <p>
+                    Users can modify these values to be any dates greater than the earliest date and less than the latest date, keeping in mind that
+                    the rightmost date must always be greater than the leftmost date.
+                </p> -->
+                <h4>2.4 Choosing the Number of Packets to Skip</h4>
+                <p>
+                    Lastly, users have a choice to skip a number of packets after each retrieval. By default, no packets are skipped. Assume, for example,
+                    a user selects to 'Use 1 of every 2 packets.' For every packet retrieved, the following packet will be ignored. If the user selects to
+                    'Use 1 of every 3 packets,' every retrieved packet is followed by two ignored packets.
+                    <br />
+                    <br />
+                    Users can select the number of packets to skip in the following number input box:
+                </p>
+                <img src="user_guide_images\image2.4.1.png" alt="user enters number of packets to skip" class="user-guide-img"/>
+                <p>
+                    Now, all data retrieval options have been examined. When the user is satisfied with their selections, they can click 'Retrieve Data' to 
+                    generate their track:
+                </p>
+                <img src="user_guide_images\image2.4.2.png" alt="user retrieves their data" class="user-guide-img"/>
+                <p>
+                    We will explore the track and understanding its data points in Section 4.
+                </p>
+            </div>
+            <div id="retrieving-metadata">
+                <h3>3. Retrieving Metadata</h3>
+                <h4>3.1 Fetching Metadata</h4>
+                <p>
+                    Databases may have a metadata packet that provides information on the sensor's  deployment data, latitude and longitude data, and the 
+                    owner of the sensor. To determine if a preset has metadata associated with it, select a preset in the top menu. The 'Retrieve Metadata'
+                    button will appear to be loading:
+                </p>
+                <img src="user_guide_images\image3.1.1.png" alt="metadata is loading" class="user-guide-img"/>
+                <p>
+                    After the loading process, the button will indicate whether or not it has retrieved metadata, as pictured below:
+                </p>
+                <img src="user_guide_images\image3.1.2.png" alt="metadata can be retrieved" class="user-guide-img"/>
+                <img src="user_guide_images\image3.1.3.png" alt="metadata cannot be retrieved" class="user-guide-img"/>
+                <p>
+                    If metadata is available, select 'View Metadata' to view the information.
+                </p>
+                <h4>3.2 Interpreting Metadata</h4>
+                <p>
+                    The retrieved metadata will present the user with the following four categories:
+                    <ul>
+                        <li>Deployment Date</li>
+                        <li>Latitude</li>
+                        <li>Longitude</li>
+                        <li>Owner</li>
+                    </ul>
+                </p>
+                <img src="user_guide_images\image3.2.1.png" alt="metadata retrieved" class="user-guide-img"/>
+                <p>
+                    The deployment date is representative of when the database was first placed and began to retrieve data. The latitude and longitude 
+                    values represent the physical coordinates of each dataset. Finally, the Owner attribute represents the team or individual that 
+                    created the sensor.
+                </p>
+            </div>
+            <div id="interpreting-tracks">
+                <h3>4. Interpreting Tracks</h3>
+                <h4>4.1 Understanding the Axes</h4>
+                <p>
+                    The retrieved environmental data is interpreted as line graphs. As the trends in data increase, and the line gets visually higher, 
+                    the notation will also become musically higher. For data trends that decrease, the visual line and notation simultaneously get 
+                    lower. Users can add multiple tracks coinciding with the selected dataset. All tracks share the same x-axis, which is above
+                    all graphs. The x-axis represents time stamps, which will be universal across all data points in the dataset.
+                </p>
+                <img src="user_guide_images\image4.1.1.png" alt="the track has a top x-axis" class="user-guide-img"/>
+                <p>
+                    Each track will have a unique y-axis consisting of measurements relevant to its sensor and reading. For example, in the 'Cascade
+                    Creek' dataset, when a user selects 'Climate' as their sensor and 'Humidity' as their reading, the y-axis will display humidity
+                    percentages.
+                </p>
+                <img src="user_guide_images\image4.1.2.png" alt="humidity percentages shown in the y-axis" class="user-guide-img"/>
+            </div>
+            <div id="setting-playback">
+                <h3>5. Setting Playback Options</h3>
+                <h4>5.1 Playing and Pausing Tracks</h4>
+                <p>
+                    After data has been retrieved and a track is displayed, users can begin to play music by selecting the 'play' button in the 
+                    top menu:
+                </p>
+                <img src="user_guide_images\image5.1.1.png" alt="user selects the 'Play' button" class="user-guide-img"/>
+                <p>
+                    Music will begin playing and a visible progress bar will move from left to right, through the graph.
+                    The music will loop back to the beginning if it reaches the end point of the graph. In order to stop a track from playing, press 
+                    the 'stop' button:
+                </p>
+                <img src="user_guide_images\image5.1.2.png" alt="user selects the 'Stop' button" class="user-guide-img"/>
+                <h4>5.2 Modifying the BPM</h4>
+                <p>
+                    Users can control the speed of the music by making changes to the number of beats-per-minute, or BPM. There are two ways to
+                    change the BPM. First, select the following slider in the top menu:
+                </p>
+                <img src="user_guide_images\image5.2.1.png" alt="user changes the BPM slider" class="user-guide-img"/>
+                <p>
+                    With a minimum of 50 BPM and a maximum of 200 BPM, users can set exact values with the slider. Secondly, users can select 
+                    from four different speed modifiers:
+                </p>
+                <img src="user_guide_images\image5.2.2.png" alt="BPM speed modifiers highlighted" class="user-guide-img"/>
+                <p>
+                    Each button will multiply the current BPM by its specified value. For example, if the BPM is 100, selecting '2x' will increase
+                    the BPM to 200. 
+                </p>
+            </div>
+            <div id="selecting-sensors">
+                <h3>6. Selecting Sensors and Readings</h3>
+                <h4>6.1 Understanding Sensors and Readings</h4>
+                <p>
+                    When a user selects a data preset and retrieves its data, they have the option to select a sensor and a reading:
+                </p>
+                <img src="user_guide_images\image6.1.1.png" alt="user selects sensor and reading" class="user-guide-img"/>
+                <p>
+                    Each sensor is unique, tracking data that is relevant to its focus. For example, under the 'Cascade Creek' preset, 
+                    the 'Climate' sensor tracks 'Temperature' and 'Humidity.' In this example, the temperature and humidity represent 
+                    the sensor's readings. Readings measure an environmental variable and contain a unique y-axis. Note that sensors 
+                    can measure the same type of reading. However, the data will differ, as its measurements are in relation to its
+                    associated sensor. For example, both 'Climate' and 'Hydrostatic Pressure' sensors have 'Temperature' readings. While
+                    they both measure the same type of data, the sensors measure the climate temperature and hydrostatic pressure temperatures
+                    respectively.
+                </p>
+                <h4>6.2 Connecting Different Tracks</h4>
+                <p>
+                    Users can create new tracks by selecting 'Add Track' below the most recently-selected one:
+                </p>
+                <img src="user_guide_images\image6.2.1.png" alt="'Add Track' highlighted" class="user-guide-img"/>
+                <p>
+                    Users can select different sensors and readings for new tracks. All of the data will follow the timestamps represented
+                    by the universal x-axis. This allows users to see correlations in data between different environmental variables, seeing 
+                    how data trends work alongside one another under specific conditions.
+                </p>
+                <img src="user_guide_images\image6.2.2.png" alt="two different tracks displayed" class="user-guide-img"/>
+            </div>
+            <div id="sound-module">
+                <h3>7. Choosing Sound Module Options</h3>
+                <h4>7.1 Selecting the Tonic</h4>
+                <p>
+                    There are a variety of sound options a user can choose from. Firstly, the 'Tonic' option denotes the first note of the 
+                    scale being played:
+                </p>
+                <img src="user_guide_images\image7.1.1.png" alt="tonic highlighted" class="user-guide-img"/>
+                <h4>7.2 Selecting the Scale</h4>
+                <p>
+                    The 'Scale' option is the type of scale being played, with examples such as 'Pentatonic' and 'Harmonic Major':
+                </p>
+                <img src="user_guide_images\image7.2.1.png" alt="scale highlighted" class="user-guide-img"/>
+                <h4>7.3 Selecting the Tessitura</h4>
+                <p>
+                    The 'Tessitura' represents the musical range that will be played. The options range from as high as soprano to
+                    as low as bass.
+                </p>
+                <img src="user_guide_images\image7.3.1.png" alt="tessitura highlighted" class="user-guide-img"/>
+                <h4>7.4 Selecting the Sound Type</h4>
+                <p>
+                    Finally, the 'Sound Type' is a wide selection of instruments for users to fully personalize their musical experience.
+                </p>
+                <img src="user_guide_images\image7.4.1.png" alt="sound type highlighted" class="user-guide-img"/>
+            </div>
+            <div id="miscellaneous">
+                <h3>8. Miscellaneous Features</h3>
+                <h4>8.1 Zoom and Autoscale</h4>
+                <p>
+                    After retrieving data, users can select a specific area of the graph to view in more detail. To do this, first hover 
+                    the cursor over the graph. A selection menu should appear. From there, select 'Zoom':
+                </p>
+                <img src="user_guide_images\image8.1.1.png" alt="zoom highlighted" class="user-guide-img"/>
+                <p>
+                    The Zoom tool allows users to drag their cursor to create a rectangle. Whatever is highlighted within this rectangle will
+                    become the new graph:
+                </p>
+                <img src="user_guide_images\image8.1.2.png" alt="rectangular selection" class="user-guide-img"/>
+                <img src="user_guide_images\image8.1.3.png" alt="zoomed-in graph" class="user-guide-img"/>
+                <p>
+                    To retreive the original, full graph, hover over the track once again. Select 'Autoscale':
+                </p>
+                <img src="user_guide_images\image8.1.4.png" alt="autoscale highlighted" class="user-guide-img"/>
+                <h4>8.2 Zoom Out/Zoom In</h4>
+                <p>
+                    The tracks also allow users to zoom-in and zoom-out from the center of the graph. Hover over the graph to view the selection
+                    menu and select 'Zoom In':
+                </p>
+                <img src="user_guide_images\image8.2.1.png" alt="user selects 'Zoom-In'" class="user-guide-img"/>
+                <p>
+                    Hover over the graph again. From the selection menu, select 'Zoom Out':
+                </p>
+                <img src="user_guide_images\image8.2.2.png" alt="user selects 'Zoom-Out'" class="user-guide-img"/>
+                <h4>8.3 Panning</h4>
+                <p>
+                    Users can hover over the graph and select 'Pan.' This features allows users to move their graph freely around its 
+                    environment by holding down Left Click and dragging:
+                </p>
+                <img src="user_guide_images\image8.3.1.png" alt="user selects 'Pan'" class="user-guide-img"/>
+                <h4>8.4 Refreshing Packets</h4>
+                <p>
+                    New packets may be added to the database after a user retrieves the data. To retrieve these new packets, users 
+                    can select 'Refresh Packets' from the top menu:
+                </p>
+                <img src="user_guide_images\image8.4.1.png" alt="user selects 'Refresh Packets'" class="user-guide-img"/>
+            </div>
+            <div id="troubleshooting">
+                <h3>9. Troubleshooting</h3>
+                <h4>9.1 Data Retrieval Failure</h4>
+                <p>
+                    Sometimes, data retrieval will fail and the user will receive an error message. This is a bug we are actively
+                    working to fix. After retrieving the data again or refreshing the page, the data will most likely be retrieved
+                    without issue.
+                </p>
+                <h4>9.2 Clearing the Workspace</h4>
+                <p>
+                    If a user would like to remove all items and tracks, they can do so by selecting 'Clear Workspace' from the top menu:
+                </p>
+                <img src="user_guide_images\image9.2.1.png" alt="user selects 'Clear Workspace'" class="user-guide-img"/>
+                <img src="user_guide_images\image9.2.2.png" alt="cleared workspace" class="user-guide-img"/>
+            </div>
+            <div id="faqs">
+                <h3>10. FAQs</h3>
+                <h4>TBA</h4>
+            </div>
+        </div>
+    </main>
+
+    <script type="module" src="index.js"></script>
+  </body>
+</html>
