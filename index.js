@@ -2405,7 +2405,12 @@ function buildGlobalTimeline(xData, xMin, xMax, masterTicks) {
   let layout = {
     height: 35, 
     // Do not change
-    margin: { l: 95, r: 37, b: 0, t: 27 },
+    margin: { 
+      l: 71, 
+      r: 10, 
+      b: 0, 
+      t: 27 
+    },
     xaxis: {
       type: "date",
       range: [xMin, xMax],
@@ -2415,7 +2420,7 @@ function buildGlobalTimeline(xData, xMin, xMax, masterTicks) {
       ticktext: masterTicks.tickText,
       tickangle: 0,
       automargin: false,
-      gridcolor: "rgba(0, 0, 0, 0.56)",
+      gridcolor: "rgba(0, 0, 0, 0.54)",
       fixedrange: true,
       tickfont: {
         family: "Google Sans, sans-serif",
