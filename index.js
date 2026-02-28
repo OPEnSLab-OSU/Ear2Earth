@@ -2,6 +2,8 @@
 
 // Metadata
 let metadata;
+const metadataBtn = document.getElementById('metadataButton');
+let isMetadataDisplayed = false;
 
 // Playback boolean
 let isPlaying = false;
@@ -57,6 +59,9 @@ var retrievedData;
 // Array to hold x-axis data for each plot
 let plotXData = {};
 
+// Track if onboarding is in progress
+let openPresetBtn;
+
 // Undo/Redo state management
 let historyStack = [];
 let historyIndex = -1;
@@ -82,7 +87,13 @@ function captureState() {
     bpm: document.getElementById('bpm')?.value,
     masterVolume: document.getElementById('masterVolume')?.value,
     numPackets: document.getElementById('numpackets')?.value,
-    prescaler: document.getElementById('prescaler')?.value
+    prescaler: document.getElementById('prescaler')?.value,
+    presetButtonText: document.getElementById('openPresetModal')?.textContent.trim(),
+    startTime: document.getElementById('startTime')?.value,
+    endTime: document.getElementById('endTime')?.value,
+    dateRangeText: document.getElementById('dateRangeText')?.textContent.trim(),
+    packetOption: document.querySelector('input[name="packetOption"]:checked')?.value,
+    retrievedData: retrievedData ? [...retrievedData] : null
   };
 }
 
@@ -117,8 +128,22 @@ function restoreState(state) {
   try {
     // Stop any playback
     stopSynths();
+
+    retrievedData = state.retrieveData || null;
     
     // Restore global settings
+    if (state.presetButtonText === '' || state.presetButtonText.includes('Select a Preset')) {
+      openPresetBtn.innerHTML = '';
+      const iconEl = document.createElement('i');
+      iconEl.setAttribute('data-lucide', 'folder-search');
+      openPresetBtn.appendChild(iconEl);
+      openPresetBtn.append(' Select Preset');
+      lucide.createIcons();
+      const modalPresetDropdown = document.getElementById('modalPreset');
+      if (modalPresetDropdown) modalPresetDropdown.value = 'default';
+    } else {
+      openPresetBtn.textContent = state.presetButtonText;
+    }
     if (state.database) document.getElementById('databases').value = state.database;
     if (state.device) document.getElementById('devices').value = state.device;
     if (state.bpm) {
@@ -129,6 +154,20 @@ function restoreState(state) {
     if (state.masterVolume) document.getElementById('masterVolume').value = state.masterVolume;
     if (state.numPackets) document.getElementById('numpackets').value = state.numPackets;
     if (state.prescaler) document.getElementById('prescaler').value = state.prescaler;
+
+    // Restore date range
+    if (state.startTime !== undefined) document.getElementById('startTime').value = state.startTime;
+    if (state.endTime !== undefined) document.getElementById('endTime').value = state.endTime;
+    if (state.dateRangeText !== undefined) document.getElementById('dateRangeText').textContent = state.dateRangeText;
+
+    // Restore packet option radio + show/hide inputs
+    if (state.packetOption) {
+      const radio = document.querySelector(`input[name="packetOption"][value="${state.packetOption}"]`);
+      if (radio) radio.checked = true;
+      const isLastX = state.packetOption === 'lastXPackets';
+      document.getElementById('numpacketsInput').style.display = isLastX ? '' : 'none';
+      document.getElementById('skipPackets').style.display = isLastX ? '' : 'none';
+    }
     
     // Remove all modules
     const modulesContainer = document.getElementById('modulesContainer');
@@ -161,6 +200,18 @@ function restoreState(state) {
       // Replot if data exists
       if (retrievedData) {
         plot(index);
+      } else {
+        const plotDiv = module.querySelector('.plot');
+        if (plotDiv) {
+          try { 
+            Plotly.purge(plotDiv);
+           } catch(e) {}
+        }
+      }
+
+      // Clear the global timeline if no data
+      if (!retrievedData) {
+        try { Plotly.purge(document.getElementById('globalTimeline')); } catch(e) {}
       }
     });
     
@@ -177,13 +228,13 @@ function updateUndoRedoButtons() {
   const redoBtn = document.getElementById('redo');
   
   if (undoBtn) {
-    undoBtn.disabled = historyIndex <= 0;
+    undoBtn.disabled = historyStack.length === 0 || historyIndex <= 0;
     undoBtn.style.opacity = historyIndex <= 0 ? '0.5' : '1';
     undoBtn.style.cursor = historyIndex <= 0 ? 'not-allowed' : 'pointer';
   }
   
   if (redoBtn) {
-    redoBtn.disabled = historyIndex >= historyStack.length - 1;
+    redoBtn.disabled = historyStack.length === 0 || historyIndex >= historyStack.length - 1;
     redoBtn.style.opacity = historyIndex >= historyStack.length - 1 ? '0.5' : '1';
     redoBtn.style.cursor = historyIndex >= historyStack.length - 1 ? 'not-allowed' : 'pointer';
   }
@@ -209,7 +260,10 @@ async function addSoundModule() {
   // Populate the sound types dropdown
   const soundTypesSelect = newModule.querySelector('.soundTypes');
   soundTypesSelect.innerHTML = instrumentsMenuItems.join('');
-  soundTypesSelect.value = 'retro'; // Set default value
+  soundTypesSelect.value = 'harp'; // Set default value
+
+  const tessituraSelect = newModule.querySelector('.tessitura');
+  tessituraSelect.value = "Tenor";
 
   // Set default sustain notes for the new module
   sustainNotes[moduleId] = true; // Default to true
@@ -305,7 +359,10 @@ function attachVolumeListener(soundModule) {
   const volumeSlider = soundModule.querySelector('.volume');
   volumeSlider.addEventListener('input', event => {
     const volumeValue = parseFloat(event.target.value);
-    gainNodes[soundModules.indexOf(soundModule)].volume.value = volumeValue;
+    const idx = soundModules.indexOf(soundModule);
+    if (gainNodes[idx]) {
+      gainNodes[idx].volume.value = volumeValue;
+    }
     console.log(`Volume for ${soundModule.id} set to ${volumeValue} dB`);
   });
 }
@@ -338,7 +395,7 @@ function attachCollapseListener(soundModule) {
 
   // 1. Setup an Observer to watch for height changes in this specific module
   const resizeObserver = new ResizeObserver(() => {
-    if (plotDiv && (plotDiv.data || plotDiv.layout)) {
+    if (plotDiv && plotDiv.offsetParent != null && (plotDiv.data || plotDiv.layout)) {
       Plotly.Plots.resize(plotDiv);
     }
   });
@@ -1205,6 +1262,29 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
+  function updateToolbarScale() {
+  const DESIGN_WIDTH = 1440;
+  const MIN_SCALE    = 0.45;
+
+  const raw   = window.innerWidth / DESIGN_WIDTH;
+  // Clamp to a minimum but allow unlimited growth above 1.0
+  // Use 0.99 instead of 1.0 as the effective baseline to prevent
+  // 1-2px overflow from sub-pixel rounding at exact design width
+  const scale = Math.max(MIN_SCALE, raw * 0.99);
+
+  document.documentElement.style.setProperty('--tb-scale', scale);
+  }
+
+  // Run immediately — sized before first paint
+  updateToolbarScale();
+
+  // Debounced resize handler
+  let _tbScaleTimer;
+  window.addEventListener('resize', () => {
+    clearTimeout(_tbScaleTimer);
+    _tbScaleTimer = setTimeout(updateToolbarScale, 30);
+  });
+
   // Initialize Lucide icons
   lucide.createIcons();
 
@@ -1245,7 +1325,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const modal = document.getElementById('dataSourceModal');
   const closeBtn = document.querySelector('.close-modal');
   const confirmBtn = document.getElementById('confirmDataSource');
-  const openPresetBtn = document.getElementById('openPresetModal');  // Changed this line
+  openPresetBtn = document.getElementById('openPresetModal');  
   const modalPresetDropdown = document.getElementById('modalPreset');
 
   // Show modal when clicking the preset button
@@ -1279,30 +1359,12 @@ document.addEventListener('DOMContentLoaded', () => {
         openPresetBtn.textContent = '';
         
         // Add preset name
-        const nameDiv = document.createElement('div');
-        nameDiv.textContent = presetData.name;
-        nameDiv.style.fontWeight = '500';
-        openPresetBtn.appendChild(nameDiv);
-        
-        // Add database
-        const dbDiv = document.createElement('div');
-        dbDiv.textContent = presetData.database;
-        dbDiv.style.fontSize = '10px';
-        dbDiv.style.opacity = '0.7';
-        openPresetBtn.appendChild(dbDiv);
-        
-        // Add device
-        const deviceDiv = document.createElement('div');
-        deviceDiv.textContent = presetData.device;
-        deviceDiv.style.fontSize = '10px';
-        deviceDiv.style.opacity = '0.7';
-        openPresetBtn.appendChild(deviceDiv);
-
-        // old button text update: openPresetBtn.textContent = presetData.name;
+        openPresetBtn.textContent = presetData.name;
       } else {
         openPresetBtn.textContent = `${selectedDatabase} - ${selectedDevice}`;
       }
       modal.style.display = 'none';
+      saveState();
     } else {
       alert('Please select both a database and a device');
     }
@@ -1360,6 +1422,7 @@ document.addEventListener('DOMContentLoaded', () => {
       modalPrescaler.value = '1';
       // Reset confirmation 
       dateRangeConfirmed = false;
+      saveState();
     }
   });
 
@@ -1370,8 +1433,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // Only reset if user hasn't confirmed a date range
     if (!dateRangeConfirmed) {
       lastXPacketsRadio.checked = true;
-      document.getElementById('numpacketsInput').style.display = 'block';
-      document.getElementById('skipPackets').style.display = 'block';
+      document.getElementById('numpacketsInput').style.display = '';
+      document.getElementById('skipPackets').style.display = '';
       dateRangeText.textContent = 'Date Range';
     }
   });
@@ -1409,6 +1472,7 @@ document.addEventListener('DOMContentLoaded', () => {
     dateRangeText.textContent = `${startDate} - ${endDate}`;
     dateRangeConfirmed = true; // Mark as confirmed
     dateTimeModal.style.display = 'none';
+    saveState();
   });
 
   // Close modal when clicking outside
@@ -1431,6 +1495,15 @@ document.addEventListener('DOMContentLoaded', () => {
   const popoverBody = popover.querySelector('.popover-body');
   const popoverClose = popover.querySelector('.popover-close');
 
+  const popover1 = document.getElementById('popover1');
+  const popover1Body = popover1.querySelector('.popover-body');
+  const popover1Close = popover1.querySelector('.popover-close');
+
+  const popover2 = document.getElementById('popover2');
+  const popover2Body = popover2.querySelector('.popover-body');
+  const popover2Close = popover2.querySelector('.popover-close');
+
+
   function showPopover(button, content) {
     // Set content
     popoverBody.textContent = content;
@@ -1442,37 +1515,94 @@ document.addEventListener('DOMContentLoaded', () => {
     popover.style.top = (rect.bottom + 8) + 'px';
   }
 
+  function showPopover1(button, content) {
+    popover1Body.textContent = content;
+    const rect = button.getBoundingClientRect();
+    popover1.style.display = 'block';
+    // Align to right edge of button
+    popover1.style.left = (rect.right - popover1.offsetWidth) + 'px';
+    popover1.style.top = (rect.bottom + 8) + 'px';
+  }
+
+  function showPopover2(button, content) {
+    popover2Body.textContent = content;
+    const rect = button.getBoundingClientRect();
+    popover2.style.display = 'block';
+    popover2.style.left = rect.left + 'px';
+    popover2.style.top = (rect.bottom + 8) + 'px';
+  }
+
   function hidePopover() {
     popover.style.display = 'none';
   }
 
-  // Close button
+  function hidePopover1() {
+    popover1.style.display = 'none';
+  }
+
+  function hidePopover2() {
+    popover2.style.display = 'none';
+  }
+
   popoverClose.addEventListener('click', hidePopover);
+  popover1Close.addEventListener('click', hidePopover1);
+  popover2Close.addEventListener('click', hidePopover2);
+
+  // Hide when leaving the popover itself
+  popover.addEventListener('mouseleave', hidePopover);
+  popover1.addEventListener('mouseleave', hidePopover1);
 
   // Close when clicking outside
   document.addEventListener('click', (e) => {
     if (!popover.contains(e.target) && !e.target.closest('.icon-btn')) {
       hidePopover();
     }
+    if (!popover1.contains(e.target) && !e.target.closest('.icon-btn')) {
+      hidePopover1();
+    }
+    if (!popover2.contains(e.target) && !e.target.closest('.icon-btn')) {
+      hidePopover2();
+    }
   });
 
-  // Add to your info buttons
   const metadataHelp = document.getElementById('metadataHelp');
   const refreshHelp = document.getElementById('refreshHelp');
   
   if (metadataHelp) {
-    metadataHelp.addEventListener('click', (e) => {
+    metadataHelp.addEventListener('mouseenter', (e) => {
       e.stopPropagation();
       showPopover(e.currentTarget, 'Metadata shows device deployment information including date, location (latitude/longitude), and database owner.');
     });
+    metadataHelp.addEventListener('mouseleave', hidePopover);
   }
   
   if (refreshHelp) {
-    refreshHelp.addEventListener('click', (e) => {
+    refreshHelp.addEventListener('mouseenter', (e) => {
       e.stopPropagation();
-      showPopover(e.currentTarget, 'Reloads the latest packet data from your selected source while preserving your workspace configuration and tracks.');
+      showPopover1(e.currentTarget, 'Reloads the latest packet data from your selected source while preserving your workspace configuration and tracks.');
     });
+    refreshHelp.addEventListener('mouseleave', hidePopover1);
   }
+
+  metadataBtn.addEventListener("click", (e) => {
+  e.stopPropagation();
+
+  if (!metadata) {
+    showPopover2(e.currentTarget, "No available metadata");
+    isMetadataDisplayed = true;
+    return;
+  }
+
+  const metadataContent = `
+    Deployment Date: ${metadata.deployment_date}\n
+    Latitude: ${metadata.latitude}\n
+    Longitude: ${metadata.longitude}\n
+    Owner: ${metadata.owner}\n
+    `;
+
+  showPopover2(e.currentTarget, metadataContent);
+  isMetadataDisplayed = true;
+});
 
   // ====== UNDO/REDO button functionality ======
   const undoBtn = document.getElementById('undo');
@@ -1545,6 +1675,9 @@ document.addEventListener('DOMContentLoaded', () => {
   // Fetch databases and populate the dropdown
   fetchDatabases();
 
+  // Set null before first module is created 
+  retrievedData = null;
+
   // Create one soundModule on startup
   addSoundModule();
 
@@ -1587,8 +1720,7 @@ document.addEventListener('DOMContentLoaded', () => {
     modalOption.textContent = pair.name;
     modalPresetDropdown.appendChild(modalOption);
   });
-
-  // Handle preset selection inside the popup 
+// Handle preset selection inside the popup 
   modalPresetDropdown.addEventListener('change', async (event) => {
     if (event.target.value !== 'default') {
       const presetData = JSON.parse(event.target.value);
@@ -1633,10 +1765,43 @@ document.addEventListener('DOMContentLoaded', () => {
       
     }
   });
+  // Handle selection from the named dropdown
+
+// Handle selection from the named dropdown
+  const modalPreset = document.getElementById("modalPreset");
+  modalPreset.addEventListener('change', async e => {
+    handleDatasetChange(e);
+    isMetadataDisplayed = false;
+    metadataContainer.style.display = 'none';
+
+    const metadataTxt = metadataBtn.querySelector('#metadataTxt');
+    let metadataIcon = metadataBtn.querySelector('#metadataIcon');
+
+    metadataIcon.setAttribute("data-lucide", "loader");
+    metadataTxt.textContent = 'Loading...';
+    lucide.createIcons();
+    metadata = await retrieveMetadata();
+
+
+    if (metadata == null) {
+      metadataIcon = metadataBtn.querySelector('#metadataIcon');
+      metadataIcon.setAttribute("data-lucide", "circle-off");
+      lucide.createIcons();
+      metadataTxt.textContent = 'No Metadata';
+    } else {
+      metadataIcon = metadataBtn.querySelector('#metadataIcon');
+      metadataIcon.setAttribute("data-lucide", "codeXml");
+      lucide.createIcons();
+      metadataTxt.textContent = 'View Metadata';
+    }
+
+    return;
+  });
+
   workspaceHasData = false;
   updateClearWorkspaceButton();
 
-  saveState(); // Save initial state for undo/redo
+  //saveState(); // Save initial state for undo/redo
   updateUndoRedoButtons();
   
   if (shouldRunOnboarding()) {
@@ -1791,8 +1956,8 @@ document.getElementsByName('packetOption').forEach(radio => {
   radio.addEventListener('change', async function () {
     // If "lastXPackets" is selected, show the "numpackets" and "prescaler" input fields and hide the "startTime" and "endTime" input fields
     if (this.value === 'lastXPackets') {
-      numpacketsInput.style.display = 'block';
-      skipPackets.style.display = 'block';
+      numpacketsInput.style.display = '';
+      skipPackets.style.display = '';
       //timeInputs.style.display = 'none';
     }
     // If "timeRange" is selected, hide the "numpackets" input field and show the "startTime", "endTime" and "prescaler" input fields
@@ -1833,7 +1998,7 @@ document.getElementsByName('packetOption').forEach(radio => {
       });
     } else {
       // added 10/26
-      numpackets.style.display = 'block';
+      numpacketsInput.style.display = '';
     
       resetDates();
     }
@@ -2358,32 +2523,42 @@ function plot(moduleIdx) {
         hoverinfo: 'text',
       }];
 
+      let titleBar = m.querySelector('.plot-title-bar');
+      let yAxisLabel = m.querySelector('.plot-yaxis-label');
+
+      titleBar.textContent = `${sensorDisplayName(sensor)} - ${reading}`;
+      yAxisLabel.textContent = `${reading} Value`;
+
+      titleBar.style.display = 'block';
+      yAxisLabel.style.display = 'flex';   // flex to preserve the centering/rotation
+
       let layout = {
-        title: { 
-          text: `${sensorDisplayName(sensor)} - ${reading}`, 
-          y: 0.91 
-        },
         xaxis: {
           type: "date",
           showticklabels: false, 
           tickmode: "array",     
           showgrid: true,
           gridcolor: "#E1E1E1",  
-          gridwidth: 1,
+          gridwidth: 0.1,
           layer: 'below traces'  
         },
         margin: { 
-          l: 95, 
-          r: 37,
-          b: 20, 
-          t: 55 
+          l: 7, 
+          r: 10,
+          b: 10, 
+          t: 10 
         },
-        yaxis: { 
-          automargin: true, 
-          title: { 
-            text: `${reading} Value`, 
-            standoff: 20 
-          } 
+        yaxis: {  
+          automargin: true,
+          tickfont: {
+            family: "Google Sans, sans-serif",
+            size: 12,
+            color: "rgb(0, 0, 0)"
+          },
+          ticksuffix: "   ",  // adds spacing to the right of tick labels
+          showgrid: true,
+          gridcolor: "#E1E1E1",
+          gridwidth: 0.01     
         },
         autosize: true
       };
@@ -2757,9 +2932,6 @@ function dataToMidiPitches(normalizedData, scale) {
   return normalizedData.map(value => scale[Math.floor(value * (scaleLength - 1))]);
 }
 
-const metadataBtn = document.getElementById('metadataButton');
-let isMetadataDisplayed = false;
-
 async function retrieveMetadata() {
   let db = document.getElementById('databases').value;
   let url = `/metadata?database=${db}`;
@@ -2778,62 +2950,3 @@ async function retrieveMetadata() {
   }
 }
 
-metadataBtn.onclick = async function () {
-  const metadataContainer = document.getElementById('metadataContainer');
-
-  if (isMetadataDisplayed) {
-    metadataContainer.style.display = 'none';
-    isMetadataDisplayed = false;
-    metadataBtn.style.backgroundColor = 'green';
-    metadataBtn.textContent = 'View Metadata';
-    return;
-  }
-
-  if (metadataBtn.style.backgroundColor == "green") {
-      metadataBtn.style.backgroundColor = "#90EE90";
-  }
-
-  if (metadataBtn.style.backgroundColor == 'red') {
-    return;
-  }
-
-  metadataBtn.textContent = "Loading...";
-  metadataContainer.style.display = 'flex';
-  metadataBtn.textContent = "Close";
-
-  if (metadata == null) {
-    metadataContainer.innerHTML = `
-        <h3>No metadata :(</h3>
-        `;
-  } else {
-    let metadataDeploymentDate = metadata['deployment_date'];
-    let metadataLatitude = metadata['latitude'];
-    let metadataLongitude = metadata['longitude'];
-    let metadataOwner = metadata['owner'];
-
-    metadataContainer.innerHTML = `
-        <div id="metadataSection">
-          <h3>Deployment Date: </h3>
-          <p id="metadataDeploymentDate">${metadataDeploymentDate}</p>
-        </div>
-
-        <div id="metadataSection">
-          <h3>Latitude: </h3>
-          <p id="metadataLatitude">${metadataLatitude}</p>
-        </div>
-
-        <div id="metadataSection">
-          <h3>Longitude: </h3>
-          <p id="metadataLongitude">${metadataLongitude}</p>
-        </div>
-
-        <div id="metadataSection">
-          <h3>Owner: </h3>
-          <p id="metadataOwner">${metadataOwner}</p>
-        </div>
-        `;
-  }
-  
-  isMetadataDisplayed = true;
-  return;
-};
