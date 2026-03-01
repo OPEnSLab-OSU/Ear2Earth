@@ -314,6 +314,7 @@ TOP MENU
   height: var(--tb-h);
   margin: 0;
   align-items: stretch;
+  width: max-content;
 }
 
 #dataOptions label {
@@ -332,6 +333,7 @@ TOP MENU
   color: black;
   white-space: nowrap;
   box-sizing: border-box;
+  width: 100%;
 }
 
 #dataOptions label:hover { 

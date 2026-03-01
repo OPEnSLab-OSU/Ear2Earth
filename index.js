@@ -19,6 +19,9 @@ let gainNodes = []; // Array of gain nodes
 // Boolean to track if data is displayed
 let workspaceHasData = false
 
+// Track if user has confirmed a date range
+let dateRangeConfirmed = false;
+
 // Import synths and samplers
 import { samplers, fmSynths } from './instruments.js';
 
@@ -129,7 +132,7 @@ function restoreState(state) {
     // Stop any playback
     stopSynths();
 
-    retrievedData = state.retrieveData || null;
+    retrievedData = state.retrievedData || null;
     
     // Restore global settings
     if (state.presetButtonText === '' || state.presetButtonText.includes('Select a Preset')) {
@@ -845,17 +848,67 @@ function resetToLastPacketsMode() {
   const timeRangeRadio = document.getElementById('timeRange');
   const numpacketsInput = document.getElementById('numpacketsInput');
   const skipPackets = document.getElementById('skipPackets');
-  const dateRangeText = document.getElementById('dateRangeText');
-  const startTimeInput = document.getElementById('startTime');
-  const endTimeInput = document.getElementById('endTime');
 
   if (lastXPacketsRadio) lastXPacketsRadio.checked = true;
   if (timeRangeRadio) timeRangeRadio.checked = false;
   if (numpacketsInput) numpacketsInput.style.display = 'block';
   if (skipPackets) skipPackets.style.display = 'block';
+  resetDateRangeState();
+}
+
+function updateDateRangeModalButton() {
+  const confirmDateTime = document.getElementById('confirmDateTime');
+  const timeRangeRadio = document.getElementById('timeRange');
+  if (!confirmDateTime || !timeRangeRadio) return;
+  confirmDateTime.textContent = timeRangeRadio.checked ? 'Retrieve Data' : 'Apply';
+}
+
+function isTimeRangeSelected() {
+  const timeRangeRadio = document.getElementById('timeRange');
+  return !!(timeRangeRadio && timeRangeRadio.checked);
+}
+
+function updateDateRangeTextFromValues(startValue, endValue) {
+  const dateRangeText = document.getElementById('dateRangeText');
+  if (!dateRangeText) return;
+
+  if (!startValue || !endValue) {
+    dateRangeText.textContent = 'Date Range';
+    return;
+  }
+
+  const startDate = new Date(startValue).toLocaleDateString('en-US', {
+    month: 'numeric',
+    day: 'numeric',
+    year: 'numeric'
+  });
+  const endDate = new Date(endValue).toLocaleDateString('en-US', {
+    month: 'numeric',
+    day: 'numeric',
+    year: 'numeric'
+  });
+
+  dateRangeText.textContent = `${startDate} - ${endDate}`;
+}
+
+function resetDateRangeState() {
+  dateRangeConfirmed = false;
+  const dateRangeText = document.getElementById('dateRangeText');
+  const startTimeInput = document.getElementById('startTime');
+  const endTimeInput = document.getElementById('endTime');
+  const prescalerInput = document.getElementById('prescaler');
+  const modalStartTime = document.getElementById('modalStartTime');
+  const modalEndTime = document.getElementById('modalEndTime');
+  const modalPrescaler = document.getElementById('modalPrescaler');
+
   if (dateRangeText) dateRangeText.textContent = 'Date Range';
   if (startTimeInput) startTimeInput.value = '';
   if (endTimeInput) endTimeInput.value = '';
+  if (prescalerInput) prescalerInput.value = '1';
+  if (modalStartTime) modalStartTime.value = '';
+  if (modalEndTime) modalEndTime.value = '';
+  if (modalPrescaler) modalPrescaler.value = '1';
+  updateDateRangeModalButton();
 }
 
 function startFirstTimeOnboarding() {
@@ -1384,12 +1437,10 @@ document.addEventListener('DOMContentLoaded', () => {
   const modalPrescaler = document.getElementById('modalPrescaler');
   const prescalerInput = document.getElementById('prescaler');
 
-  // Track if user has confirmed their selection
-  let dateRangeConfirmed = false;
-
   // Open modal when Date Range radio is clicked (using the span to detect re-clicks)
   const dateRangeLabel = document.getElementById('dateRangeLabel');
   const timeRangeRadio = document.getElementById('timeRange');
+  updateDateRangeModalButton();
 
   dateRangeLabel.addEventListener('click', (e) => {
     // Check if clicking on the label/span (not the radio itself) or if radio is already checked
@@ -1397,6 +1448,7 @@ document.addEventListener('DOMContentLoaded', () => {
       setTimeout(() => {
         dateTimeModal.style.display = 'flex';
         dateRangeConfirmed = false;
+        updateDateRangeModalButton();
         
         // Pre-populate modal with current values if they exist
         if (startTimeInput.value) modalStartTime.value = startTimeInput.value;
@@ -1473,6 +1525,11 @@ document.addEventListener('DOMContentLoaded', () => {
     dateRangeConfirmed = true; // Mark as confirmed
     dateTimeModal.style.display = 'none';
     saveState();
+    updateDateRangeModalButton();
+
+    if (timeRangeRadio.checked) {
+      retrieveData();
+    }
   });
 
   // Close modal when clicking outside
@@ -1482,10 +1539,7 @@ document.addEventListener('DOMContentLoaded', () => {
       
       // Only reset if user hasn't confirmed a date range
       if (!dateRangeConfirmed) {
-        lastXPacketsRadio.checked = true;
-        document.getElementById('numpacketsInput').style.display = 'block';
-        document.getElementById('skipPackets').style.display = 'block';
-        dateRangeText.textContent = 'Date Range';
+        resetToLastPacketsMode();
       }
     }
   });
@@ -1737,7 +1791,7 @@ document.addEventListener('DOMContentLoaded', () => {
         databaseDropdown.value = presetData.database;
         
         // Wait for devices to load before checking for the device
-        await fetchDevices();
+        await fetchDevices({ autoSelectFirst: false, refreshDates: false });
         
         // Check if the selected device exists in the updated dropdown
         let deviceExists = [...deviceDropdown.options].some(
@@ -1746,7 +1800,7 @@ document.addEventListener('DOMContentLoaded', () => {
         
         if (deviceExists) {
           deviceDropdown.value = presetData.device;
-          await setDateBoundsForSelection();
+          await setDateBoundsForSelection(isTimeRangeSelected());
         } else {
           alert(
             `Warning: Device "${presetData.device}" not found in "${presetData.database}". Please select manually.`
@@ -1834,7 +1888,7 @@ async function handleDatasetChange(event) {
       databasesDropdown.value = selectedPair.database;
 
       // Wait for setDevices() to complete before checking for the device and setting it
-      await fetchDevices();
+      await fetchDevices({ autoSelectFirst: false, refreshDates: false });
 
       // Check if the selected device exists in the updated dropdown
       let deviceExists = [...devicesDropdown.options].some(
@@ -1843,7 +1897,7 @@ async function handleDatasetChange(event) {
 
       if (deviceExists) {
         devicesDropdown.value = selectedPair.device;
-        await setDateBoundsForSelection();
+        await setDateBoundsForSelection(isTimeRangeSelected());
       } else {
         alert(
           `Warning: Device "${selectedPair.device}" not found in "${selectedPair.database}". Please select manually.`
@@ -1889,7 +1943,8 @@ function fetchDatabases() {
 }
 
 // Fetch devices based on the selected database and populate the dropdown
-function fetchDevices() {
+function fetchDevices(options = {}) {
+  const { autoSelectFirst = true, refreshDates = true } = options;
   return new Promise(resolve => {
     const select = document.getElementById('devices');
     select.innerHTML = '<option value="default">Select a sensor</option>';
@@ -1906,13 +1961,17 @@ function fetchDevices() {
             select.appendChild(option);
           });
 
-          // Automatically select the first available device
-          if (data.length > 0) {
+          // Optionally auto-select first device for manual DB changes
+          if (data.length > 0 && autoSelectFirst) {
             select.value = data[0];
-            await setDateBoundsForSelection();
+            if (refreshDates) {
+              await setDateBoundsForSelection(isTimeRangeSelected());
+            }
+          } else if (data.length === 0) {
+            resetDates();
+            updateDateRangeTextFromValues('', '');
           }
 
-          resetDates();
           resolve(); // Resolve the Promise when devices are populated
         })
         .catch(error => {
@@ -1942,7 +2001,9 @@ function resetDevicesAndDates() {
 }
 
 // e.g., call after devices populated or when device changes:
-document.getElementById('devices').addEventListener('change', setDateBoundsForSelection);
+document.getElementById('devices').addEventListener('change', () => {
+  setDateBoundsForSelection(isTimeRangeSelected());
+});
 
 document.getElementById('databases').addEventListener('change', fetchDevices);
 
@@ -1958,6 +2019,7 @@ document.getElementsByName('packetOption').forEach(radio => {
     if (this.value === 'lastXPackets') {
       numpacketsInput.style.display = '';
       skipPackets.style.display = '';
+      updateDateRangeModalButton();
       //timeInputs.style.display = 'none';
     }
     // If "timeRange" is selected, hide the "numpackets" input field and show the "startTime", "endTime" and "prescaler" input fields
@@ -1965,6 +2027,7 @@ document.getElementsByName('packetOption').forEach(radio => {
       numpacketsInput.style.display = 'none';
       skipPackets.style.display = 'none';
       //timeInputs.style.display = 'block';
+      dateRangeConfirmed = false;
       
       // await setDateBoundsForSelection(); // added 10/26
 
@@ -1986,6 +2049,7 @@ document.getElementsByName('packetOption').forEach(radio => {
       
       // Show the modal
       document.getElementById('dateTimeModal').style.display = 'flex';
+      updateDateRangeModalButton();
 
       setDateBoundsForSelection().then(() => {
         // Update modal with new bounds after they load
@@ -2006,7 +2070,7 @@ document.getElementsByName('packetOption').forEach(radio => {
 });
 
 // Main function to retrieve data and initialize modules
-document.getElementById('retrieve').onclick = async function () {
+async function retrieveData() {
   // Stop audio playback
   stopSynths();
 
@@ -2096,9 +2160,12 @@ document.getElementById('retrieve').onclick = async function () {
       updateClearWorkspaceButton();
 
       saveState(); // Save state after data retrieval and module initialization
+      setDateBoundsForSelection();
     })
     .catch(error => console.error('Error:', error));
-};
+}
+
+document.getElementById('retrieve').onclick = retrieveData;
 
 // Function to save currently selected sensor and reading
 function saveSelects() {
@@ -2769,7 +2836,7 @@ function fixTimestamp(ts) {
 }
 
 
-async function setDateBoundsForSelection() {
+async function setDateBoundsForSelection(forceAutofill = false) {
   const database = document.getElementById('databases').value;
   const collection = document.getElementById('devices').value;
 
@@ -2802,6 +2869,7 @@ async function setDateBoundsForSelection() {
       startInput.max = '';
       endInput.min = '';
       endInput.max = '';
+      updateDateRangeTextFromValues('', '');
       return;
     }
 
@@ -2822,9 +2890,28 @@ async function setDateBoundsForSelection() {
     endInput.min = minStr;
     endInput.max = maxStr;
 
-    // Autofill values
-    startInput.value = minStr;
-    endInput.value = maxStr;
+    // Autofill values if source changed in date-range mode, or if user has no confirmed custom range.
+    if (forceAutofill || !dateRangeConfirmed) {
+      startInput.value = minStr;
+      endInput.value = maxStr;
+    }
+
+    const modalStartTime = document.getElementById('modalStartTime');
+    const modalEndTime = document.getElementById('modalEndTime');
+    if (modalStartTime && modalEndTime) {
+      modalStartTime.min = minStr;
+      modalStartTime.max = maxStr;
+      modalEndTime.min = minStr;
+      modalEndTime.max = maxStr;
+      if (forceAutofill || !dateRangeConfirmed) {
+        modalStartTime.value = minStr;
+        modalEndTime.value = maxStr;
+      }
+    }
+
+    if (isTimeRangeSelected()) {
+      updateDateRangeTextFromValues(startInput.value, endInput.value);
+    }
 
     console.log('Autofilled time range:', { minStr, maxStr });
   } catch (err) {
