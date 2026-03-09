@@ -144,7 +144,11 @@ function captureState() {
       tonic: module.querySelector('.tonic')?.value,
       scale: module.querySelector('.scale')?.value,
       sustainNotes: module.querySelector('.sustainNotes')?.checked,
-      panelOpen: module.querySelector('.moduleBottomOptions')?.style.display === 'block'
+      panelOpen: module.querySelector('.moduleBottomOptions')?.style.display === 'block',
+      plotTitle: module.querySelector('.plot-title-bar')?.textContent || '',
+      plotYAxis: module.querySelector('.plot-yaxis-label')?.textContent || '',
+      plotTitleVisible: module.querySelector('.plot-title-bar')?.style.display || 'none',
+      plotYAxisVisible: module.querySelector('.plot-yaxis-label')?.style.display || 'none',
     })),
     database: document.getElementById('databases')?.value,
     device: document.getElementById('devices')?.value,
@@ -301,11 +305,9 @@ async function restoreState(state) {
 
       if (retrievedData) {
         initializeModuleSelects(mod, retrievedData);
-        if (s) s.disabled = false;
-        if (r) r.disabled = false;
       } else {
-        if (s) { s.value = 'default'; s.disabled = true; }
-        if (r) { r.value = 'default'; r.disabled = true; }
+        if (s) { s.innerHTML = ''; s.value = 'default'; }
+        if (r) { r.innerHTML = ''; r.value = 'default'; }
       }
     });
 
@@ -370,6 +372,18 @@ async function restoreState(state) {
       // Update MIDI pitches to match restored sound options
       if (retrievedData) {
         updateSoundModule(index);
+      }
+
+      // ── Restore plot title bar ──
+      const titleBar = mod.querySelector('.plot-title-bar');
+      const yAxisLabel = mod.querySelector('.plot-yaxis-label');
+      if (titleBar) {
+        titleBar.textContent = moduleState.plotTitle || '';
+        titleBar.style.display = moduleState.plotTitleVisible || 'none';
+      }
+      if (yAxisLabel) {
+        yAxisLabel.textContent = moduleState.plotYAxis || '';
+        yAxisLabel.style.display = moduleState.plotYAxisVisible || 'none';
       }
 
       // ── Restore panel open/close state WITHOUT setTimeout ──
@@ -528,14 +542,11 @@ function attachRemoveListener(soundModule) {
 
 function attachVolumeListener(soundModule) {
   const volumeSlider = soundModule.querySelector('.volume');
-  volumeSlider.addEventListener('change', event => {
-    const volumeValue = parseFloat(event.target.value);
+  volumeSlider.addEventListener('input', () => {
     const idx = soundModules.indexOf(soundModule);
-    if (gainNodes[idx]) {
-      gainNodes[idx].volume.value = volumeValue;
-    }
-    saveState(); // Capture state after changing volume
+    applyVolume(idx);
   });
+  volumeSlider.addEventListener('change', () => saveState());
 }
 
 function attachSensorListener(soundModule) {
@@ -682,6 +693,7 @@ function attachGainNode(synth, moduleId) {
   const gainNode = new Tone.Volume(volume).toDestination();
   synth.connect(gainNode);
   gainNodes[moduleId] = gainNode;
+  applyVolume(moduleId);
 }
 
 // Helper function to convert MIDI note to frequency
@@ -796,11 +808,7 @@ async function playNotes() {
     return;
   }
 
-  gainNodes.forEach(gainNode => {
-    // Set the volume for each gain node according to the slider value
-    gainNode.volume.value =
-      soundModules[gainNodes.indexOf(gainNode)].querySelector('.volume').value;
-  });
+  gainNodes.forEach((_, idx) => applyVolume(idx));
 
   let i = 0; // Reset index
   isPlaying = true;
@@ -899,6 +907,18 @@ function stopSynths() {
 // Event listener for stop button
 document.getElementById('stop').addEventListener('click', stopSynths);
 
+function applyVolume(moduleId) {
+  const gainNode = gainNodes[moduleId];
+  if (!gainNode) {
+    return;
+  }
+  
+  const trackVol = parseFloat(soundModules[moduleId].querySelector('.volume').value);
+  const masterVol = parseFloat(document.getElementById('masterVolume').value);
+  
+  gainNode.volume.value = trackVol + masterVol;
+}
+
 function updateTimeBetween() {
   timeBetweenNotes = 60000 / bpm / speedMult;
   Tone.Transport.bpm.value = bpm * speedMult;
@@ -944,6 +964,7 @@ function clearWorkspace() {
 
   isRestoring = true;
   try {
+    // Stop any playback
     stopSynths();
 
     // Clear global “loaded data” state
@@ -954,7 +975,11 @@ function clearWorkspace() {
     // Clear the universal x-axis timeline
     const globalTimeline = document.getElementById('globalTimeline');
     if (globalTimeline) {
-      try { Plotly.purge(globalTimeline); } catch(e) {}
+      try { 
+        Plotly.purge(globalTimeline); 
+      } catch(e) {
+        console.warn("Plotly purge failed (safe to ignore):", e);
+      }
       globalTimeline.innerHTML = "";
     }
 
@@ -966,10 +991,12 @@ function clearWorkspace() {
       }
     }
 
-    // Rebuild soundModules array from DOM
+    // Rebuild soundModules to match what is in the DOM
     soundModules = [];
     const remainingModules = document.getElementsByClassName('soundModule');
-    for (let m of remainingModules) soundModules.push(m);
+    for (let m of remainingModules) {
+      soundModules.push(m);
+    }
 
     // Ensure IDs + remove button data attributes are correct
     soundModules.forEach((module, index) => {
@@ -984,21 +1011,39 @@ function clearWorkspace() {
 
       const plotDiv = module.querySelector(".plot");
       if (plotDiv) {
-        try { Plotly.purge(plotDiv); } catch(e) {}
+        try { Plotly.purge(plotDiv); } catch(e) {
+          console.warn("Plotly purge failed (safe to ignore):", e);
+        }
         plotDiv.innerHTML = "";
+      }
+
+      // Reset title of graph
+      const titleBar = module.querySelector(".plot-title-bar");
+      if (titleBar) {
+        titleBar.textContent = '';
+        titleBar.style.display = 'none';
+      }
+
+      // Reset y-axis label
+      const yAxisLabel = module.querySelector(".plot-yaxis-label");
+      if (yAxisLabel) {
+        yAxisLabel.textContent = '';
+        yAxisLabel.style.display = 'none';
       }
 
       // NOT delete dropdown options. Just reset selection + disable.
       const sensorsSelect = module.querySelector(".sensors");
       if (sensorsSelect) {
+        sensorsSelect.innerHTML = `<option value="default">Select a sensor</option>`;
         sensorsSelect.value = "default";
-        sensorsSelect.disabled = true;
+        //sensorsSelect.disabled = true;
       }
 
       const readingsSelect = module.querySelector(".readings");
       if (readingsSelect) {
+        sensorsSelect.innerHTML = `<option value="default">Select a sensor</option>`;
         readingsSelect.value = "default";
-        readingsSelect.disabled = true;
+        //readingsSelect.disabled = true;
       }
     }
 
@@ -2327,8 +2372,8 @@ async function retrieveData() {
         
         const s = m.querySelector('.sensors');
         const r = m.querySelector('.readings');
-        if (s) s.disabled = false;
-        if (r) r.disabled = false;
+        //if (s) s.disabled = false;
+        //if (r) r.disabled = false;
 
         restoreSelects(m);
       }
@@ -2433,6 +2478,10 @@ function initializeModuleSelects(module, data) {
 
     // Initialize readings select element
     setReadings(soundModules.indexOf(module));
+
+    // Enable dropdowns now that they have data
+    sensorsSelect.disabled = false;
+    module.querySelector('.readings').disabled = false;
   } else {
     console.error('No data available to initialize module selects.');
   }
