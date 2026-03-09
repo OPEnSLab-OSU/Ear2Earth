@@ -10,7 +10,7 @@ function createSoundModuleTemplate(moduleId) {
                 <div class="moduleTopOptions">
                     <div class="volumeContainer">
                         <label for="volume">Volume:</label>
-                        <input type="range" class="volume" min="-60" max="3">
+                        <input type="range" class="volume" min="-20" max="20" value="0" step="1">
                     </div>
                 </div>
 
