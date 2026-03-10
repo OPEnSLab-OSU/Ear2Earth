@@ -1146,9 +1146,24 @@ function resetDateRangeState() {
   updateDateRangeModalButton();
 }
 
-function startFirstTimeOnboarding() {
+let activeOnboardingSession = null;
+
+function startFirstTimeOnboarding(options = {}) {
+  const { manual = false } = options;
+  if (activeOnboardingSession) {
+    activeOnboardingSession.close(false);
+  }
+
   const dataSourceModal = document.getElementById('dataSourceModal');
   const dateTimeModal = document.getElementById('dateTimeModal');
+  const onboardingLockTargets = [
+    '.topmenu',
+    '.timeline-row',
+    '#modulesContainer',
+    '#addModule',
+    '#popover',
+    '#status-message'
+  ];
 
   const steps = [
     {
@@ -1212,9 +1227,10 @@ function startFirstTimeOnboarding() {
     {
       selectors: ['#modalStartTime', '#modalEndTime', '#modalPrescaler'],
       title: 'Select Date & Time Range',
-      text: 'Set start time, end time, and "Use of every" together in this modal.',
+      text: 'Set start time, end time, and "Use of every" here. These bounds update when the preset, database, or device changes.',
       beforeShow: () => {
         document.getElementById('timeRange').checked = true;
+        updateDateRangeModalButton();
       },
       anchorSelector: '#confirmDateTime',
       cardPlacement: 'below',
@@ -1223,15 +1239,15 @@ function startFirstTimeOnboarding() {
     },
     {
       selectors: ['#confirmDateTime'],
-      title: 'Apply Date Range',
-      text: 'Apply the selected window for time-based retrieval.',
+      title: 'Retrieve From Date Range',
+      text: 'Use this button to retrieve data directly from the date range modal.',
       showDataSourceModal: false,
       showDateTimeModal: true
     },
     {
       selectors: ['#retrieve'],
       title: 'Retrieve Data',
-      text: 'Fetch packets after source and packet settings are configured.',
+      text: 'Use this main button when you are in Last Packets mode.',
       showDataSourceModal: false,
       showDateTimeModal: false
     },
@@ -1278,7 +1294,15 @@ function startFirstTimeOnboarding() {
       showDateTimeModal: false
     },
     {
-      selectors: ['#play', '#stop', '#bpmContainer', '#speedOptions'],
+      selectors: [
+        '#play',
+        '#stop',
+        '#bpmContainer',
+        '#speedOptions label[for="speed1x"]',
+        '#speedOptions label[for="speed2x"]',
+        '#speedOptions label[for="speed4x"]',
+        '#speedOptions label[for="speed8x"]'
+      ],
       title: 'Playback Controls',
       text: 'Use Play/Stop, BPM, and speed controls to audition results.',
       showDataSourceModal: false,
@@ -1395,12 +1419,18 @@ function startFirstTimeOnboarding() {
     clearHighlight();
     overlay.remove();
     card.remove();
+    document.body.classList.remove('onboarding-modal-lock');
+    onboardingLockTargets.forEach(selector => {
+      const el = document.querySelector(selector);
+      if (el) el.classList.remove('onboarding-locked');
+    });
     document.getElementById('dataSourceModal').style.display = 'none';
     document.getElementById('dateTimeModal').style.display = 'none';
     document.getElementById('dataSourceModal').classList.remove('onboarding-modal-active');
     document.getElementById('dateTimeModal').classList.remove('onboarding-modal-active');
+    activeOnboardingSession = null;
     resetToLastPacketsMode();
-    if (markComplete) {
+    if (markComplete && !manual) {
       setOnboardingComplete();
     }
     window.removeEventListener('resize', handleViewportUpdate);
@@ -1427,6 +1457,13 @@ function startFirstTimeOnboarding() {
       dateTimeModal.style.display = step.showDateTimeModal ? 'flex' : 'none';
       dateTimeModal.classList.toggle('onboarding-modal-active', !!step.showDateTimeModal);
     }
+
+    const lockToModal = !!(step.showDataSourceModal || step.showDateTimeModal);
+    document.body.classList.toggle('onboarding-modal-lock', lockToModal);
+    onboardingLockTargets.forEach(selector => {
+      const el = document.querySelector(selector);
+      if (el) el.classList.toggle('onboarding-locked', lockToModal);
+    });
 
     const targets = (step.selectors || [])
       .map(selector => document.querySelector(selector))
@@ -1474,6 +1511,10 @@ function startFirstTimeOnboarding() {
   window.addEventListener('resize', handleViewportUpdate);
   window.addEventListener('scroll', handleViewportUpdate, true);
 
+  activeOnboardingSession = {
+    close: closeTour
+  };
+
   renderStep();
 }
 
@@ -1483,6 +1524,7 @@ document.getElementById('speedOptions').addEventListener('change', handleSpeedCh
 document.addEventListener('DOMContentLoaded', () => {
 
   const row = document.querySelector('.topmenu .row');
+  const startTourLink = document.getElementById('startTourLink');
   
   // Wrap specific sections in draggable containers
   const sections = [
@@ -1615,12 +1657,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Close modal when X is clicked
   closeBtn.addEventListener('click', () => {
+    if (modal.classList.contains('onboarding-modal-active')) return;
     modal.style.display = 'none';
   });
 
   // Close modal when clicking outside
   window.addEventListener('click', (event) => {
     if (event.target === modal) {
+      if (modal.classList.contains('onboarding-modal-active')) return;
       modal.style.display = 'none';
     }
   });
@@ -1707,6 +1751,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Close modal when X is clicked
   closeDateModal.addEventListener('click', () => {
+    if (dateTimeModal.classList.contains('onboarding-modal-active')) return;
     dateTimeModal.style.display = 'none';
     
     // Only reset if user hasn't confirmed a date range
@@ -1762,6 +1807,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // Close modal when clicking outside
   window.addEventListener('click', (e) => {
     if (e.target === dateTimeModal) {
+      if (dateTimeModal.classList.contains('onboarding-modal-active')) return;
       dateTimeModal.style.display = 'none';
       
       // Only reset if user hasn't confirmed a date range
@@ -2068,6 +2114,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
   //saveState(); // Save initial state for undo/redo
   updateUndoRedoButtons();
+
+  if (startTourLink) {
+    startTourLink.addEventListener('click', () => {
+      startFirstTimeOnboarding({ manual: true });
+    });
+  }
   
   if (shouldRunOnboarding()) {
     setTimeout(() => {
