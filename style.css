@@ -81,6 +81,10 @@ nav#nav ul li a {
   color: #030303;
 }
 
+nav#nav ul li a:hover {
+  color: var(--hover-blue);
+}
+
 .nav-link-btn {
   border: 0;
   background: transparent;
