@@ -2554,24 +2554,33 @@ function setReadings(moduleIdx) {
 
   // If sensor is not "default"
   if (sensor !== 'default') {
-    // Get the first object in the data array that has the sensor as a key
-    let sensorData = retrievedData.find(d => d.hasOwnProperty(sensor));
+    // Special case for Analog sensor - add virtual "Volts" option
+    if (sensor === 'Analog') {
+      let option = document.createElement('option');
+      option.value = 'Volts';
+      option.text = 'Volts';
+      selectReadings.appendChild(option);
+    } else {
+      // Normal handling for other sensors
+      // Get the first object in the data array that has the sensor as a key
+      let sensorData = retrievedData.find(d => d.hasOwnProperty(sensor));
 
-    // If sensorData exists and its value is an object
-    if (sensorData && typeof sensorData[sensor] === 'object') {
-      // Get the keys of the sensorData object
-      let keys = Object.keys(sensorData[sensor]);
+      // If sensorData exists and its value is an object
+      if (sensorData && typeof sensorData[sensor] === 'object') {
+        // Get the keys of the sensorData object
+        let keys = Object.keys(sensorData[sensor]);
 
-      // Add each key as an option to the select element
-      keys.forEach(key => {
-        let option = document.createElement('option');
-        option.value = key;
-        option.text = key;
-        selectReadings.appendChild(option);
-      });
-
-      plot(moduleIdx);
+        // Add each key as an option to the select element
+        keys.forEach(key => {
+          let option = document.createElement('option');
+          option.value = key;
+          option.text = key;
+          selectReadings.appendChild(option);
+        });
+      }
     }
+
+    plot(moduleIdx);
   }
 }
 
@@ -2841,10 +2850,18 @@ function plot(moduleIdx) {
 
   // If sensor and reading are not "default"
   if (sensor !== 'default' && reading !== 'default') {
-    // Get the data for the selected sensor and reading
-    let filteredData = retrievedData.filter(
-      d => d.hasOwnProperty(sensor) && d[sensor].hasOwnProperty(reading)
-    );
+    let filteredData;
+    let yData;
+    
+    // Special handling for virtual "Volts" reading
+    if (sensor === 'Analog' && reading === 'Volts') {
+      filteredData = retrievedData.filter(d => d.hasOwnProperty('Analog') && d.Analog.hasOwnProperty('Vbat'));
+    } else {
+      // Normal handling for other readings
+      filteredData = retrievedData.filter(
+        d => d.hasOwnProperty(sensor) && d[sensor].hasOwnProperty(reading)
+      );
+    }
 
     console.log(filteredData);
 
@@ -2858,11 +2875,34 @@ function plot(moduleIdx) {
 
       // Use actual timestamps instead of indices to account for spacing issues
       let xData = filteredData.map(d => new Date(fixTimestamp(d.Timestamp.time_local)).getTime());
-      let yData = filteredData.map(d => d[sensor][reading]);
+      
+      // Get yData based on reading type
+      if (sensor === 'Analog' && reading === 'Volts') {
+        yData = filteredData.map(d => d.Analog.Vbat);
+      } else {
+        yData = filteredData.map(d => d[sensor][reading]);
+      }
 
       // Prepare Plot Data and Layout
-      let xLabels = filteredData.map(d => new Date(fixTimestamp(d.Timestamp.time_local)).toLocaleString('en-US', { /*...*/ }));
-      let hoverTexts = filteredData.map((d, i) => `Date: ${xLabels[i]}<br>Value: ${yData[i]}`);
+      let xLabels = filteredData.map(d => new Date(fixTimestamp(d.Timestamp.time_local)).toLocaleString('en-US', { 
+        hour: 'numeric',
+        minute: '2-digit',
+        second: '2-digit'
+      }));
+      
+      let hoverTexts = filteredData.map((d, i) => {
+        let baseText = `Date: ${xLabels[i]}<br>Value: ${yData[i]}`;
+
+        // Check if Analog data exists in this packet
+        if (d.Analog) {
+          let vbat = d.Analog.Vbat ? d.Analog.Vbat.toFixed(2) : 'N/A';
+          let vbat_mv = d.Analog.Vbat_MV ? d.Analog.Vbat_MV.toFixed(0) : 'N/A';
+
+          return `${baseText}<br>Vbat: ${vbat}V<br>Vbat_MV: ${vbat_mv}mV`;
+        }
+
+        return baseText;
+      });
 
       let plotData = [{
         x: xData,
@@ -2885,6 +2925,20 @@ function plot(moduleIdx) {
       titleBar.style.display = 'block';
       yAxisLabel.style.display = 'flex';   // flex to preserve the centering/rotation
 
+      // Create yaxis configuration
+      let yAxisConfig = {  
+        automargin: true,
+        tickfont: {
+          family: "Google Sans, sans-serif",
+          size: 12,
+          color: "rgb(0, 0, 0)"
+        },
+        ticksuffix: "   ",  // adds spacing to the right of tick labels
+        showgrid: true,
+        gridcolor: "#E1E1E1",
+        gridwidth: 0.01     
+      };
+
       let layout = {
         xaxis: {
           type: "date",
@@ -2901,18 +2955,7 @@ function plot(moduleIdx) {
           b: 10, 
           t: 10 
         },
-        yaxis: {  
-          automargin: true,
-          tickfont: {
-            family: "Google Sans, sans-serif",
-            size: 12,
-            color: "rgb(0, 0, 0)"
-          },
-          ticksuffix: "   ",  // adds spacing to the right of tick labels
-          showgrid: true,
-          gridcolor: "#E1E1E1",
-          gridwidth: 0.01     
-        },
+        yaxis: yAxisConfig,
         autosize: true
       };
 
@@ -2965,8 +3008,8 @@ function plot(moduleIdx) {
             }
           });
         }, 100);
-    }
-    syncThisPlot(currentPlotDiv, moduleIdx);
+      }
+      syncThisPlot(currentPlotDiv, moduleIdx);
     }
   }
 }
