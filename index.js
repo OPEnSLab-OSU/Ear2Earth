@@ -2893,8 +2893,8 @@ function plot(moduleIdx) {
       let hoverTexts = filteredData.map((d, i) => {
         let baseText = `Date: ${xLabels[i]}<br>Value: ${yData[i]}`;
 
-        // Check if Analog data exists in this packet
-        if (d.Analog) {
+        // Only add Analog data to hover if we're plotting the Analog sensor
+        if (sensor === 'Analog' && d.Analog) {
           let vbat = d.Analog.Vbat ? d.Analog.Vbat.toFixed(2) : 'N/A';
           let vbat_mv = d.Analog.Vbat_MV ? d.Analog.Vbat_MV.toFixed(0) : 'N/A';
 
