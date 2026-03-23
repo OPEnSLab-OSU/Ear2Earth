@@ -2885,9 +2885,12 @@ function plot(moduleIdx) {
 
       // Prepare Plot Data and Layout
       let xLabels = filteredData.map(d => new Date(fixTimestamp(d.Timestamp.time_local)).toLocaleString('en-US', { 
-        hour: 'numeric',
-        minute: '2-digit',
-        second: '2-digit'
+        year: "2-digit",
+        month: "2-digit", 
+        day: "2-digit", 
+        hour: "2-digit", 
+        minute: "2-digit", 
+        second: "2-digit"
       }));
       
       let hoverTexts = filteredData.map((d, i) => {
