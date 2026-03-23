@@ -10,7 +10,7 @@ function createSoundModuleTemplate(moduleId) {
                 <div class="moduleTopOptions">
                     <div class="volumeContainer">
                         <label for="volume">Volume:</label>
-                        <input type="range" class="volume" min="-60" max="3" value="-10">
+                        <input type="range" class="volume" min="-20" max="20" value="0" step="1">
                     </div>
                 </div>
 
@@ -30,7 +30,7 @@ function createSoundModuleTemplate(moduleId) {
                 
                 <!-- Collapse button -->
                 <button class="collapse-btn"> 
-                More Options <span class="arrow-icon">▼</span>
+                Sound Options <span class="arrow-icon">▼</span>
                 </button>
                 
                 <!-- Bottom options (collapsible) -->
@@ -114,10 +114,14 @@ function createSoundModuleTemplate(moduleId) {
 
             <!-- RIGHT SIDE: Plot -->
             <div class="rightPlot">
-                <div class="plot">
-                </div>
+            <div class="plot-title-bar"></div>
+            <div class="plot-body">
+                <div class="plot-yaxis-label"></div>
+                <div class="plot"></div>
+            </div>
             </div>
         </div>`;
+
 }
 
 export { createSoundModuleTemplate };
